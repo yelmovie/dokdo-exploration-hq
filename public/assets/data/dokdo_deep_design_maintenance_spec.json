@@ -1,0 +1,899 @@
+{
+  "metadata": {
+    "project_key": "dokdo_exploration_hq",
+    "project_title": "독도 탐사본부: 사라진 기록을 복원하라",
+    "document_type": "screen_design_progression_question_level_and_maintenance_spec",
+    "version": "1.0.0",
+    "created_at": "2026-06-12T10:03:57",
+    "target_grade": "초등 4학년 심화",
+    "subject_area": "사회·통합 독도교육",
+    "target_device": "웹앱, 태블릿 가로형, 전자칠판",
+    "screen_ratio": "16:9",
+    "backend_policy": "백엔드 없음. 브라우저 저장소 기반.",
+    "design_goal": "단순 독도 퀴즈나 유치한 꾸미기 앱이 아니라, 위치·지형·역사·생태·보호 근거를 수집해 최종 브리핑 보드를 완성하는 자료 해석형 탐사 웹앱"
+  },
+  "source_basis": {
+    "mofa_government_position": {
+      "title": "대한민국 외교부 독도: 정부 기본입장",
+      "url": "https://dokdo.mofa.go.kr/kor/dokdo/government_position.jsp",
+      "use_in_app": "독도에 대한 기본 서술은 외교부 공식 입장 문장에 근거해 짧고 정확하게 제시한다.",
+      "facts_used": [
+        "독도는 역사적·지리적·국제법적으로 명백한 우리 고유의 영토이다.",
+        "독도에 대한 우리 정부의 확고한 영토주권을 전제로 교육한다."
+      ]
+    },
+    "mofa_location": {
+      "title": "대한민국 외교부 독도: 구성 및 위치",
+      "url": "https://dokdo.mofa.go.kr/kor/introduce/location.jsp",
+      "use_in_app": "위치·구성·거리 관련 문제의 기준 자료로 사용한다.",
+      "facts_used": [
+        "독도는 동도와 서도 두 큰 섬, 주변 부속도서로 구성된다.",
+        "독도와 울릉도의 거리는 87.4km이다.",
+        "동도·서도 높이와 면적 등 수치 자료는 선택형 또는 자료 해석형 문제로만 사용한다."
+      ]
+    },
+    "mofa_history_reason": {
+      "title": "대한민국 외교부 독도: 우리 영토인 근거",
+      "url": "https://dokdo.mofa.go.kr/kor/dokdo/reason.jsp",
+      "use_in_app": "역사 기록, 인물, 연표 문제의 기준 자료로 사용한다.",
+      "facts_used": [
+        "512년 이사부의 우산국 복속 관련 기록",
+        "1454년 세종실록 지리지의 울릉도·독도 기록",
+        "1693~1696년 안용복 관련 사건과 일본 막부의 도해금지령",
+        "1900년 대한제국 칙령 제41호와 울도군 관할 구역 기록"
+      ]
+    },
+    "mofa_nature": {
+      "title": "대한민국 외교부 독도: 자연환경",
+      "url": "https://dokdo.mofa.go.kr/kor/introduce/nature.jsp",
+      "use_in_app": "기후·생태·보호 행동 문제의 기준 자료로 사용한다.",
+      "facts_used": [
+        "독도에서 확인된 식물은 약 60종이다.",
+        "조류는 괭이갈매기 등을 포함해 약 160종으로 안내된다.",
+        "해양생물에는 오징어, 전복, 소라, 홍합, 미역, 다시마, 성게 등이 포함된다.",
+        "독도는 철새 이동 경로의 중간 피난처 및 휴식처로 생물지리학적으로 중요하다."
+      ]
+    }
+  },
+  "difficulty_audit": {
+    "overall_result": "기존 단순 카드형/유치원식 선택 문제에서 초4 심화형 자료 해석 미션으로 재설계 필요. 본 설계는 자료 읽기, 근거 선택, 연표 복원, 원인-결과 설명, 발표문 개선 중심으로 전환함.",
+    "removed_low_level_patterns": [
+      "동물/식물 단순 분류만 반복",
+      "정답이 보기에서 바로 보이는 1문장 퀴즈",
+      "캐릭터 클릭 후 보상만 받는 활동",
+      "독도는 어디인가요 수준의 단일 지식 확인만 반복",
+      "작품 꾸미기만 하고 배움 정리가 약한 화면"
+    ],
+    "required_deepening_patterns": [
+      "두 가지 이상 단서를 함께 읽고 답 찾기",
+      "자료표·지도·연표·관찰 기록을 해석하기",
+      "정답 선택 후 왜 맞는지 근거 확인하기",
+      "사실과 생각을 구분하기",
+      "잘못된 설명을 수정하기",
+      "최종 발표문을 근거 중심으로 고치기"
+    ],
+    "minimum_question_standard": "각 핵심 스테이지는 3문제 이상, 그중 2문제 이상은 자료 해석형 또는 근거 선택형이어야 한다."
+  },
+  "asset_strategy": {
+    "asset_budget_per_screen": "배경, 캐릭터, 아이콘, 오브젝트 합산 화면당 10개 이하",
+    "css_ui_policy": "버튼, 진행 막대, 토글, 모달, 카드 테두리, 드롭 영역은 CSS/코드로 구현한다. 이미지 에셋으로 만들지 않는다.",
+    "critical_text_policy": "문제, 보기, 해설, 출처 문구는 이미지가 아니라 코드 텍스트로 표시한다. 제목 장식 이미지만 예외적으로 사용 가능.",
+    "reuse_policy": "공통 캐릭터는 1~3회 정도만 반복하고, 각 장면의 핵심 오브젝트는 장면별로 다르게 사용한다."
+  },
+  "progression": {
+    "loop": [
+      "자료 관찰",
+      "단서 선택",
+      "문제 해결",
+      "근거 확인",
+      "배지 획득",
+      "브리핑 보드에 카드 저장"
+    ],
+    "unlock_rules": {
+      "stage_2_unlock": "1단계 항로 복원실에서 3문제 중 2문제 이상 근거 확인까지 완료",
+      "stage_3_unlock": "2단계 바위섬 분석실에서 비교표 완성",
+      "stage_4_unlock": "3단계 기록 보관소에서 연표 완성",
+      "stage_5_unlock": "4단계 생태 수호 작전에서 보호 행동 카드 3장 이상 수집",
+      "presentation_unlock": "브리핑 보드의 위치·지형·역사·생태·보호 5칸이 모두 채워짐"
+    },
+    "scoring_policy": {
+      "stars": "정답 수보다 근거 확인 완료 여부에 더 큰 가중치",
+      "recommended_weights": {
+        "accuracy": 40,
+        "evidence_selection": 40,
+        "persistence": 10,
+        "completion": 10
+      },
+      "no_fail_mode": "초등 수업용이므로 완전 실패 종료는 두지 않고 힌트를 통해 완성 가능하게 함"
+    }
+  },
+  "pages": [
+    {
+      "page": 1,
+      "route": "/title",
+      "name": "메인 화면",
+      "role": "프로젝트 진입, 세계관 제시, 학습 기대감 형성",
+      "stage": "intro",
+      "screen_layout_16_9": {
+        "background": "독도 전망대 또는 바다 전경을 전체 배경으로 배치",
+        "left_zone": "대표 학생 캐릭터와 탐사 도구, 배경과 겹치지 않게 하단 좌측 25% 영역",
+        "center_zone": "제목 그림 ‘독도 탐사본부: 사라진 기록을 복원하라’를 중앙 55% 폭으로 크게 배치",
+        "right_zone": "보조 마스코트 또는 독도 수료 배지 예고 아이콘",
+        "bottom_zone": "CSS 버튼: 탐사 시작 / 이어하기 / 선생님 안내"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_title_dokdo_observatory",
+        "logo_main_dokdo_exploration_hq",
+        "character_student_explorer",
+        "mascot_wave_or_lighthouse",
+        "icon_compass",
+        "icon_binoculars",
+        "object_taegeuk_flag",
+        "object_flower_cluster"
+      ],
+      "css_only_ui": [
+        "탐사 시작 버튼",
+        "이어하기 버튼",
+        "설정 버튼",
+        "음소거 버튼"
+      ],
+      "interaction": {
+        "type": "start_continue_select",
+        "rules": [
+          "localStorage에 저장 기록이 있으면 이어하기 표시",
+          "첫 방문이면 20초 이하 짧은 오프닝 후 시작 가능"
+        ]
+      },
+      "advanced_level_check": "학습 문제는 없지만 ‘기록 복원’ 세계관을 제시해 이후 문제를 단순 퀴즈가 아닌 자료 탐구형으로 연결한다."
+    },
+    {
+      "page": 2,
+      "route": "/briefing",
+      "name": "탐사본부 브리핑",
+      "role": "오늘의 조사 목표와 평가 기준 안내",
+      "stage": "intro",
+      "screen_layout_16_9": {
+        "background": "탐사본부 내부 브리핑룸",
+        "left_zone": "오늘의 목표 5개 카드: 위치, 지형, 역사, 생태, 보호",
+        "center_zone": "대형 브리핑 보드: ‘사라진 독도 기록을 복원하라’",
+        "right_zone": "완성해야 할 브리핑 보드 미리보기",
+        "bottom_zone": "CSS 진행 막대와 준비 완료 버튼"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_briefing_room",
+        "character_teacher_researcher",
+        "icon_goal_location",
+        "icon_goal_geography",
+        "icon_goal_history",
+        "icon_goal_ecology",
+        "icon_goal_protection",
+        "object_briefing_board_preview"
+      ],
+      "interaction": {
+        "type": "mission_goal_check",
+        "rules": [
+          "목표 카드 5개를 눌러 읽으면 다음 장면 잠금 해제",
+          "목표 설명은 2문장 이하로 유지"
+        ]
+      },
+      "advanced_level_check": "학생이 ‘무엇을 외울지’보다 ‘어떤 근거를 모아 설명할지’를 먼저 확인한다."
+    },
+    {
+      "page": 3,
+      "route": "/mission-map",
+      "name": "미션 지도",
+      "role": "전체 5단계 진행 경로와 잠금 구조 확인",
+      "stage": "hub",
+      "screen_layout_16_9": {
+        "background": "울릉도에서 독도까지 이어지는 큰 해도형 지도",
+        "left_zone": "진행률과 획득 배지 목록",
+        "center_zone": "항로 위 5개 미션 섬: 항로, 지형, 역사, 생태, 브리핑",
+        "right_zone": "선택한 미션 설명과 난이도 표시",
+        "bottom_zone": "CSS: 미션 시작 / 도감 / 이전 버튼"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_mission_map_ocean",
+        "object_route_path",
+        "icon_stage_route",
+        "icon_stage_geology",
+        "icon_stage_history",
+        "icon_stage_ecology",
+        "icon_stage_briefing",
+        "object_research_ship"
+      ],
+      "interaction": {
+        "type": "stage_select_locked_path",
+        "rules": [
+          "1단계 완료 전 2~5단계는 설명만 보이고 시작 불가",
+          "완료 배지는 즉시 저장",
+          "뒤로 가도 진행 상태 유지"
+        ]
+      },
+      "advanced_level_check": "미션 선택 자체는 단순하지만 각 미션 설명에 ‘자료 읽기·비교·근거 선택’ 기준을 명확히 제시한다."
+    },
+    {
+      "page": 4,
+      "route": "/stage/route-restore",
+      "name": "1단계 항로 복원실",
+      "role": "위치·방향·거리 단서로 독도 항로 복원",
+      "stage": "location_route",
+      "screen_layout_16_9": {
+        "background": "항로 복원실 또는 해도 책상 배경",
+        "left_zone": "지도 단서: 울릉도, 독도, 동쪽 바다, 거리 표기",
+        "center_zone": "드래그 가능한 항로 조각 3~5개와 지도판",
+        "right_zone": "단서 노트와 선택지",
+        "bottom_zone": "근거 확인 패널: 선택한 단서가 왜 맞는지 표시"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_route_restore_room",
+        "character_route_guide",
+        "mascot_wave_spirit",
+        "object_ocean_map_board",
+        "object_route_piece_a",
+        "object_route_piece_b",
+        "icon_compass_arrow",
+        "icon_distance_marker",
+        "reward_route_badge"
+      ],
+      "interaction": {
+        "type": "map_evidence_drag_and_choice",
+        "rules": [
+          "단서 2개 이상을 확인해야 정답 제출 가능",
+          "오답 시 정답 공개가 아니라 근거 카드 1개만 강조",
+          "3회 오답 후 힌트 표시"
+        ]
+      },
+      "question_samples": [
+        {
+          "id": "S1-Q1",
+          "type": "evidence_choice",
+          "level": "초4 심화",
+          "stem": "지도 단서 두 가지를 함께 보고, 설명에 맞는 섬을 고르세요. 단서: ① 울릉도에서 동쪽 바다로 약 87.4km 떨어져 있다. ② 동도와 서도 두 큰 섬을 중심으로 이루어져 있다.",
+          "choices": [
+            "독도",
+            "제주도",
+            "백령도",
+            "거제도"
+          ],
+          "answer": "독도",
+          "rationale": "거리 단서와 구성 단서가 모두 맞는 것은 독도이다.",
+          "source_ref": "mofa_location"
+        },
+        {
+          "id": "S1-Q2",
+          "type": "map_reasoning",
+          "level": "초4 심화",
+          "stem": "배가 울릉도에서 출발해 동쪽으로 이동했습니다. 지도에서 독도에 도착하려면 먼저 확인해야 할 정보로 가장 알맞은 것은 무엇인가요?",
+          "choices": [
+            "방향과 거리",
+            "섬의 꽃 색깔",
+            "바다의 깊이만",
+            "구름 모양"
+          ],
+          "answer": "방향과 거리",
+          "rationale": "항로를 복원할 때는 위치 관계, 방향, 거리 정보를 함께 보아야 한다.",
+          "source_ref": "mofa_location"
+        },
+        {
+          "id": "S1-Q3",
+          "type": "error_correction",
+          "level": "초4 심화",
+          "stem": "다음 설명에서 잘못된 부분을 고치세요. ‘독도는 울릉도에서 서쪽으로 87.4km 떨어져 있다.’",
+          "answer": "서쪽 → 동쪽",
+          "rationale": "독도는 울릉도에서 동쪽 방향에 있는 섬으로 다룬다.",
+          "source_ref": "mofa_location"
+        }
+      ],
+      "advanced_level_check": "단일 지식 암기가 아니라 방향·거리·구성 단서를 동시에 읽고 판단하게 한다."
+    },
+    {
+      "page": 5,
+      "route": "/stage/geology-lab",
+      "name": "2단계 바위섬 분석실",
+      "role": "독도의 지형 자료를 읽고 생활 조건을 분석",
+      "stage": "geography_geology",
+      "screen_layout_16_9": {
+        "background": "바위섬 분석실, 지층 샘플과 창밖 독도 전경",
+        "left_zone": "독도 지형 사진형 자료와 지층 단면 카드",
+        "center_zone": "비교표: 지형 특징 / 생활 영향 / 근거",
+        "right_zone": "복수 정답 문제 또는 까닭 선택 문제",
+        "bottom_zone": "분석 노트와 제출 전 근거 체크"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_geology_lab",
+        "character_geology_student",
+        "mascot_rock_crab_robot",
+        "object_rock_core_sample",
+        "object_cliff_cutaway",
+        "icon_wave_erosion",
+        "icon_steep_cliff",
+        "object_geology_clipboard",
+        "reward_geology_badge"
+      ],
+      "interaction": {
+        "type": "data_table_reasoning",
+        "rules": [
+          "복수 정답 문제는 선택 개수를 명확히 표시",
+          "근거 없는 선택 제출 불가",
+          "표 채우기 후 문제 해결"
+        ]
+      },
+      "question_samples": [
+        {
+          "id": "S2-Q1",
+          "type": "multiple_select_reason",
+          "level": "초4 심화",
+          "stem": "독도에 조사기지를 크게 세우기 어려운 까닭으로 알맞은 것을 두 가지 고르세요. 자료: 가파른 바위, 좁은 땅, 거센 파도, 동도·서도와 작은 바위섬들.",
+          "choices": [
+            "넓은 평지가 많기 때문",
+            "가파른 바위와 좁은 땅이 많기 때문",
+            "파도와 바람의 영향을 많이 받을 수 있기 때문",
+            "강이 넓게 흐르기 때문"
+          ],
+          "answer": [
+            "가파른 바위와 좁은 땅이 많기 때문",
+            "파도와 바람의 영향을 많이 받을 수 있기 때문"
+          ],
+          "rationale": "지형과 바다 환경을 함께 고려해야 한다.",
+          "source_ref": "mofa_location"
+        },
+        {
+          "id": "S2-Q2",
+          "type": "compare_data",
+          "level": "초4 심화",
+          "stem": "동도와 서도의 높이 자료를 비교했을 때, 더 높은 섬은 어느 쪽인가요?",
+          "choices": [
+            "동도",
+            "서도",
+            "둘의 높이는 같다",
+            "자료만으로 알 수 없다"
+          ],
+          "answer": "서도",
+          "rationale": "외교부 일반 현황 자료에서 동도는 98.6m, 서도는 168.5m로 안내된다.",
+          "source_ref": "mofa_location"
+        },
+        {
+          "id": "S2-Q3",
+          "type": "cause_effect",
+          "level": "초4 심화",
+          "stem": "‘가파른 바위와 좁은 땅’이라는 지형 특징이 생활에 주는 영향으로 가장 알맞은 것은 무엇인가요?",
+          "choices": [
+            "시설을 크게 짓기 어렵다",
+            "논농사가 매우 쉽다",
+            "큰 강을 이용할 수 있다",
+            "평야가 넓어 도시가 생긴다"
+          ],
+          "answer": "시설을 크게 짓기 어렵다",
+          "rationale": "지형 특징과 생활 조건을 연결해 판단해야 한다.",
+          "source_ref": "mofa_location"
+        }
+      ],
+      "advanced_level_check": "그림을 보고 느낌을 고르는 문제가 아니라 자료표와 지형 단서를 연결하는 원인·결과형 문제로 구성한다."
+    },
+    {
+      "page": 6,
+      "route": "/stage/history-archive",
+      "name": "3단계 기록 보관소",
+      "role": "역사 기록을 비교해 사건 흐름 복원",
+      "stage": "history_records",
+      "screen_layout_16_9": {
+        "background": "목재 서가와 고문서가 있는 기록 보관소",
+        "left_zone": "시대별 기록 카드 묶음",
+        "center_zone": "연표 드롭 영역 4~6칸",
+        "right_zone": "인물·기록 설명 패널",
+        "bottom_zone": "사실/생각 구분 토글과 근거 확인"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_history_archive",
+        "character_archive_student",
+        "mascot_owl_historian",
+        "object_old_book_records",
+        "object_timeline_scroll",
+        "icon_evidence_seal",
+        "object_archive_box",
+        "object_hourglass_history",
+        "reward_history_badge"
+      ],
+      "interaction": {
+        "type": "timeline_order_and_fact_opinion",
+        "rules": [
+          "카드를 연표에 놓으면 시대 단서가 표시",
+          "사실/생각 문제는 문장 색상으로 구분하지 않고 학생이 판단",
+          "정답 확인 전 근거 카드 선택 필수"
+        ]
+      },
+      "question_samples": [
+        {
+          "id": "S3-Q1",
+          "type": "timeline_order",
+          "level": "초4 심화",
+          "stem": "다음 기록을 옛날부터 차례대로 놓으세요: ① 대한제국 칙령 제41호 ② 세종실록 지리지 ③ 이사부의 우산국 복속 ④ 안용복 관련 사건",
+          "answer": [
+            "이사부의 우산국 복속",
+            "세종실록 지리지",
+            "안용복 관련 사건",
+            "대한제국 칙령 제41호"
+          ],
+          "rationale": "512년, 1454년, 1690년대, 1900년의 순서로 흐름을 이해한다.",
+          "source_ref": "mofa_history_reason"
+        },
+        {
+          "id": "S3-Q2",
+          "type": "evidence_matching",
+          "level": "초4 심화",
+          "stem": "‘울릉도와 독도가 강원도 울진현에 속한 두 섬’이라는 기록과 가장 관련 깊은 자료는 무엇인가요?",
+          "choices": [
+            "세종실록 지리지",
+            "기상 관측표",
+            "생태 관찰 기록",
+            "현대 관광 안내문"
+          ],
+          "answer": "세종실록 지리지",
+          "rationale": "외교부 자료에서 1454년 세종실록 지리지는 울릉도와 독도 기록과 연결된다.",
+          "source_ref": "mofa_history_reason"
+        },
+        {
+          "id": "S3-Q3",
+          "type": "fact_opinion",
+          "level": "초4 심화",
+          "stem": "다음 문장을 사실과 생각으로 구분하세요. A: ‘대한제국 칙령 제41호는 1900년에 반포되었다.’ B: ‘나는 독도를 배울수록 더 소중하게 느낀다.’",
+          "answer": {
+            "A": "사실",
+            "B": "생각"
+          },
+          "rationale": "A는 기록으로 확인되는 내용이고, B는 개인의 느낌이다.",
+          "source_ref": "mofa_history_reason"
+        }
+      ],
+      "advanced_level_check": "역사 인물 맞히기가 아니라 연표, 자료명, 사실/생각 구분을 함께 다룬다."
+    },
+    {
+      "page": 7,
+      "route": "/stage/ecology-guard",
+      "name": "4단계 생태 수호 작전",
+      "role": "생태 단서와 보호 행동을 연결해 판단",
+      "stage": "ecology_protection",
+      "screen_layout_16_9": {
+        "background": "독도 생태 관찰소와 탐방로",
+        "left_zone": "관찰 구역: 바다새, 해안 식물, 조간대 생물",
+        "center_zone": "상황 카드: 방문객 행동, 연구자 행동, 보호 규칙",
+        "right_zone": "선택 후 영향 예측 카드",
+        "bottom_zone": "보호 행동 체크리스트"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_ecology_observatory",
+        "character_ecology_student",
+        "mascot_flower_fairy_or_bird",
+        "object_rock_flower_cluster",
+        "object_tide_pool",
+        "icon_ecology_cycle",
+        "icon_protection_shield",
+        "sign_ecology_guard_zone",
+        "reward_guard_badge"
+      ],
+      "interaction": {
+        "type": "situation_judgement",
+        "rules": [
+          "동물/식물 단순 분류 금지",
+          "행동 선택 후 결과 예측까지 연결",
+          "자연 보호 행동은 정답 하나보다 ‘가장 적절한 행동’ 판단형으로 구성"
+        ]
+      },
+      "question_samples": [
+        {
+          "id": "S4-Q1",
+          "type": "best_action",
+          "level": "초4 심화",
+          "stem": "괭이갈매기가 많이 모이는 바위 주변을 관찰할 때 가장 알맞은 행동은 무엇인가요?",
+          "choices": [
+            "가까이 다가가 크게 소리친다",
+            "표시된 길에서 조용히 관찰한다",
+            "먹이를 던져 새를 모은다",
+            "둥지 주변의 물건을 가져온다"
+          ],
+          "answer": "표시된 길에서 조용히 관찰한다",
+          "rationale": "관찰은 하되 서식 환경을 방해하지 않아야 한다.",
+          "source_ref": "mofa_nature"
+        },
+        {
+          "id": "S4-Q2",
+          "type": "evidence_connection",
+          "level": "초4 심화",
+          "stem": "독도가 철새 이동 경로의 중간 피난처와 휴식처로 중요하다는 설명을 보고, 보호 안내문에 들어갈 말로 가장 알맞은 것은 무엇인가요?",
+          "choices": [
+            "새가 쉬는 곳 가까이에 들어가지 않아요",
+            "더 많이 보기 위해 새를 쫓아요",
+            "식물을 기념품으로 가져가요",
+            "바위에 이름을 새겨요"
+          ],
+          "answer": "새가 쉬는 곳 가까이에 들어가지 않아요",
+          "rationale": "생물의 휴식처라는 자료와 보호 행동을 연결해야 한다.",
+          "source_ref": "mofa_nature"
+        },
+        {
+          "id": "S4-Q3",
+          "type": "classification_plus_reason",
+          "level": "초4 심화",
+          "stem": "다음 중 ‘자연을 보호하는 조사 방법’으로 볼 수 있는 것을 고르고 까닭을 선택하세요.",
+          "choices": [
+            "사진과 기록으로 남기기",
+            "꽃을 꺾어 가져가기",
+            "조간대 돌을 마구 뒤집기",
+            "쓰레기를 그대로 두기"
+          ],
+          "answer": "사진과 기록으로 남기기",
+          "rationale": "자연물에 직접 손상을 주지 않으면서 자료를 남길 수 있다.",
+          "source_ref": "mofa_nature"
+        }
+      ],
+      "advanced_level_check": "생물 이름 암기보다 생태적 가치, 관찰 윤리, 보호 행동의 까닭을 묻는다."
+    },
+    {
+      "page": 8,
+      "route": "/stage/briefing-board",
+      "name": "5단계 브리핑 보드 제작",
+      "role": "수집한 근거 카드로 종합 설명 자료 완성",
+      "stage": "synthesis_board",
+      "screen_layout_16_9": {
+        "background": "밝은 제작실, 큰 코르크 보드와 자료 카드",
+        "left_zone": "수집 카드 보관함: 위치, 지형, 역사, 생태, 보호",
+        "center_zone": "브리핑 보드 드롭 영역 5칸",
+        "right_zone": "검토 기준: 사실성, 근거성, 균형, 표현",
+        "bottom_zone": "현재 선택한 카드 설명과 교체 버튼"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_briefing_board_room",
+        "character_presenter_student",
+        "mascot_memo_seagull",
+        "object_portfolio_binder",
+        "object_info_board",
+        "icon_summary_note",
+        "icon_microphone_speech",
+        "object_dokdo_diorama",
+        "reward_briefing_badge"
+      ],
+      "interaction": {
+        "type": "evidence_card_synthesis",
+        "rules": [
+          "각 영역에 카드 1장 이상 필요",
+          "같은 주제 카드만 3장 이상 넣으면 균형 부족 경고",
+          "사실 문장은 출처 태그 표시"
+        ]
+      },
+      "question_samples": [
+        {
+          "id": "S5-Q1",
+          "type": "select_evidence_set",
+          "level": "초4 심화",
+          "stem": "독도를 종합적으로 설명하는 브리핑 보드에 꼭 들어가야 할 자료 묶음으로 가장 균형 잡힌 것은 무엇인가요?",
+          "choices": [
+            "위치, 지형, 역사, 생태, 보호",
+            "생물 사진만 5개",
+            "캐릭터 그림만 5개",
+            "내 느낌 문장만 5개"
+          ],
+          "answer": "위치, 지형, 역사, 생태, 보호",
+          "rationale": "종합 발표는 여러 영역의 근거를 균형 있게 담아야 한다.",
+          "source_ref": "internal_learning_goal"
+        },
+        {
+          "id": "S5-Q2",
+          "type": "fix_weak_sentence",
+          "level": "초4 심화",
+          "stem": "다음 발표 문장을 더 근거 있게 고치세요. ‘독도는 그냥 중요한 섬입니다.’",
+          "answer_example": "독도는 울릉도 동쪽에 있으며, 동도와 서도를 중심으로 이루어진 우리나라의 소중한 섬입니다.",
+          "rationale": "‘중요하다’는 주장에 위치와 구성 근거를 붙이면 설명력이 높아진다.",
+          "source_ref": "mofa_location"
+        },
+        {
+          "id": "S5-Q3",
+          "type": "fact_check",
+          "level": "초4 심화",
+          "stem": "브리핑 보드에 넣기 전에 확인해야 할 문장으로 가장 알맞은 것은 무엇인가요?",
+          "choices": [
+            "출처가 있는 사실인지 확인한다",
+            "예쁜 색인지 먼저 본다",
+            "친구가 좋아할 말만 고른다",
+            "길면 무조건 맞다고 본다"
+          ],
+          "answer": "출처가 있는 사실인지 확인한다",
+          "rationale": "독도 자료는 사실성과 근거 확인이 중요하다.",
+          "source_ref": "mofa_government_position"
+        }
+      ],
+      "advanced_level_check": "결과물을 꾸미는 화면이 아니라 주제별 근거 선택과 문장 개선이 핵심이다."
+    },
+    {
+      "page": 9,
+      "route": "/presentation-prep",
+      "name": "최종 발표 준비",
+      "role": "브리핑 내용을 말하기 구조로 바꾸기",
+      "stage": "presentation",
+      "screen_layout_16_9": {
+        "background": "교실 발표 준비실 또는 독도 전시관 앞 대기 화면",
+        "left_zone": "완성된 브리핑 보드 미리보기",
+        "center_zone": "발표 순서 카드 5개: 인사, 위치, 근거, 보호, 마무리",
+        "right_zone": "발표 연습 체크리스트",
+        "bottom_zone": "음성 없이 텍스트 리허설, CSS 진행 표시"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_presentation_room",
+        "character_presenter_boy_or_girl",
+        "mascot_speech_drone",
+        "icon_microphone",
+        "object_summary_slide",
+        "object_presentation_file",
+        "object_banner_dokdo",
+        "reward_presentation_medal"
+      ],
+      "interaction": {
+        "type": "speech_sequence_builder",
+        "rules": [
+          "5문장 발표문 자동 초안 제공",
+          "학생이 핵심어 3개를 직접 선택",
+          "문장 길이는 4학년 발표에 맞게 12~25어절 내외"
+        ]
+      },
+      "question_samples": [
+        {
+          "id": "P-Q1",
+          "type": "speech_order",
+          "level": "초4 심화",
+          "stem": "발표 순서로 가장 자연스러운 것은 무엇인가요?",
+          "choices": [
+            "인사→위치 설명→역사/자연 근거→보호 방법→마무리",
+            "마무리→보호 방법→인사→위치 설명",
+            "근거 없이 느낌만 말하기",
+            "질문부터 하고 끝내기"
+          ],
+          "answer": "인사→위치 설명→역사/자연 근거→보호 방법→마무리",
+          "rationale": "청중이 이해하기 쉽게 기본 정보에서 근거와 실천으로 흐름을 잡는다.",
+          "source_ref": "internal_presentation_logic"
+        },
+        {
+          "id": "P-Q2",
+          "type": "sentence_improvement",
+          "level": "초4 심화",
+          "stem": "‘독도는 멋져요’라는 문장을 발표문에 맞게 고치려면 어떤 방식이 가장 좋나요?",
+          "choices": [
+            "근거를 덧붙여 왜 소중한지 설명한다",
+            "더 크게 쓴다",
+            "반복해서 세 번 말한다",
+            "그림으로만 대신한다"
+          ],
+          "answer": "근거를 덧붙여 왜 소중한지 설명한다",
+          "rationale": "심화 발표는 느낌보다 근거가 중요하다.",
+          "source_ref": "internal_presentation_logic"
+        }
+      ],
+      "advanced_level_check": "발표 화면도 단순 축하가 아니라 논리적 말하기 구조를 연습하게 한다."
+    },
+    {
+      "page": 10,
+      "route": "/completion-gallery",
+      "name": "수료 및 전시",
+      "role": "수료증, 배지, 포트폴리오 저장, 수업 마무리",
+      "stage": "completion",
+      "screen_layout_16_9": {
+        "background": "독도 전망대 또는 전시관 배경",
+        "left_zone": "수료증 미리보기",
+        "center_zone": "획득 배지 5개와 최종 메시지",
+        "right_zone": "포트폴리오 저장 안내",
+        "bottom_zone": "CSS: 다시 보기 / 저장 / 처음으로"
+      },
+      "asset_budget_max": 10,
+      "recommended_assets": [
+        "bg_completion_observatory",
+        "character_certificate_student",
+        "mascot_lighthouse",
+        "object_certificate_scroll",
+        "object_mission_passport",
+        "object_celebration_banner",
+        "reward_final_medal",
+        "object_dokdo_diorama_display"
+      ],
+      "interaction": {
+        "type": "summary_and_export",
+        "rules": [
+          "브라우저 저장소 기반 개인 결과 요약",
+          "이미지 내보내기는 선택 기능",
+          "저장 실패 시 텍스트 요약 복사 대체 제공"
+        ]
+      },
+      "advanced_level_check": "마지막 화면은 축하만 하지 않고 학생이 배운 5개 근거를 다시 확인하게 한다."
+    }
+  ],
+  "architecture": {
+    "recommended_stack": {
+      "runtime": "Phaser 3 + Vite + TypeScript",
+      "state": "localStorage 기반 단일 사용자 저장",
+      "data": "src/data/dokdo_questions.json, src/data/asset_manifest.json 분리",
+      "rendering": "고정 기준 1920x1080, Scale.FIT, Center.BOTH, 안전 영역 5%"
+    },
+    "folder_structure_recommendation": {
+      "public/assets/backgrounds": "16:9 전체 배경만 배치",
+      "public/assets/characters": "투명 PNG 캐릭터만 배치",
+      "public/assets/objects": "지도, 문서, 배지, 표지판 등 오브젝트",
+      "public/assets/icons": "단일 아이콘 PNG",
+      "public/assets/sounds/sfx": "효과음 mp3/ogg",
+      "src/scenes": "TitleScene, BriefingScene, MissionMapScene, RouteScene, GeologyScene, ArchiveScene, EcologyScene, BoardScene, PresentationScene, CompletionScene",
+      "src/systems": "AssetLoader, SaveManager, AudioManager, SceneTransition, LayoutManager, QuestionEngine",
+      "src/data": "assetManifest.ts 또는 json, questionBank.ts 또는 json, stageConfig.ts"
+    },
+    "file_structure_audit_from_uploaded_zip": {
+      "public_zip_detected": true,
+      "detected_counts": {
+        "backgrounds": 8,
+        "icons": 91,
+        "samplepages": 10,
+        "soundeffects": 5,
+        "data": 0
+      },
+      "raw_filename_risk": "원본 파일명이 생성 시각 중심이라 유지보수성이 낮음. 반드시 의미 기반 파일명으로 리네임하거나 assetManifest에서 alias를 붙여 사용해야 함.",
+      "raw_examples": {
+        "backgrounds": [
+          "assets/backgrounds/ChatGPT Image 2026년 6월 12일 오후 04_36_25 (1).png",
+          "assets/backgrounds/ChatGPT Image 2026년 6월 12일 오후 04_36_37 (2).png",
+          "assets/backgrounds/ChatGPT Image 2026년 6월 12일 오후 04_36_44 (1).png",
+          "assets/backgrounds/ChatGPT Image 2026년 6월 12일 오후 04_37_06 (1).png",
+          "assets/backgrounds/ChatGPT Image 2026년 6월 12일 오후 04_37_15 (1).png"
+        ],
+        "icons": [
+          "assets/icons/ChatGPT Image 2026년 6월 12일 오후 04_36_18.png",
+          "assets/icons/ChatGPT Image 2026년 6월 12일 오후 04_36_26 (2).png",
+          "assets/icons/ChatGPT Image 2026년 6월 12일 오후 04_36_28 (3).png",
+          "assets/icons/ChatGPT Image 2026년 6월 12일 오후 04_36_29 (4).png",
+          "assets/icons/ChatGPT Image 2026년 6월 12일 오후 04_36_30 (5).png"
+        ],
+        "samplepages": [
+          "assets/samplepages/ChatGPT Image 2026년 6월 12일 오후 04_38_07 (1).png",
+          "assets/samplepages/ChatGPT Image 2026년 6월 12일 오후 04_38_08 (2).png",
+          "assets/samplepages/ChatGPT Image 2026년 6월 12일 오후 04_38_10 (3).png",
+          "assets/samplepages/ChatGPT Image 2026년 6월 12일 오후 04_38_11 (4).png",
+          "assets/samplepages/ChatGPT Image 2026년 6월 12일 오후 04_38_13 (5).png"
+        ],
+        "soundeffects": [
+          "assets/sound/soundeffects/floraphonic-brass-fail-7-a-207129.mp3",
+          "assets/sound/soundeffects/freesound_community-badge-coin-win-14675.mp3",
+          "assets/sound/soundeffects/freesound_community-ui-click-43196.mp3",
+          "assets/sound/soundeffects/litupsubway-ui-open-sfx-513358.mp3",
+          "assets/sound/soundeffects/meldix-success-340660.mp3"
+        ],
+        "data": []
+      },
+      "recommended_action": [
+        "public.zip 내부 assets를 그대로 코드에서 직접 참조하지 말고 asset_manifest.json으로 별칭 관리",
+        "samplepages 폴더는 참고용으로만 두고 실제 게임 로딩 대상에서 제외",
+        "배경·캐릭터·오브젝트를 폴더 단위로 분리하여 선로딩 목록을 명확히 관리"
+      ]
+    },
+    "responsive_16_9_policy": {
+      "base_resolution": "1920x1080",
+      "safe_area": "좌우 96px, 상하 54px 이상 여백",
+      "tablet_landscape": "버튼 최소 터치 영역 64x64px, 드래그 오브젝트 최소 96px",
+      "web_large_screen": "중앙 콘텐츠 최대 폭 제한, 배경은 cover가 아니라 game canvas scale fit 권장",
+      "no_text_in_critical_images": "중요 학습 문장과 문제는 이미지가 아니라 코드 텍스트로 렌더링"
+    }
+  },
+  "maintenance_review": {
+    "one_year_stability_grade": "B+",
+    "reason": "구조를 데이터 주도형으로 분리하면 1년 유지 가능성이 높다. 다만 이미지 생성 파일명이 불규칙하고 문제 데이터가 코드에 박히면 유지보수 위험이 커진다.",
+    "must_fix_before_development": [
+      "asset_manifest.json 작성: 원본 파일명과 의미별 key를 매핑",
+      "question_bank.json 작성: 문제, 정답, 해설, 출처, 난이도, 힌트를 코드 밖으로 분리",
+      "Scene 전환 중복 클릭 방지: transitionLock 적용",
+      "드래그 오브젝트는 setInteractive의 hitArea를 명시",
+      "localStorage schemaVersion 저장: 향후 업데이트 시 migrate 함수 실행",
+      "선생님용 resetProgress 기능은 숨김 메뉴 또는 쿼리 파라미터로 제공",
+      "에셋 로딩 실패 시 placeholder 이미지 표시",
+      "폰트 로딩 실패 시 시스템 글꼴 fallback 지정",
+      "모든 문제는 정답 외 해설과 근거를 포함",
+      "효과음은 AudioManager에서 일괄 음량 제어"
+    ],
+    "risk_register": [
+      {
+        "risk": "문제 수준이 낮아져 단순 클릭형 앱이 될 위험",
+        "impact": "학습 가치 하락",
+        "mitigation": "각 스테이지 문제의 70% 이상을 자료 해석, 근거 선택, 순서 배열, 원인-결과형으로 구성"
+      },
+      {
+        "risk": "이미지 텍스트가 많아 수정이 어려움",
+        "impact": "오탈자 수정 비용 증가",
+        "mitigation": "제목 장식 외 핵심 텍스트는 코드/CSS 텍스트로 표시"
+      },
+      {
+        "risk": "에셋 파일명 불명확",
+        "impact": "개발 중 중복 로딩, 누락, 교체 오류",
+        "mitigation": "의미 기반 alias와 preload 그룹을 Manifest로 관리"
+      },
+      {
+        "risk": "터치 기기에서 드래그 오작동",
+        "impact": "태블릿 수업 중 진행 막힘",
+        "mitigation": "드래그 시작 거리, 스냅 영역, 취소 버튼, 키보드 대체 조작 제공"
+      },
+      {
+        "risk": "localStorage 데이터 손상",
+        "impact": "학생 진행 기록 초기화",
+        "mitigation": "저장 전 JSON validation, 저장 실패 시 기본 상태 복구, export/import 기능 선택 제공"
+      },
+      {
+        "risk": "웹앱 화면 비율 깨짐",
+        "impact": "전자칠판/태블릿 표시 품질 저하",
+        "mitigation": "LayoutManager에서 앵커·비율 기반 배치, 해상도별 QA"
+      }
+    ],
+    "qa_checklist": [
+      "Chrome, Edge, Safari 태블릿 가로 화면에서 1920x1080 기준 UI가 잘리지 않는가",
+      "모든 버튼의 터치 영역이 64px 이상인가",
+      "문제 오답 시 정답을 바로 공개하지 않고 힌트가 나오는가",
+      "각 스테이지가 새로고침 후에도 진행 상태를 복구하는가",
+      "소리 끄기 상태가 다음 접속에도 유지되는가",
+      "에셋 하나가 빠져도 전체 앱이 멈추지 않는가",
+      "출처가 필요한 사실 문장에 source_ref가 붙어 있는가",
+      "선생님이 수업 전 전체 진행을 5분 안에 리셋할 수 있는가",
+      "학생이 읽어야 하는 문장이 한 화면에 과도하게 많지 않은가",
+      "끝 화면에서 배운 내용 5개가 요약되는가"
+    ]
+  },
+  "json_schema_notes": {
+    "question_item_schema": {
+      "id": "string, unique",
+      "stage": "location_route | geography_geology | history_records | ecology_protection | synthesis_board | presentation",
+      "type": "evidence_choice | map_reasoning | multiple_select_reason | timeline_order | fact_opinion | best_action | sentence_improvement",
+      "level": "초4 기본 | 초4 심화 | 초5 연계",
+      "stem": "string",
+      "materials": "array of text/image/data cards, optional",
+      "choices": "array, optional",
+      "answer": "string | array | object",
+      "rationale": "string",
+      "hint_1": "string",
+      "hint_2": "string",
+      "source_ref": "source_basis key or internal_learning_goal"
+    },
+    "asset_manifest_item_schema": {
+      "key": "meaningful_snake_case_asset_key",
+      "type": "background | character | mascot | icon | object | reward | sound",
+      "path": "public/assets/...",
+      "scene_usage": "array of page numbers",
+      "preload_group": "common | page_01 | stage_route | stage_geology | stage_history | stage_ecology | stage_board | completion",
+      "fallback": "path to fallback image",
+      "notes": "license/source/usage notes"
+    }
+  },
+  "teacher_use_notes": {
+    "40_minute_lesson_flow": [
+      {
+        "time": "5분",
+        "activity": "도입: 독도 탐사본부 세계관과 오늘 목표 확인"
+      },
+      {
+        "time": "20분",
+        "activity": "1~4단계 핵심 미션 해결. 학생별 또는 짝 활동 가능"
+      },
+      {
+        "time": "10분",
+        "activity": "브리핑 보드 제작 및 최종 발표 준비"
+      },
+      {
+        "time": "5분",
+        "activity": "수료 화면 확인, 발표문 1~2명 공유"
+      }
+    ],
+    "assessment_points": [
+      "독도의 위치와 구성 정보를 근거로 설명하는가",
+      "지형과 생활 조건을 원인-결과로 연결하는가",
+      "역사 기록을 시간 순서에 맞게 배열하는가",
+      "생태 보호 행동의 까닭을 설명하는가",
+      "최종 발표문에 사실 근거와 자신의 다짐을 균형 있게 담는가"
+    ]
+  }
+}
