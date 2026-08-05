@@ -73,9 +73,16 @@ body {
 }
 .btn:active { transform: scale(.96); }
 .btn:disabled { filter: grayscale(.6) opacity(.55); cursor: not-allowed; }
-.btn--sm { font-size: 14px; padding: 8px 16px; min-height: 40px; }
-.btn--md { font-size: 16px; padding: 10px 22px; }
+.btn--sm { font-size: 14.5px; padding: 10px 18px; min-height: 48px; }
+.btn--md { font-size: 16px; padding: 10px 22px; min-height: 48px; }
 .btn--lg { font-size: 19px; padding: 14px 30px; min-height: 56px; }
+
+/* 키보드 포커스 표시 (접근성) */
+.btn:focus-visible, .choice:focus-visible, .collapsible__head:focus-visible,
+.order__card:focus-visible, [tabindex="0"]:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
 .btn--sea   { background: linear-gradient(180deg, var(--sea-light), var(--sea-deep)); }
 .btn--gold  { background: linear-gradient(180deg, #ffd968, var(--gold-deep)); color: #4a3305; }
 .btn--green { background: linear-gradient(180deg, #4cc45e, var(--green-deep)); }
@@ -170,7 +177,7 @@ body {
 .collapsible__head {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   width: 100%; font-family: inherit; font-size: 15px; font-weight: 900; color: var(--navy);
-  background: transparent; border: 0; padding: 11px 15px; cursor: pointer; min-height: 44px;
+  background: transparent; border: 0; padding: 13px 15px; cursor: pointer; min-height: 48px;
 }
 .collapsible--gold .collapsible__head { color: #7a5a10; }
 .collapsible__arrow { transition: transform .2s; }
@@ -277,6 +284,19 @@ body {
 .badge__name { font-size: 13px; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.5); text-align: center; }
 .badge-pop { animation: badgePop .5s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes badgePop { from { transform: scale(.2) rotate(-16deg); opacity: 0; } }
+
+/* ---- 부팅 로더 (첫 씬 렌더 시 제거) ---- */
+#boot-loader {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px;
+  color: #cfe3f5; font-weight: 800; font-size: 16px;
+}
+#boot-loader .spin {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 5px solid rgba(255,255,255,.25); border-top-color: #f5c542;
+  animation: bootSpin 1s linear infinite;
+}
+@keyframes bootSpin { to { transform: rotate(360deg); } }
 
 /* ---- 세로 모드 비차단 안내 칩 ---- */
 #rotate-hint {

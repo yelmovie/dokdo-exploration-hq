@@ -12,6 +12,16 @@ import AudioManager from "../managers/AudioManager.js";
     onTap(), onDrop(dropEl|null) — dropEl 은 dropSelector 에 매칭된 요소 */
 export function makeDraggable(card, { dropSelector, onTap, onDrop, stage }) {
   card.style.touchAction = "none";
+  // 키보드 접근: Enter/Space = 탭과 동일 동작
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && onTap) {
+      e.preventDefault();
+      AudioManager.unlock(); AudioManager.click();
+      onTap();
+    }
+  });
   let startX = 0, startY = 0, dragging = false, ghost = null, down = false;
 
   card.addEventListener("pointerdown", (e) => {

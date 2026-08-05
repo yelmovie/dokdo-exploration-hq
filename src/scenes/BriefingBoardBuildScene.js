@@ -7,7 +7,7 @@
    - 5칸 완성 → 사실 확인 문제 → 미션 완료
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, modal, button, toast } from "../components/ui.js";
+import { buildScene, placeAsset, quiz, pos, modal, button, toast, pressable } from "../components/ui.js";
 import { makeDraggable } from "../components/interactions.js";
 import { missionFrame, hintFold, nextCoachButton, completeMission } from "./_shared.js";
 import { DOKDO } from "../config/assetManifest.js";
@@ -76,6 +76,7 @@ export default function BriefingBoardBuildScene(ctx) {
       el("div", { style: { fontSize: "15px", fontWeight: "900", color: f.color, flex: "0 0 auto" }, text: `${f.icon} ${f.label}` }),
     ]);
     z.dataset.field = f.key;
+    pressable(z);
     z.addEventListener("click", () => {
       if (selectedCard) { AudioManager.unlock(); tryPlace(selectedCard, f.key); }
     });

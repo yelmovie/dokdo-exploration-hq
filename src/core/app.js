@@ -49,8 +49,8 @@ function go(key, { push = true } = {}) {
   if (transitioning || key === currentKey) return;
   transitioning = true;
 
-  // 잔여 모달/토스트 정리
-  stage.querySelectorAll(".modal-mask, .toast").forEach((n) => n.remove());
+  // 부팅 로더·잔여 모달/토스트 정리
+  stage.querySelectorAll("#boot-loader, .modal-mask, .toast").forEach((n) => n.remove());
 
   const old = currentRoot;
   if (old) {

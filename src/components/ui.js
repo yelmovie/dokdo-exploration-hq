@@ -55,6 +55,16 @@ export function button(label, { variant = "sea", size = "md", icon = "", onClick
 export function backButton(onClick) { return button("이전", { variant: "ghost", size: "sm", icon: "◀", onClick }); }
 export function homeButton(onClick) { return button("처음으로", { variant: "ghost", size: "sm", icon: "⌂", onClick }); }
 
+/** 클릭형 div 에 키보드 접근 부여 (Enter/Space = 클릭) */
+export function pressable(node) {
+  node.tabIndex = 0;
+  node.setAttribute("role", "button");
+  node.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); node.click(); }
+  });
+  return node;
+}
+
 /** 알약형 소제목 */
 export function pillHead(text, variant = "sea") {
   return el("span.pill.pill--" + variant, { text });

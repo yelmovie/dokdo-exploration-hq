@@ -50,9 +50,11 @@ export default function GeologyAnalysisScene(ctx) {
   island.appendChild(islandImg);
   island.appendChild(el("div", { style: titlePillStyle, text: "🔍 관찰 자료" }));
   GEOLOGY_CLUES.forEach((c) => {
-    const chip = el("div", {
+    const chip = el("button", {
+      type: "button",
       style: { position: "absolute", left: c.fx + "%", top: c.fy + "%", transform: "translate(-50%,-50%)", zIndex: 5,
-        background: "rgba(20,54,92,.92)", color: "#fff", fontWeight: "800", fontSize: "14px", padding: "6px 13px",
+        background: "rgba(20,54,92,.92)", color: "#fff", fontWeight: "800", fontSize: "15px", padding: "12px 18px",
+        minHeight: "48px", border: "0", fontFamily: "inherit",
         borderRadius: "999px", boxShadow: "var(--shadow-sm)", whiteSpace: "nowrap", cursor: "pointer" },
       text: "🔍 " + c.short,
       onClick: () => { AudioManager.unlock(); AudioManager.click(); openClue(c); },

@@ -4,7 +4,7 @@
    → 상황 판단 문제 3개: 행동 선택 → 정답 시 '영향 예측' 카드 표시.
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, modal, button, toast, coachify, uncoach } from "../components/ui.js";
+import { buildScene, placeAsset, quiz, pos, modal, button, toast, coachify, uncoach, pressable } from "../components/ui.js";
 import { missionFrame, hintFold, nextCoachButton, completeMission } from "./_shared.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
@@ -47,6 +47,7 @@ export default function EcologyProtectionScene(ctx) {
       el("div.pill", { style: { background: "var(--green)", fontSize: "12px" }, text: "🔍 관찰하기" }),
     ]);
     coachify(card, { label: null });
+    pressable(card);
     card.addEventListener("click", () => { AudioManager.unlock(); AudioManager.click(); openClue(c, card); });
     zoneCards.set(c.id, card);
     layer.appendChild(card);

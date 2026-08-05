@@ -4,7 +4,7 @@
    '준비 완료' 버튼이 열린다(게이팅). 외울 것보다 '모을 근거'를 확인.
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { buildScene, placeAsset, button, modal, toast, backButton, coachify, uncoach } from "../components/ui.js";
+import { buildScene, placeAsset, button, modal, toast, backButton, coachify, uncoach, pressable } from "../components/ui.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { BRIEFING_FIELDS } from "../data/missions.js";
@@ -73,6 +73,7 @@ export default function BriefingScene(ctx) {
       el("div.pill", { style: { background: f.color, fontSize: "12.5px", marginTop: "auto" }, text: "눌러서 확인" }),
     ]);
     coachify(card, { label: null });
+    pressable(card);
     card.addEventListener("click", () => {
       AudioManager.unlock(); AudioManager.click();
       const md = modal(ctx.stage, {
