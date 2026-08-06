@@ -66,8 +66,21 @@ export default function CompletionGalleryScene(ctx) {
     ctx.stage.__finaleShown = true;
     const badgeImg = assetImg(DOKDO.badgeFinal, "수료 배지");
     badgeImg.className = "finale__badge";
+    const stars = [];
+    for (let i = 0; i < 34; i++) {
+      const s = el("div.finale__star");
+      const sz = 2 + (i % 4);
+      s.style.width = s.style.height = sz + "px";
+      s.style.left = (i * 137.5 % 100) + "%";                 // 황금각 분산 배치
+      s.style.top = (7 + (i * 61.8 % 86)) + "%";
+      s.style.animationDuration = (2 + (i % 5) * 0.7) + "s";
+      s.style.animationDelay = (i % 7) * 0.4 + "s";
+      if (i % 5 === 0) s.style.background = "#ffd968";        // 일부는 금빛 별
+      stars.push(s);
+    }
     const finale = el("div.finale", {}, [
-      el("div.finale__rays"),
+      el("div.finale__glow"),
+      ...stars,
       badgeImg,
       el("div.finale__line1", { text: "MISSION COMPLETE" }),
       el("div.finale__line2", { html: "독도는, 대한민국입니다" }),

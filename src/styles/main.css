@@ -523,27 +523,28 @@ body {
   cursor: pointer; overflow: hidden;
   transition: opacity .6s ease;
 }
-.finale__rays {
-  position: absolute; width: 1600px; height: 1600px; left: 50%; top: 50%;
+/* 배지 뒤 은은한 원형 글로우 (호흡하듯 커졌다 작아짐) */
+.finale__glow {
+  position: absolute; width: 720px; height: 720px; left: 50%; top: 38%;
   transform: translate(-50%, -50%);
-  background: conic-gradient(from 0deg,
-    rgba(245,197,66,.16) 0deg 12deg, transparent 12deg 30deg,
-    rgba(245,197,66,.16) 30deg 42deg, transparent 42deg 60deg,
-    rgba(245,197,66,.16) 60deg 72deg, transparent 72deg 90deg,
-    rgba(245,197,66,.16) 90deg 102deg, transparent 102deg 120deg,
-    rgba(245,197,66,.16) 120deg 132deg, transparent 132deg 150deg,
-    rgba(245,197,66,.16) 150deg 162deg, transparent 162deg 180deg,
-    rgba(245,197,66,.16) 180deg 192deg, transparent 192deg 210deg,
-    rgba(245,197,66,.16) 210deg 222deg, transparent 222deg 240deg,
-    rgba(245,197,66,.16) 240deg 252deg, transparent 252deg 270deg,
-    rgba(245,197,66,.16) 270deg 282deg, transparent 282deg 300deg,
-    rgba(245,197,66,.16) 300deg 312deg, transparent 312deg 330deg,
-    rgba(245,197,66,.16) 330deg 342deg, transparent 342deg 360deg);
-  animation: raysSpin 24s linear infinite;
+  background: radial-gradient(circle,
+    rgba(245, 197, 66, .28) 0%, rgba(245, 197, 66, .1) 34%, transparent 62%);
+  border-radius: 50%;
+  animation: glowBreath 4.5s ease-in-out infinite;
+  pointer-events: none;
 }
-@keyframes raysSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-.finale__badge { width: 240px; height: 240px; object-fit: contain; z-index: 2;
-  filter: drop-shadow(0 0 44px rgba(245,197,66,.55));
+@keyframes glowBreath {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: .9; }
+  50% { transform: translate(-50%, -50%) scale(1.14); opacity: 1; }
+}
+/* 밤바다 별빛 */
+.finale__star {
+  position: absolute; border-radius: 50%; background: #fff;
+  animation: twinkle ease-in-out infinite; pointer-events: none;
+}
+@keyframes twinkle { 0%, 100% { opacity: .15; } 50% { opacity: .95; } }
+.finale__badge { width: 340px; height: 340px; object-fit: contain; z-index: 2;
+  filter: drop-shadow(0 0 60px rgba(245,197,66,.6));
   animation: badgePop .7s cubic-bezier(.2, 1.6, .4, 1); }
 .finale__line1 { z-index: 2; color: var(--gold); font-size: 22px; font-weight: 900; letter-spacing: .28em;
   animation: finaleUp .7s ease .25s both; }
