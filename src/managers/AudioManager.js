@@ -1,14 +1,14 @@
 /* =========================================================================
    AudioManager — BGM(mp3) + 효과음(WebAudio 합성 비프)
-   - 효과음 파일이 없는 상태이므로 짧은 합성음으로 대체 (파일 불필요)
-   - BGM 파일이 없거나 재생이 막혀도 앱은 계속 진행
-   - 음소거 상태는 SaveManager 에 저장되어 다음 접속에도 유지
+   - 배경음/효과음 개별 ON/OFF (설정에서 분리 제어, 저장 유지)
+   - 파일이 없거나 재생이 막혀도 앱은 계속 진행
    ========================================================================= */
 import save from "./SaveManager.js";
 
 class AudioManagerClass {
   constructor() {
-    this.enabled = save.get("soundEnabled") !== false;
+    this.bgmEnabled = save.get("bgmEnabled") !== false;
+    this.sfxEnabled = save.get("sfxEnabled") !== false;
     this.bgmEl = null;
     this.bgmSrc = "";
     this.actx = null;
@@ -23,16 +23,21 @@ class AudioManagerClass {
       this.actx = this.actx || new (window.AudioContext || window.webkitAudioContext)();
       if (this.actx.state === "suspended") this.actx.resume();
     } catch { this.actx = null; }
-    if (this.enabled && this.bgmEl && this.bgmEl.paused) {
+    if (this.bgmEnabled && this.bgmEl && this.bgmEl.paused) {
       this.bgmEl.play().catch(() => {});
     }
   }
 
-  setEnabled(on) {
-    this.enabled = !!on;
-    save.set("soundEnabled", this.enabled);
-    if (!this.enabled) { if (this.bgmEl) this.bgmEl.pause(); }
+  setBgmEnabled(on) {
+    this.bgmEnabled = !!on;
+    save.set("bgmEnabled", this.bgmEnabled);
+    if (!this.bgmEnabled) { if (this.bgmEl) this.bgmEl.pause(); }
     else if (this.bgmEl) this.bgmEl.play().catch(() => {});
+  }
+
+  setSfxEnabled(on) {
+    this.sfxEnabled = !!on;
+    save.set("sfxEnabled", this.sfxEnabled);
   }
 
   playBgm(src) {
@@ -45,7 +50,7 @@ class AudioManagerClass {
     a.volume = 0.28;
     a.addEventListener("error", () => console.warn("[audio] BGM 로딩 실패(계속 진행):", src), { once: true });
     this.bgmEl = a;
-    if (this.enabled && this.unlocked) a.play().catch(() => {});
+    if (this.bgmEnabled && this.unlocked) a.play().catch(() => {});
   }
 
   stopBgm() {
@@ -56,7 +61,7 @@ class AudioManagerClass {
 
   /** 합성 효과음 (freq[], 길이) */
   _beep(freqs, dur = 0.12, type = "sine", gain = 0.08) {
-    if (!this.enabled || !this.actx) return;
+    if (!this.sfxEnabled || !this.actx) return;
     try {
       const t0 = this.actx.currentTime;
       freqs.forEach((f, i) => {

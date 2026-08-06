@@ -15,9 +15,9 @@ import AudioManager from "../managers/AudioManager.js";
 import stats from "../managers/StatsManager.js";
 
 const STAGE_TITLES = [
-  "🔢 발표 순서를 <b>알맞게</b> 정렬하세요",
-  "✍️ 발표문 빈칸에 <b>알맞은 근거</b>를 채우세요",
-  "🗣️ 감상만 있는 문장을 <b>근거 있는 발표 문장</b>으로 고쳐 보세요",
+  "발표 순서를 <b>나만의 방식</b>으로 정하세요 — 정답은 없어요",
+  "발표문 빈칸에 <b>알맞은 근거</b>를 채우세요",
+  "감상만 있는 문장을 <b>근거 있는 발표 문장</b>으로 고쳐 보세요",
 ];
 
 /* 발표문 빈칸 템플릿 — 탐사에서 모은 5개 영역 근거로 채운다(오답 재도전) */
@@ -93,9 +93,9 @@ export default function PresentationPrepScene(ctx) {
       ])),
   }));
 
-  /* ---- 캐릭터: 발표 소녀 + 마이크 ---- */
-  placeAsset(layer, DOKDO.presenterGirl, { x: 40, y: 380, w: 240, h: 330, alt: "발표 준비 탐험가", z: 3 });
-  placeAsset(layer, DOKDO.micIsland, { x: 1130, y: 550, w: 130, h: 150, alt: "발표 마이크", float: true, z: 3 });
+  /* ---- 캐릭터: 발표 소녀(1.5배, 잘림 없이) + 마이크 ---- */
+  placeAsset(layer, DOKDO.presenterGirl, { x: 2, y: 224, w: 350, h: 490, alt: "발표 준비 탐험가", z: 3 });
+  placeAsset(layer, DOKDO.micIsland, { x: 1128, y: 548, w: 135, h: 158, alt: "발표 마이크", float: true, z: 3 });
 
   /* ---- 중앙: 활동 보드 ---- */
   const boardEl = el("div.q-board", { style: { ...pos(330, 128, 930, 560) } }, [el("div.q-board__clip")]);
@@ -108,26 +108,46 @@ export default function PresentationPrepScene(ctx) {
   /* ---- 2단계: 발표문 빈칸 채우기 + 나의 마무리 문장 ---- */
   function renderScriptEditor() {
     const fb = el("div.feedback");
+    /* 빈칸 클릭 → 선택지 3개가 펼쳐지는 팝오버에서 고르기 */
+    function closePops() { qHolder.querySelectorAll(".blank-pop").forEach((p) => p.remove()); }
     const rows = SCRIPT_BLANKS.map((b) => {
       const blankSpan = el("span", {
         style: { display: "inline-block", minWidth: "170px", padding: "2px 12px", margin: "0 4px",
           borderRadius: "10px", border: "2px dashed var(--gold-deep)", background: "#fff",
-          cursor: "pointer", textAlign: "center", color: picks[b.id] != null ? "var(--sea)" : "#aaa", fontWeight: "800" },
-        text: picks[b.id] != null ? b.options[picks[b.id]] : "____",
-        onClick: () => {
-          AudioManager.unlock(); AudioManager.click();
-          picks[b.id] = ((picks[b.id] == null ? -1 : picks[b.id]) + 1) % b.options.length;
-          blankSpan.textContent = b.options[picks[b.id]];
-          blankSpan.style.color = "var(--sea)";
-          saveDraft();
-          checkBtn.disabled = SCRIPT_BLANKS.some((x) => picks[x.id] == null);
-        },
+          cursor: "pointer", textAlign: "center", color: picks[b.id] != null ? "var(--sea-deep)" : "#8a97a5", fontWeight: "800" },
+        text: picks[b.id] != null ? b.options[picks[b.id]] : "눌러서 고르기",
       });
-      return el("div", { style: { padding: "9px 12px", background: "var(--paper, #fdf9ef)", border: "1.5px solid var(--panel-line)", borderRadius: "12px", fontSize: "16px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.7" } }, [
+      const row = el("div", { style: { position: "relative", padding: "9px 12px", background: "rgba(253,249,239,.85)", border: "1px solid var(--panel-line)", borderRadius: "12px", fontSize: "16px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.7" } }, [
         el("span", { style: { display: "inline-block", minWidth: "74px", fontWeight: "900", color: "var(--navy)", fontSize: "14px" }, text: b.section }),
         el("span", { text: b.before }), blankSpan, el("span", { text: b.after }),
       ]);
+      blankSpan.addEventListener("click", (e) => {
+        e.stopPropagation();
+        AudioManager.unlock(); AudioManager.click();
+        const opened = row.querySelector(".blank-pop");
+        closePops();
+        if (opened) return; // 다시 누르면 닫기
+        const pop = el("div.blank-pop", { style: { left: "86px", top: "calc(100% - 4px)" } },
+          b.options.map((opt, oi) => {
+            const ob = el("button", { type: "button", text: opt });
+            if (picks[b.id] === oi) { ob.style.borderColor = "var(--sea)"; ob.style.background = "#eaf4fd"; }
+            ob.addEventListener("click", () => {
+              picks[b.id] = oi;
+              blankSpan.textContent = opt;
+              blankSpan.style.color = "var(--sea-deep)";
+              blankSpan.style.borderStyle = "solid";
+              saveDraft();
+              checkBtn.disabled = SCRIPT_BLANKS.some((x) => picks[x.id] == null);
+              closePops();
+              AudioManager.click();
+            });
+            return ob;
+          }));
+        row.appendChild(pop);
+      });
+      return row;
     });
+    qHolder.addEventListener("click", closePops);
 
     /* 나의 마무리 문장 — 자유 입력, debounce 자동 저장 */
     const counter = el("span", { style: { fontSize: "12px", fontWeight: "700", color: "var(--ink-soft)" }, text: `${closing.length} / ${CLOSING_MAX}자` });
@@ -163,7 +183,7 @@ export default function PresentationPrepScene(ctx) {
     } });
 
     qHolder.appendChild(el("div.col", { style: { gap: "10px" } }, [
-      el("div.tip", { html: "🖐️ 밑줄(____)을 <b>눌러</b> 알맞은 근거 표현을 골라요. 고른 내용은 자동 저장돼요." }),
+      el("div.tip", { html: "<b>‘눌러서 고르기’</b> 칸을 누르면 고를 수 있는 표현 3개가 나와요. 고른 내용은 자동 저장돼요." }),
       ...rows,
       el("div", { style: { marginTop: "4px" } }, [
         el("div.row", { style: { justifyContent: "space-between", alignItems: "center", marginBottom: "6px" } }, [
@@ -225,11 +245,15 @@ export default function PresentationPrepScene(ctx) {
     nextHolder.innerHTML = "";
 
     if (stage === 0) {
+      qHolder.appendChild(el("div.tip", {
+        html: "발표 순서에 정답은 없어요. <b>듣는 사람이 이해하기 쉬운 나만의 순서</b>를 만들어 봐요. (예: 인사를 먼저 하면 자연스러워요)",
+      }));
       const order = orderInteraction({
         items: PRESENTATION_ORDER.sections.map((s) => ({ id: s.id, label: s.label })),
         answer: PRESENTATION_ORDER.answer, slotW: 150, slotH: 80,
-        onResult: () => {
-          ctx.save.setPresentationOrder(PRESENTATION_ORDER.answer);
+        freeOrder: true, confirmText: "이 순서로 정했어요",
+        onResult: (ok, ids) => {
+          ctx.save.setPresentationOrder(ids);
           nextHolder.appendChild(nextCoachButton("다음 활동", () => { stage = 1; render(); }));
         },
       });

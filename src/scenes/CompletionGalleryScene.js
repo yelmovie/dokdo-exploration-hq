@@ -55,6 +55,40 @@ export default function CompletionGalleryScene(ctx) {
   const badges = save.get("badges");
   const allDone = isAllComplete(save.get("completedMissions"));
 
+  /* ---- 입장 연출: 임무 완수 (전체 완료 시 1회, 탭으로 건너뛰기) ---- */
+  if (allDone && !ctx.stage.__finaleShown) {
+    ctx.stage.__finaleShown = true;
+    const badgeImg = assetImg(DOKDO.badgeFinal, "수료 배지");
+    badgeImg.className = "finale__badge";
+    const finale = el("div.finale", {}, [
+      el("div.finale__rays"),
+      badgeImg,
+      el("div.finale__line1", { text: "MISSION COMPLETE" }),
+      el("div.finale__line2", { html: "독도는, 대한민국입니다" }),
+      el("div.finale__line3", { text: "512년 신라의 기록부터 오늘의 우리까지 — 근거로 증명한 우리 땅" }),
+      el("div.finale__skip", { text: "화면을 누르면 넘어가요" }),
+    ]);
+    // 컨페티 (모션 최소화 설정이면 CSS 가 애니메이션을 끔)
+    const colors = ["#f5c542", "#4ea3e0", "#ffffff", "#2f9e44", "#e05252"];
+    for (let i = 0; i < 26; i++) {
+      const c = el("div.confetti");
+      c.style.left = (i * 47 % 100) + "%";
+      c.style.background = colors[i % colors.length];
+      c.style.animationDuration = (2.4 + (i % 5) * 0.5) + "s";
+      c.style.animationDelay = (i % 7) * 0.22 + "s";
+      finale.appendChild(c);
+    }
+    const dismiss = () => {
+      finale.style.opacity = "0";
+      finale.style.pointerEvents = "none";
+      setTimeout(() => finale.remove(), 650);
+    };
+    finale.addEventListener("pointerdown", dismiss);
+    const autoT = setTimeout(dismiss, 4600);
+    (root.__disposers = root.__disposers || []).push(() => clearTimeout(autoT));
+    layer.appendChild(finale);
+  }
+
   // 저장된 다짐/성찰 복원 (없거나 깨져 있어도 기본값으로)
   const reflection = save.get("reflection") || {};
   const savedPledge = typeof reflection.pledge === "string" ? reflection.pledge : "";
@@ -66,7 +100,7 @@ export default function CompletionGalleryScene(ctx) {
   ]));
   sign(layer, DOKDO.signComplete, { x: 108, y: -14, w: 175, h: 175, alt: "탐사 수료관" });
   layer.appendChild(el("div.row", { style: { ...pos(920, 20, 340), gap: "10px", zIndex: 12, justifyContent: "flex-end", alignItems: "center" } }, [
-    button("결과 남기기", { variant: "ghost", size: "sm", icon: "📸", onClick: openCaptureModal }),
+    button("수료증 저장", { variant: "gold", size: "sm", icon: "🖼", onClick: openCertSaveModal }),
     homeButton(() => confirmGoMain()),
   ]));
 
@@ -110,8 +144,8 @@ export default function CompletionGalleryScene(ctx) {
       el("div", { style: { fontSize: "30px", fontWeight: "900", color: "var(--navy)", margin: "6px 0" }, text: "독도 탐사본부 수료" }),
       el("div", { style: { fontSize: "15px", color: "var(--ink-soft)", fontWeight: "700" }, text: "위치 · 지형 · 역사 · 생태 · 보호 미션 완료" }),
       el("div", { style: { margin: "12px auto", width: "60%", height: "2px", background: "var(--gold-deep)" } }),
-      el("div", { style: { fontSize: "17px", fontWeight: "800", color: "var(--green-deep)", lineHeight: "1.45", wordBreak: "keep-all" },
-        text: "“독도는 위치, 지형, 역사, 자연이 모두 소중한 우리 땅입니다.”" }),
+      el("div", { style: { fontSize: "17px", fontWeight: "800", color: "var(--green-deep)", lineHeight: "1.5", wordBreak: "keep-all" },
+        text: "“독도는 역사적·지리적·국제법적으로 명백한 대한민국의 영토입니다. 우리가 그 근거를 직접 확인했습니다.”" }),
     ]),
   ]);
   layer.appendChild(cert);
@@ -286,24 +320,95 @@ export default function CompletionGalleryScene(ctx) {
     });
   }
 
-  /* ---- 모달: 결과 남기기 (화면 캡처 + 교사 확인 안내, 서버 없음 전제) ---- */
-  function openCaptureModal() {
-    const row = (icon, txt) => el("div.row", { style: { gap: "8px", alignItems: "flex-start", fontSize: "15.5px", fontWeight: "600", color: "var(--ink)", lineHeight: "1.5" } }, [
-      el("span", { style: { flex: "0 0 auto" }, text: icon }),
-      el("span", { style: { wordBreak: "keep-all" }, text: txt }),
-    ]);
-    const body = el("div.col", { style: { gap: "10px" } }, [
-      el("div", { style: { fontSize: "16px", fontWeight: "800", color: "var(--navy)", wordBreak: "keep-all" }, text: "이 화면을 캡처해서 나의 탐사 결과를 남겨요." }),
-      row("📱", "태블릿: 전원 버튼과 소리 줄이기 버튼을 동시에 짧게 눌러요."),
-      row("🖐️", "일부 태블릿은 손날로 화면을 옆으로 쓸어도 캡처돼요."),
-      row("🧑‍🏫", "캡처한 화면을 선생님께 보여 드리고 탐사 수료를 확인받아요."),
-      el("div", { style: { fontSize: "13.5px", fontWeight: "600", color: "var(--ink-soft)", wordBreak: "keep-all" }, text: "탐사 기록은 이 기기(브라우저)에 자동으로 저장돼 있어요." }),
+  /* ---- 모달: 수료증 저장 (반·번호 입력 → 수료증 PNG 다운로드) ---- */
+  function openCertSaveModal() {
+    const cert = save.get("certificate") || {};
+    const inputStyle = {
+      width: "76px", fontFamily: "inherit", fontSize: "17px", fontWeight: "800",
+      textAlign: "center", color: "var(--ink)", background: "#fff",
+      border: "2px solid #b9c7d6", borderRadius: "10px", padding: "9px 6px", outline: "none",
+    };
+    const mkNum = (v, ph) => {
+      const i = el("input", { type: "text", attrs: { inputmode: "numeric", maxlength: "2", placeholder: ph }, style: inputStyle });
+      i.value = v || "";
+      return i;
+    };
+    const inGrade = mkNum(cert.grade, "4");
+    const inClass = mkNum(cert.classNo, "1");
+    const inNum = mkNum(cert.studentNo, "1");
+    const body = el("div.col", { style: { gap: "12px", minWidth: "400px" } }, [
+      el("div", { style: { fontSize: "15px", fontWeight: "700", color: "var(--ink)", wordBreak: "keep-all", lineHeight: "1.5" },
+        text: "학년·반·번호를 적으면 수료증 그림 파일로 저장해요. (이름은 적지 않아요 · 이 기기에만 저장)" }),
+      el("div.row", { style: { alignItems: "center", justifyContent: "center", gap: "6px", fontSize: "17px", fontWeight: "800", color: "var(--navy)" } }, [
+        inGrade, el("span", { text: "학년" }), inClass, el("span", { text: "반" }), inNum, el("span", { text: "번" }),
+      ]),
     ]);
     const m = modal(ctx.stage, {
-      title: "결과 남기기", icon: "📸", body,
-      buttons: [button("확인", { variant: "green", onClick: () => m.close() })],
+      title: "수료증 저장", icon: "🖼", body,
+      buttons: [
+        button("취소", { variant: "ghost", onClick: () => m.close() }),
+        button("수료증 그림 저장", { variant: "gold", onClick: async () => {
+          const c = { grade: inGrade.value.trim(), classNo: inClass.value.trim(), studentNo: inNum.value.trim() };
+          save.set("certificate", c);
+          m.close();
+          try {
+            await downloadCertificate(c);
+            toast(ctx.stage, "수료증을 저장했어요! 다운로드 폴더를 확인해요.");
+          } catch (e) {
+            console.warn("[cert] 저장 실패:", e);
+            toast(ctx.stage, "저장이 안 되면 화면을 캡처해서 선생님께 보여 드려요.");
+          }
+        } }),
+      ],
     });
   }
+
+  /** 수료증을 canvas 에 직접 그려 PNG 다운로드 */
+  async function downloadCertificate(c) {
+    const W = 1200, H = 848;
+    const cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    const g = cv.getContext("2d");
+    // 배경
+    const grad = g.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0, "#fdfbf3"); grad.addColorStop(1, "#f3ead2");
+    g.fillStyle = grad; g.fillRect(0, 0, W, H);
+    // 이중 테두리
+    g.strokeStyle = "#c9962a"; g.lineWidth = 10; g.strokeRect(28, 28, W - 56, H - 56);
+    g.strokeStyle = "#e5cf96"; g.lineWidth = 3; g.strokeRect(48, 48, W - 96, H - 96);
+    // 배지 이미지
+    const img = new Image();
+    img.src = badgeFinalSrc();
+    await new Promise((res) => { img.onload = res; img.onerror = res; });
+    if (img.naturalWidth) g.drawImage(img, W / 2 - 110, 84, 220, 220);
+    // 텍스트
+    g.fillStyle = "#14365c"; g.textAlign = "center";
+    g.font = "900 58px 'Malgun Gothic', sans-serif";
+    g.fillText("독도 탐사본부 수료증", W / 2, 392);
+    g.font = "700 30px 'Malgun Gothic', sans-serif";
+    g.fillStyle = "#5b6b7c";
+    const who = (c.grade ? `${c.grade}학년 ` : "") + (c.classNo ? `${c.classNo}반 ` : "") + (c.studentNo ? `${c.studentNo}번 ` : "") + "탐사대원";
+    g.fillText(who, W / 2, 452);
+    g.fillStyle = "#2b3a4a";
+    g.font = "700 26px 'Malgun Gothic', sans-serif";
+    g.fillText("위 대원은 독도의 위치·지형·역사·생태·보호 다섯 영역의", W / 2, 528);
+    g.fillText("근거를 스스로 수집하여 탐사 임무를 완수하였기에", W / 2, 568);
+    g.fillText("이 증서를 수여합니다.", W / 2, 608);
+    g.fillStyle = "#1d6b2e";
+    g.font = "800 28px 'Malgun Gothic', sans-serif";
+    g.fillText("“독도는 역사·지리·국제법적으로 명백한 우리 땅입니다.”", W / 2, 676);
+    const d = new Date();
+    g.fillStyle = "#5b6b7c";
+    g.font = "700 24px 'Malgun Gothic', sans-serif";
+    g.fillText(`${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 · 독도 탐사본부`, W / 2, 748);
+    // 다운로드
+    const a = document.createElement("a");
+    a.download = `독도탐사수료증${c.grade ? "_" + c.grade + "-" + c.classNo + "-" + c.studentNo : ""}.png`;
+    a.href = cv.toDataURL("image/png");
+    a.click();
+  }
+
+  function badgeFinalSrc() { return DOKDO.badgeFinal; }
 
   return root;
 }

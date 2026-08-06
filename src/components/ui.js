@@ -194,7 +194,12 @@ export function uncoach(node) {
    ------------------------------------------------------------------------- */
 export function quiz(q, { layout = "column", confirmLabel = "정답 확인", confirmAlign = "center", onResult = null } = {}) {
   const isMulti = q.type === "multiple_choice";
-  const answers = isMulti ? q.answer : [q.answer];
+  // 정답 위치 셔플: 표시 순서를 섞고 answer/wrongFeedback 인덱스를 재매핑
+  const perm = q.choices.map((_, i) => i).sort(() => Math.random() - 0.5);
+  const choices = perm.map((i) => q.choices[i]);
+  const wrongFeedback = q.wrongFeedback ? perm.map((i) => q.wrongFeedback[i]) : null;
+  const origAnswers = isMulti ? q.answer : [q.answer];
+  const answers = origAnswers.map((a) => perm.indexOf(a));
   const picked = new Set();
   let wrongCount = 0;
   let done = false;
@@ -204,7 +209,7 @@ export function quiz(q, { layout = "column", confirmLabel = "정답 확인", con
   const fb = el("div.feedback");
   const btns = [];
 
-  q.choices.forEach((label, i) => {
+  choices.forEach((label, i) => {
     const b = el("button.choice", { type: "button" }, [
       el("span.choice__mark", { text: isMulti ? "☐" : "○" }),
       el("span", { text: label }),
@@ -247,7 +252,7 @@ export function quiz(q, { layout = "column", confirmLabel = "정답 확인", con
       AudioManager.wrong();
       // 오개념 피드백: 잘못 고른 선택지에 맞는 설명 (정답은 비공개)
       const firstWrong = [...picked].find((i) => !answers.includes(i));
-      const wf = q.wrongFeedback && firstWrong != null ? q.wrongFeedback[firstWrong] : null;
+      const wf = wrongFeedback && firstWrong != null ? wrongFeedback[firstWrong] : null;
       fb.className = "feedback show feedback--no";
       fb.innerHTML = "🤔 " + (wf || "다시 생각해 봐요.") +
         (wrongCount >= 3 ? "<br>💡 <b>힌트</b> · " + (q.hint || "단서를 다시 읽어 봐요.") : "");

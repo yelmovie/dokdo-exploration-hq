@@ -1,88 +1,107 @@
 /* =========================================================================
    1페이지 - 메인 화면 (MainTitleScene)
-   타이틀 로고 + 캐릭터 + 탐사 시작 / 이어하기(저장 감지) / 선생님 안내.
-   설정: 소리 켜기/끄기, 처음부터 다시(선생님용 리셋), 생성형 이미지 고지.
+   정적 타이틀 로고(배경을 가리지 않게 상단), 캐릭터 크게, 버튼 3개 이하.
+   설정 모달: 소리(배경음/효과음 분리) · 교사용 가이드 · 관리자 · AI 고지.
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
 import { buildScene, placeAsset, button, modal, toast } from "../components/ui.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
+import { MISSIONS } from "../data/missions.js";
 import AudioManager from "../managers/AudioManager.js";
 
 export default function MainTitleScene(ctx) {
   const cfg = PAGES.main;
-  const { root, layer } = buildScene({ bg: cfg.bg, veil: "soft" });
+  const { root, layer } = buildScene({ bg: cfg.bg });
   const hasSave = ctx.save.hasProgress();
 
-  /* ---- 타이틀 로고 + 부제 ---- */
+  /* ---- 타이틀 로고: 정적, 상단 좌측 치우침 — 노을·독도 배경이 보이게 ---- */
   const logo = assetImg(DOKDO.titleLogo, "독도, 우리의 섬!");
   Object.assign(logo.style, {
-    position: "absolute", left: "50%", top: "48px", transform: "translateX(-50%)",
-    width: "520px", zIndex: 5, filter: "drop-shadow(0 8px 16px rgba(0,0,0,.35))",
+    position: "absolute", left: "50%", top: "30px", transform: "translateX(-50%)",
+    width: "440px", zIndex: 5,
+    filter: "drop-shadow(0 10px 22px rgba(9, 28, 48, .45))",
   });
-  logo.classList.add("floaty");
   layer.appendChild(logo);
 
   layer.appendChild(el("div", {
     style: {
-      position: "absolute", left: "50%", top: "348px", transform: "translateX(-50%)",
-      zIndex: 5, background: "rgba(20,54,92,.88)", color: "#fff",
-      fontSize: "21px", fontWeight: "900", padding: "10px 30px", borderRadius: "999px",
-      boxShadow: "var(--shadow)", whiteSpace: "nowrap",
+      position: "absolute", left: "50%", top: "336px", transform: "translateX(-50%)",
+      zIndex: 5, background: "rgba(14, 38, 64, .72)",
+      backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,.25)",
+      color: "#fff", fontSize: "18px", fontWeight: "800", letterSpacing: "-0.01em",
+      padding: "10px 28px", borderRadius: "999px",
+      boxShadow: "0 8px 24px rgba(9,28,48,.35)", whiteSpace: "nowrap",
     },
-    text: "독도 탐사본부 · 사라진 기록을 복원하라!",
+    text: "독도 탐사본부 — 사라진 기록을 복원하라",
   }));
 
-  layer.appendChild(el("div", {
-    style: {
-      position: "absolute", left: "50%", top: "406px", transform: "translateX(-50%)",
-      zIndex: 5, color: "#fff", fontSize: "15px", fontWeight: "700",
-      textShadow: "0 1px 4px rgba(0,0,0,.6)", whiteSpace: "nowrap",
-    },
-    text: "위치 · 지형 · 역사 · 생태 · 보호 — 5가지 근거를 모아 브리핑 보드를 완성해요",
-  }));
+  /* ---- 캐릭터: 1.5배, 하단 기준 배치 (잘림 방지: 720 안쪽) ---- */
+  placeAsset(layer, DOKDO.girlScout, { x: 18, y: 218, w: 420, h: 500, alt: "탐험가 소녀", z: 4 });
+  placeAsset(layer, DOKDO.otterSailor, { x: 900, y: 292, w: 345, h: 425, alt: "강치 항해사", float: true, z: 4 });
+  placeAsset(layer, DOKDO.gull, { x: 850, y: 70, w: 100, h: 82, alt: "갈매기", float: true, z: 3 });
 
-  /* ---- 캐릭터 ---- */
-  placeAsset(layer, DOKDO.girlScout, { x: 60, y: 330, w: 280, h: 380, alt: "탐험가 소녀", z: 4 });
-  placeAsset(layer, DOKDO.otterSailor, { x: 990, y: 400, w: 230, h: 300, alt: "수달 항해사", float: true, z: 4 });
-  placeAsset(layer, DOKDO.gull, { x: 880, y: 90, w: 110, h: 90, alt: "갈매기", float: true, z: 3 });
-
-  /* ---- 하단 버튼 (CSS) ---- */
+  /* ---- 하단 버튼 ---- */
   const btnRow = el("div.row", {
-    style: { position: "absolute", left: "50%", bottom: "56px", transform: "translateX(-50%)", gap: "16px", zIndex: 6 },
+    style: { position: "absolute", left: "50%", bottom: "52px", transform: "translateX(-50%)", gap: "14px", zIndex: 6 },
   }, [
-    button(hasSave ? "이어하기" : "탐사 시작", { variant: "gold", size: "lg", icon: hasSave ? "▶" : "🧭", onClick: () => {
+    button(hasSave ? "이어하기" : "탐사 시작", { variant: "gold", size: "lg", icon: hasSave ? "▶" : "⚓", onClick: () => {
       ctx.navigate(hasSave ? "missionMap" : "briefing");
     } }),
-    hasSave ? button("처음부터", { variant: "sea", size: "lg", icon: "🧭", onClick: () => ctx.navigate("briefing") }) : null,
-    button("선생님 안내", { variant: "ghost", size: "lg", icon: "🧑‍🏫", onClick: openTeacherGuide }),
+    hasSave ? button("처음부터", { variant: "sea", size: "lg", onClick: () => ctx.navigate("briefing") }) : null,
+    button("설정", { variant: "ghost", size: "lg", icon: "⚙", onClick: openSettings }),
   ].filter(Boolean));
   layer.appendChild(btnRow);
 
-  /* ---- 우상단: 설정 ---- */
-  layer.appendChild(el("div", { style: { position: "absolute", right: "22px", top: "20px", zIndex: 10 } }, [
-    button("설정", { variant: "ghost", size: "sm", icon: "⚙️", onClick: openSettings }),
-  ]));
+  /* =======================================================================
+     설정 모달 — 소리 / 교사용 가이드 / 관리자 / 고지
+     ======================================================================= */
+  function toggleRow(label, get, set) {
+    const btn = el("button", {
+      type: "button",
+      style: {
+        fontFamily: "inherit", fontSize: "14px", fontWeight: "900", minWidth: "72px", minHeight: "40px",
+        borderRadius: "999px", border: "0", cursor: "pointer",
+        background: get() ? "var(--green)" : "#aeb9c4", color: "#fff",
+      },
+      text: get() ? "켜짐" : "꺼짐",
+    });
+    btn.addEventListener("click", () => {
+      set(!get());
+      btn.style.background = get() ? "var(--green)" : "#aeb9c4";
+      btn.textContent = get() ? "켜짐" : "꺼짐";
+    });
+    return el("div.row", { style: { justifyContent: "space-between", alignItems: "center", padding: "8px 2px" } }, [
+      el("span", { style: { fontSize: "15.5px", fontWeight: "800", color: "var(--ink)" }, text: label }),
+      btn,
+    ]);
+  }
+
+  function sectionTitle(text) {
+    return el("div", { style: { fontSize: "13px", fontWeight: "900", color: "var(--sea-deep)", letterSpacing: ".04em", margin: "10px 0 2px", borderBottom: "1px solid rgba(20,86,143,.15)", paddingBottom: "5px" }, text });
+  }
 
   function openSettings() {
-    const soundBtn = button(AudioManager.enabled ? "소리 끄기" : "소리 켜기", {
-      variant: "sea", icon: AudioManager.enabled ? "🔇" : "🔊",
-      onClick: () => {
-        AudioManager.setEnabled(!AudioManager.enabled);
-        md.close();
-        toast(ctx.stage, AudioManager.enabled ? "소리를 켰어요" : "소리를 껐어요");
-      },
-    });
-    const body = el("div.col", { style: { gap: "12px" } }, [
-      el("div.row", { style: { justifyContent: "center" } }, [soundBtn]),
+    const body = el("div.col", { style: { gap: "4px", minWidth: "420px" } }, [
+      sectionTitle("소리"),
+      toggleRow("배경 음악", () => AudioManager.bgmEnabled, (v) => AudioManager.setBgmEnabled(v)),
+      toggleRow("효과음", () => AudioManager.sfxEnabled, (v) => AudioManager.setSfxEnabled(v)),
+
+      sectionTitle("교사용"),
+      el("div.row", { style: { gap: "8px", padding: "6px 0" } }, [
+        button("수업 가이드", { variant: "ghost", size: "sm", onClick: openTeacherGuide }),
+        button("관리자", { variant: "ghost", size: "sm", onClick: openAdmin }),
+      ]),
+
+      sectionTitle("안내"),
       el("div", {
-        style: { fontSize: "12.5px", fontWeight: "600", color: "var(--ink-soft)", lineHeight: "1.5", textAlign: "center", wordBreak: "keep-all" },
-        text: "이 앱의 배경·캐릭터·아이콘 그림은 생성형 AI로 만든 교육용 이미지입니다.",
+        style: { fontSize: "12.5px", fontWeight: "600", color: "var(--ink-soft)", lineHeight: "1.55", wordBreak: "keep-all", padding: "4px 0" },
+        text: "이 앱의 배경·캐릭터·아이콘 그림과 배경 음악은 생성형 AI로 만든 교육용 자료입니다. 교육 내용은 대한민국 외교부 독도(dokdo.mofa.go.kr) 자료를 근거로 합니다.",
       }),
     ]);
     const md = modal(ctx.stage, {
-      title: "설정", icon: "⚙️", body,
-      buttons: [button("닫기", { variant: "ghost", onClick: () => md.close() })],
+      title: "설정", icon: "⚙", body,
+      buttons: [button("닫기", { variant: "green", onClick: () => md.close() })],
     });
   }
 
@@ -91,16 +110,43 @@ export default function MainTitleScene(ctx) {
       el("div", { style: { fontSize: "15px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.65", wordBreak: "keep-all" },
         html: "초등 4학년 사회·통합 독도교육용 <b>자료 해석형 탐사 웹앱</b>입니다.<br>" +
           "· 40분 수업 흐름: 도입 5분 → 미션 1~4단계 20분 → 브리핑 보드·발표 준비 10분 → 수료·공유 5분<br>" +
-          "· 진행 기록은 이 기기 브라우저에만 저장됩니다(서버 없음).<br>" +
-          "· 오답 시 정답을 바로 알려 주지 않고 오개념 피드백·힌트로 재도전을 유도합니다." }),
+          "· 진행 기록은 이 기기 브라우저에만 저장됩니다(서버 없음). 수업은 한 주소로만 진행하세요.<br>" +
+          "· 오답 시 정답을 바로 알려 주지 않고 오개념 피드백과 힌트로 재도전을 유도합니다." }),
       el("div", {
-        style: { fontSize: "13.5px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.6", background: "#f0f4f8", borderRadius: "10px", padding: "10px 14px", wordBreak: "keep-all" },
+        style: { fontSize: "13.5px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.6", background: "rgba(31,122,194,.08)", borderRadius: "10px", padding: "10px 14px", wordBreak: "keep-all" },
         html: "<b>교육과정 연계</b> · 범교과 학습 주제 ‘독도 교육’ 기반, 2022 개정 사회과 <b>[6사01-02]</b>" +
           "(독도의 지리적 특성과 역사 기록을 바탕으로 영토로서 독도의 중요성 이해)와 연계한 4학년 심화 활동입니다." +
-          "<br><span style='color:#a05a1a'>※ 성취기준 원문은 수업 전 교육과정 고시 원문과 대조해 확인해 주세요.</span>" +
-          "<br>교육 내용 출처: 대한민국 외교부 독도(dokdo.mofa.go.kr)" }),
-      el("div.row", { style: { justifyContent: "center", marginTop: "4px" } }, [
-        button("전체 기록 초기화", { variant: "ghost", size: "sm", icon: "🗑️", onClick: () => {
+          "<br><span style='color:#a05a1a'>※ 성취기준 원문은 수업 전 교육과정 고시 원문과 대조해 확인해 주세요.</span>",
+      }),
+    ]);
+    const md = modal(ctx.stage, {
+      title: "교사용 수업 가이드", icon: "📖", body,
+      buttons: [button("닫기", { variant: "ghost", onClick: () => md.close() })],
+    });
+  }
+
+  function openAdmin() {
+    const gate = modal(ctx.stage, {
+      title: "관리자 확인", icon: "🔐",
+      bodyHtml: "<div style='font-size:14.5px;font-weight:700;color:var(--ink);line-height:1.6'>교사·관리자용 기능입니다.<br>학생은 선생님과 함께 사용해요.</div>",
+      buttons: [
+        button("취소", { variant: "ghost", onClick: () => gate.close() }),
+        button("교사입니다", { variant: "sea", onClick: () => { gate.close(); openAdminPanel(); } }),
+      ],
+    });
+  }
+
+  function openAdminPanel() {
+    const body = el("div.col", { style: { gap: "10px", minWidth: "420px" } }, [
+      el("div", { style: { fontSize: "14px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.5", wordBreak: "keep-all" },
+        text: "시범·복습 수업용 기능이에요. 이 기기의 기록에만 적용됩니다." }),
+      el("div.row", { style: { gap: "10px", justifyContent: "center" } }, [
+        button("전체 단계 해금", { variant: "gold", onClick: () => {
+          const all = MISSIONS.map((m) => m.key);
+          ctx.save.set("unlockedMissions", all);
+          toast(ctx.stage, "모든 단계를 열었어요!");
+        } }),
+        button("전체 기록 초기화", { variant: "ghost", onClick: () => {
           const md2 = modal(ctx.stage, {
             title: "기록을 초기화할까요?", icon: "⚠️",
             bodyHtml: "이 기기의 탐사 기록(미션·배지·발표문)이 모두 지워져요.",
@@ -108,8 +154,8 @@ export default function MainTitleScene(ctx) {
               button("취소", { variant: "ghost", onClick: () => md2.close() }),
               button("초기화", { variant: "green", onClick: () => {
                 ctx.save.reset();
-                md2.close(); md.close();
-                toast(ctx.stage, "기록을 초기화했어요. 새로 시작할 수 있어요!");
+                md2.close();
+                toast(ctx.stage, "기록을 초기화했어요.");
                 setTimeout(() => location.reload(), 700);
               } }),
             ],
@@ -118,7 +164,7 @@ export default function MainTitleScene(ctx) {
       ]),
     ]);
     const md = modal(ctx.stage, {
-      title: "선생님 안내", icon: "🧑‍🏫", body,
+      title: "관리자", icon: "🔐", body,
       buttons: [button("닫기", { variant: "ghost", onClick: () => md.close() })],
     });
   }

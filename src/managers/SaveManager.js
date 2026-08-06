@@ -20,7 +20,10 @@ function defaults() {
     briefingBoard: { location: null, geology: null, history: null, ecology: null, protection: null },
     presentationDraft: { orderedSections: [], sentences: { blanks: {}, closing: "" } },
     reflection: { pledge: "", memorable: null },
-    soundEnabled: true,
+    soundEnabled: true,          // 구버전 호환 (migrate 시 아래 두 필드로 복사)
+    bgmEnabled: true,
+    sfxEnabled: true,
+    certificate: { grade: "", classNo: "", studentNo: "" },
     updatedAt: "",
   };
 }
@@ -44,6 +47,11 @@ function safeLoad() {
   }
   base.version = VERSION;
   if (!base.unlockedMissions.includes("route")) base.unlockedMissions.push("route");
+  // migrate: 구버전 soundEnabled → bgm/sfx 분리 필드
+  if ("soundEnabled" in data && !("bgmEnabled" in data)) {
+    base.bgmEnabled = !!data.soundEnabled;
+    base.sfxEnabled = !!data.soundEnabled;
+  }
   return base;
 }
 

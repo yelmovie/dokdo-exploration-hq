@@ -92,7 +92,7 @@ function dropAt(x, y, selector) {
    카드 탭 → 첫 빈 슬롯에 배치 / 드래그 → 원하는 슬롯에 배치
    슬롯 카드 탭 → 트레이로 되돌림. 확인 → onResult(ok). 오답은 재도전.
    ------------------------------------------------------------------------- */
-export function orderInteraction({ items, answer, slotW = 150, slotH = 80, onResult = null }) {
+export function orderInteraction({ items, answer, slotW = 150, slotH = 80, onResult = null, freeOrder = false, confirmText = "순서 확인" }) {
   const shuffled = [...items].sort(() => Math.random() - 0.5);
   const node = el("div.order");
   const fb = el("div.feedback");
@@ -161,13 +161,14 @@ export function orderInteraction({ items, answer, slotW = 150, slotH = 80, onRes
   }
 
   const confirm = el("button.btn.btn--gold.btn--md", { type: "button" }, [
-    el("span.btn__icon", { text: "🔍" }), el("span", { text: "순서 확인" }),
+    el("span", { text: confirmText }),
   ]);
   confirm.disabled = true;
   confirm.addEventListener("click", () => {
     if (done) return;
     AudioManager.unlock(); AudioManager.click();
-    const ok = placed.every((p, i) => p && p.id === answer[i]);
+    // freeOrder: 정답 없음 — 5칸 다 채우면 학습자의 배치 그대로 통과
+    const ok = freeOrder || placed.every((p, i) => p && p.id === answer[i]);
     if (!ok) {
       stats.wrong++;
       AudioManager.wrong();
@@ -181,10 +182,10 @@ export function orderInteraction({ items, answer, slotW = 150, slotH = 80, onRes
     done = true;
     AudioManager.correct();
     fb.className = "feedback show feedback--ok";
-    fb.textContent = "✅ 순서를 바르게 복원했어요!";
+    fb.textContent = freeOrder ? "나만의 순서가 완성됐어요!" : "✅ 순서를 바르게 복원했어요!";
     confirm.style.display = "none";
     slots.forEach((s) => s.classList.add("is-correct"));
-    if (onResult) onResult(true);
+    if (onResult) onResult(true, placed.map((p) => p.id));
   });
 
   node.appendChild(slotsRow);

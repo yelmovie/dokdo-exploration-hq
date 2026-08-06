@@ -3,7 +3,7 @@
    활동 3단계: ① 기록 카드 연표 복원(순서 배열, 카드 눌러 확대 보기)
    → ② 자료 매칭 퀴즈 → ③ 사실/생각 구분(문장별 토글 판단).
    ========================================================================= */
-import { el } from "../core/dom.js";
+import { el, assetImg } from "../core/dom.js";
 import { buildScene, placeAsset, quiz, pos, collapsible, modal, button } from "../components/ui.js";
 import { orderInteraction } from "../components/interactions.js";
 import { missionFrame, hintFold, nextCoachButton, completeMission } from "./_shared.js";
@@ -16,7 +16,8 @@ import stats from "../managers/StatsManager.js";
 export default function HistoricalArchiveScene(ctx) {
   const cfg = PAGES.history;
   const { root, layer } = buildScene({ bg: cfg.bg, veil: "soft" });
-  let stage = 0; // 0 연표, 1 매칭 퀴즈, 2 사실/생각
+  let stage = 0; // 0 연표, 1 퀴즈(3문항), 2 사실/생각
+  let qi = 0;
 
   const frame = missionFrame(ctx, layer, cfg, {
     signSrc: DOKDO.signHistory,
@@ -27,25 +28,44 @@ export default function HistoricalArchiveScene(ctx) {
   layer.appendChild(collapsible({
     title: "기록 카드 읽어보기", icon: "📜",
     style: { ...pos(22, 96), zIndex: 9 },
-    body: [el("div.col", { style: { gap: "6px" } }, HISTORY_CARDS.map((c) =>
-      el("button", {
+    open: true,
+    body: [el("div.col", { style: { gap: "7px" } }, HISTORY_CARDS.map((c) => {
+      const icon = assetImg(DOKDO[c.icon] || DOKDO.oldBook, "");
+      Object.assign(icon.style, { width: "34px", height: "34px", objectFit: "contain", flex: "0 0 auto" });
+      const cardBtn = el("button", {
         type: "button",
         style: {
-          fontFamily: "inherit", textAlign: "left", background: "#fdf6e3", border: "1.5px solid rgba(160,120,50,.35)",
-          borderRadius: "10px", padding: "8px 12px", cursor: "pointer", fontSize: "13.5px", fontWeight: "800", color: "var(--ink)",
+          fontFamily: "inherit", textAlign: "left", display: "flex", alignItems: "center", gap: "9px",
+          background: "linear-gradient(165deg,#fbf5e6,#f3e8cd)", border: "1px solid #d9c08a",
+          borderRadius: "12px", padding: "9px 12px", cursor: "pointer", minHeight: "52px",
+          boxShadow: "0 2px 6px rgba(90,64,20,.12), inset 0 1px 0 rgba(255,255,255,.7)",
+          width: "100%",
         },
-        text: "🔍 " + c.label,
-        onClick: () => {
-          AudioManager.unlock(); AudioManager.click();
-          const md = modal(ctx.stage, {
-            title: c.label, icon: "📜",
-            bodyHtml: `<div style="font-size:15px;font-weight:700;line-height:1.6;color:var(--ink);word-break:keep-all">${c.desc}</div>
-              <div style="margin-top:8px" class="src-tag">📎 외교부 독도: 우리 영토인 근거</div>
-              <div style="margin-top:6px;font-size:13px;font-weight:700;color:var(--ink-soft)">시대 단서는 연표에 놓을 때 확인돼요.</div>`,
-            buttons: [button("확인", { variant: "ghost", onClick: () => md.close() })],
-          });
-        },
-      })))],
+      }, [
+        icon,
+        el("div", {}, [
+          el("div", { style: { fontSize: "13.5px", fontWeight: "800", color: "var(--ink)" }, text: c.label }),
+          el("div", { style: { fontSize: "11.5px", fontWeight: "700", color: "#a07c33" }, text: "자세히 읽기" }),
+        ]),
+      ]);
+      cardBtn.addEventListener("click", () => {
+        AudioManager.unlock(); AudioManager.click();
+        const big = assetImg(DOKDO[c.icon] || DOKDO.oldBook, c.label);
+        Object.assign(big.style, { width: "92px", height: "92px", objectFit: "contain" });
+        const body = el("div.col", { style: { gap: "10px", alignItems: "center", maxWidth: "480px" } }, [
+          big,
+          el("div.pill", { style: { background: "#8a5a2b" }, text: c.year }),
+          el("div", { style: { fontSize: "15px", fontWeight: "700", lineHeight: "1.65", color: "var(--ink)", wordBreak: "keep-all", textAlign: "center" }, text: c.desc }),
+          el("div", { style: { fontSize: "14px", fontWeight: "800", color: "var(--sea-deep)", background: "rgba(31,122,194,.08)", borderRadius: "10px", padding: "8px 14px", wordBreak: "keep-all", textAlign: "center" }, text: "💡 " + c.point }),
+          el("div.src-tag", { text: "📎 외교부 독도: 우리 영토인 근거" }),
+        ]);
+        const md = modal(ctx.stage, {
+          title: c.label, icon: "📜", body,
+          buttons: [button("확인", { variant: "green", onClick: () => md.close() })],
+        });
+      });
+      return cardBtn;
+    }))],
   }));
 
   /* ---- 캐릭터 ---- */
@@ -68,9 +88,11 @@ export default function HistoricalArchiveScene(ctx) {
     hintHolder.appendChild(hintFold(text, { x: 22, y: 640 }));
   }
 
+  const TOTAL = 2 + HISTORY_QUESTIONS.length; // 연표 + 퀴즈들 + 사실/생각
+
   /* ---- ① 연표 복원 ---- */
   function renderTimeline() {
-    frame.setStep(1, 3, "활동");
+    frame.setStep(1, TOTAL, "활동");
     qTitle.innerHTML = "<b>활동 1.</b> " + HISTORY_TIMELINE.prompt;
     workArea.innerHTML = "";
     nextHolder.innerHTML = "";
@@ -96,16 +118,19 @@ export default function HistoricalArchiveScene(ctx) {
     setHint("가장 오래된 기록은 신라 시대(512년) 이야기예요. 가장 최근은 ‘대한제국’이 들어간 기록이에요.");
   }
 
-  /* ---- ② 자료 매칭 퀴즈 ---- */
-  function renderMatching() {
-    frame.setStep(2, 3, "활동");
-    const q = HISTORY_QUESTIONS[0];
-    qTitle.innerHTML = "<b>활동 2.</b> " + q.prompt;
+  /* ---- ② 기록 해석 퀴즈 (3문항) ---- */
+  function renderQuizzes() {
+    const q = HISTORY_QUESTIONS[qi];
+    frame.setStep(2 + qi, TOTAL, "활동");
+    qTitle.innerHTML = `<b>활동 ${2 + qi}.</b> ` + q.prompt;
     workArea.innerHTML = "";
     nextHolder.innerHTML = "";
     const qc = quiz(q, { onResult: (ok) => {
       if (!ok) return;
-      nextHolder.appendChild(nextCoachButton("다음 활동", () => { stage = 2; render(); }));
+      nextHolder.appendChild(nextCoachButton("다음 활동", () => {
+        if (qi < HISTORY_QUESTIONS.length - 1) { qi++; render(); }
+        else { stage = 2; render(); }
+      }));
     } });
     workArea.appendChild(qc.node);
     setHint(q.hint);
@@ -113,8 +138,8 @@ export default function HistoricalArchiveScene(ctx) {
 
   /* ---- ③ 사실/생각 구분 ---- */
   function renderFactOpinion() {
-    frame.setStep(3, 3, "활동");
-    qTitle.innerHTML = "<b>활동 3.</b> " + FACT_OPINION.prompt;
+    frame.setStep(TOTAL, TOTAL, "활동");
+    qTitle.innerHTML = `<b>활동 ${TOTAL}.</b> ` + FACT_OPINION.prompt;
     workArea.innerHTML = "";
     nextHolder.innerHTML = "";
 
@@ -179,7 +204,7 @@ export default function HistoricalArchiveScene(ctx) {
 
   function render() {
     if (stage === 0) renderTimeline();
-    else if (stage === 1) renderMatching();
+    else if (stage === 1) renderQuizzes();
     else renderFactOpinion();
   }
   render();

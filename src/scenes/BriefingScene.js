@@ -3,13 +3,18 @@
    목표 카드 5장(위치·지형·역사·생태·보호)을 모두 눌러 읽어야
    '준비 완료' 버튼이 열린다(게이팅). 외울 것보다 '모을 근거'를 확인.
    ========================================================================= */
-import { el } from "../core/dom.js";
+import { el, assetImg } from "../core/dom.js";
 import { buildScene, placeAsset, button, modal, toast, backButton, coachify, uncoach, pressable } from "../components/ui.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { BRIEFING_FIELDS } from "../data/missions.js";
 import { nextCoachButton } from "./_shared.js";
 import AudioManager from "../managers/AudioManager.js";
+
+const GOAL_ICON = {
+  location: "pinIsland", geology: "cliff", history: "oldBook",
+  ecology: "ecoLeaf", protection: "shieldEco",
+};
 
 const GOAL_DETAILS = {
   location:   { goal: "독도가 어디에 있는 섬인지 지도 단서로 설명하기", how: "항로 복원실에서 방향·거리 단서를 읽어요." },
@@ -39,10 +44,13 @@ export default function BriefingScene(ctx) {
   }));
   layer.appendChild(el("div", {
     style: {
-      position: "absolute", left: "50%", top: "96px", transform: "translateX(-50%)", zIndex: 6,
-      color: "#fff", fontSize: "15.5px", fontWeight: "700", textShadow: "0 1px 4px rgba(0,0,0,.55)", whiteSpace: "nowrap",
+      position: "absolute", left: "50%", top: "98px", transform: "translateX(-50%)", zIndex: 6,
+      background: "rgba(252,254,255,.82)", backdropFilter: "blur(8px)",
+      border: "1px solid rgba(255,255,255,.8)", borderRadius: "999px",
+      color: "var(--navy)", fontSize: "14.5px", fontWeight: "800",
+      padding: "9px 24px", boxShadow: "var(--shadow-sm)", whiteSpace: "nowrap",
     },
-    text: "다섯 개의 조사 구역에서 근거 카드를 모아 브리핑 보드를 완성해요. 카드를 눌러 오늘의 목표를 확인!",
+    html: "외교부 기본입장 · <b>“독도는 역사적·지리적·국제법적으로 명백한 우리 고유의 영토입니다.”</b> — 이 사실의 근거를 우리가 직접 모아요!",
   }));
 
   /* ---- 안내 캐릭터 ---- */
@@ -67,7 +75,11 @@ export default function BriefingScene(ctx) {
         padding: "18px 14px", cursor: "pointer", transition: "transform .15s",
       },
     }, [
-      el("div", { style: { fontSize: "44px" }, text: f.icon }),
+      (() => {
+        const ic = assetImg(DOKDO[GOAL_ICON[f.key]], f.label);
+        Object.assign(ic.style, { width: "72px", height: "72px", objectFit: "contain" });
+        return ic;
+      })(),
       el("div", { style: { fontSize: "20px", fontWeight: "900", color: f.color }, text: f.label }),
       el("div", { style: { fontSize: "13.5px", fontWeight: "700", color: "var(--ink-soft)", textAlign: "center", lineHeight: "1.5", wordBreak: "keep-all" }, text: d.goal }),
       el("div.pill", { style: { background: f.color, fontSize: "12.5px", marginTop: "auto" }, text: "눌러서 확인" }),

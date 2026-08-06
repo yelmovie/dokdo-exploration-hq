@@ -18,10 +18,13 @@ export function missionFrame(ctx, layer, cfg, { signSrc = null, helpText = "" } 
   const stepChip = el("div.hud-chip", { style: { position: "absolute", right: "266px", top: "26px", zIndex: 12 } });
   layer.appendChild(stepChip);
 
-  const soundBtn = button(AudioManager.enabled ? "소리" : "무음", { variant: "ghost", size: "sm", icon: AudioManager.enabled ? "🔊" : "🔇", onClick: () => {
-    AudioManager.setEnabled(!AudioManager.enabled);
-    soundBtn.querySelector(".btn__icon").textContent = AudioManager.enabled ? "🔊" : "🔇";
-    soundBtn.querySelector("span:last-child").textContent = AudioManager.enabled ? "소리" : "무음";
+  const soundOn = () => AudioManager.bgmEnabled || AudioManager.sfxEnabled;
+  const soundBtn = button(soundOn() ? "소리" : "무음", { variant: "ghost", size: "sm", icon: soundOn() ? "🔊" : "🔇", onClick: () => {
+    const on = !soundOn();
+    AudioManager.setBgmEnabled(on);
+    AudioManager.setSfxEnabled(on);
+    soundBtn.querySelector(".btn__icon").textContent = on ? "🔊" : "🔇";
+    soundBtn.querySelector("span:last-child").textContent = on ? "소리" : "무음";
   } });
   layer.appendChild(el("div.row", { style: { position: "absolute", right: "22px", top: "20px", zIndex: 12, gap: "8px" } }, [
     soundBtn,
