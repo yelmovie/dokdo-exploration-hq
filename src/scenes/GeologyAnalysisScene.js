@@ -57,7 +57,7 @@ export default function GeologyAnalysisScene(ctx) {
   if (use3D) {
     /* ---- 3D 독도 지형 탐사 (회전·확대·단면 보기) ---- */
     island.style.background = "linear-gradient(180deg,#8ecdf2 0%,#c8ecff 62%,#7fb6dd 100%)";
-    viewer = createDokdoTerrain3D({ root, width: 560, height: 300, onMarkerSelect: (id) => {
+    viewer = createDokdoTerrain3D({ root, width: 560, height: 300, glbSrc: "public/models/dokdo_diorama.glb", onMarkerSelect: (id) => {
       const clue = GEOLOGY_CLUES.find((c) => c.id === id);
       if (!clue) return;
       AudioManager.unlock(); AudioManager.click();
@@ -80,7 +80,8 @@ export default function GeologyAnalysisScene(ctx) {
       sectionOn = !sectionOn;
       viewer.setSectionView(sectionOn);
       strataTips.style.display = sectionOn ? "flex" : "none";
-      secBtn.querySelector("span:last-child").textContent = sectionOn ? "겉모습 보기" : "단면 보기";
+      secBtn.querySelector("span:last-child").textContent = sectionOn ? "실사 모형 보기" : "단면 보기";
+      toast(ctx.stage, sectionOn ? "지층 모형으로 전환 — 섬 속을 관찰해요" : "실사 모형으로 전환");
     } });
     Object.assign(secBtn.style, { position: "absolute", right: "10px", bottom: "10px", zIndex: 6, padding: "6px 14px", fontSize: "13px", minHeight: "44px" });
     island.appendChild(secBtn);

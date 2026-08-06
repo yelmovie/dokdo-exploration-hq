@@ -8,6 +8,7 @@
    ========================================================================= */
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { createThreeStage, registerDisposer } from "./ThreeStage.js";
 
 /* 관찰 마커 기본 위치 (씬 단서 id: cliff/flat/erosion/bird 와 1:1) */
@@ -17,6 +18,14 @@ export const TERRAIN_MARKERS = [
   { id: "erosion", pos: [-1.5, 0.65, 2.2] },   // 물가 침식 지형
   { id: "bird",    pos: [4.9, 1.4, 1.7] },     // 바닷새 서식 부속 바위
 ];
+
+/* 실사 GLB 모드용 마커 위치 (모델 중심 원점, 지름 ~10.5 정규화 기준) */
+const GLB_MARKERS = {
+  cliff:   [-2.5, 2.2, 0.9],   // 서도 봉우리 절벽
+  flat:    [2.5, 1.7, -0.3],   // 동도 평평한 정상
+  erosion: [0.2, 0.4, 2.2],    // 물가 침식 바위(아치 부근)
+  bird:    [4.2, 0.5, 1.3],    // 오른쪽 부속 바위
+};
 
 /* 내부 지층(단면) 색 — 삼형제굴 실사(외교부) 기준: 현무암/붉은 화산암/응회암/겉층 */
 const STRATA_COLORS = [0x3f3d3a, 0x7a4a33, 0x6e675e, 0x87764a].map((c) => new THREE.Color(c));
@@ -108,7 +117,7 @@ function badgeTexture(text, bg, ring) {
  *  - onMarkerSelect(id): 마커 클릭 콜백
  * @returns {{ el, stage, setMarkerCollected, setSectionView, sectionOn }}
  */
-export function createDokdoTerrain3D({ root = null, width = 560, height = 300, onMarkerSelect = null } = {}) {
+export function createDokdoTerrain3D({ root = null, width = 560, height = 300, onMarkerSelect = null, glbSrc = null } = {}) {
   const stage = createThreeStage({ root, width, height, fov: 42, near: 0.1, far: 300, alpha: true });
   const { renderer, scene, camera } = stage;
   renderer.localClippingEnabled = true; // 단면 보기(클리핑)용
@@ -123,7 +132,8 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
   const seaGeo = new THREE.PlaneGeometry(90, 90, 26, 26);
   seaGeo.rotateX(-Math.PI / 2);
   const seaMat = new THREE.MeshLambertMaterial({ color: 0x2478ad, flatShading: true }); // 실사의 깊은 동해색
-  scene.add(new THREE.Mesh(seaGeo, seaMat));
+  const seaMesh = new THREE.Mesh(seaGeo, seaMat);
+  scene.add(seaMesh);
   const seaPos = seaGeo.attributes.position;
   const seaBase = seaPos.array.slice(); // 원래 x/z 보존
 
@@ -194,6 +204,28 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
   controls.update();
   if (root) registerDisposer(root, () => controls.dispose());
 
+  /* ---- 실사 GLB (겉모습 모드): 성공 시 절차 모델·바다를 GLB 디오라마로 대체.
+     단면 보기는 언제나 절차 지층 모형으로 전환한다 (교육 기능 유지). ---- */
+  let glbModel = null;
+  if (glbSrc) {
+    new GLTFLoader().load(glbSrc, (gltf) => {
+      glbModel = gltf.scene;
+      const box = new THREE.Box3().setFromObject(glbModel);
+      const size = box.getSize(new THREE.Vector3());
+      const scale = 10.5 / Math.max(size.x, size.z);
+      glbModel.scale.setScalar(scale);
+      const center = box.getCenter(new THREE.Vector3()).multiplyScalar(scale);
+      glbModel.position.sub(center);
+      glbModel.position.y += 0.4;
+      scene.add(glbModel);
+      if (!sectionOn) { islands.visible = false; seaMesh.visible = false; }
+      sprites.forEach((sp) => {
+        const p = GLB_MARKERS[sp.userData.markerId];
+        if (p && !sectionOn) sp.position.set(p[0], p[1], p[2]);
+      });
+    }, undefined, (err) => console.warn("[glb] 지형 모델 로딩 실패 — 절차 모델 유지:", err));
+  }
+
   /* ---- 단면 보기: 클리핑 평면으로 앞쪽 절반을 잘라 지층 노출 ---- */
   const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0.15); // z > 0.15 잘림
   let sectionOn = false;
@@ -204,6 +236,16 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
     coreMat.clippingPlanes = planes;
     cores.visible = sectionOn;
     if (sectionOn) controls.autoRotate = false;
+    if (glbModel) {
+      // 겉모습 = 실사 GLB / 단면 = 절차 지층 모형
+      glbModel.visible = !sectionOn;
+      islands.visible = sectionOn;
+      seaMesh.visible = sectionOn;
+      sprites.forEach((sp) => {
+        const src = sectionOn ? TERRAIN_MARKERS.find((m) => m.id === sp.userData.markerId).pos : GLB_MARKERS[sp.userData.markerId];
+        if (src) sp.position.set(src[0], src[1], src[2]);
+      });
+    }
   }
 
   /* ---- 마커 수집 표시: 배지를 초록 체크로 교체 ---- */

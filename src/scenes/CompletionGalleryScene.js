@@ -153,8 +153,12 @@ export default function CompletionGalleryScene(ctx) {
         holder.appendChild(dio.el);
         holder.appendChild(el("div", {
           style: { position: "absolute", left: "0", right: "0", bottom: "6px", textAlign: "center", fontSize: "12.5px", fontWeight: "800", color: "var(--navy)", opacity: ".75", pointerEvents: "none" },
-          text: "손가락으로 돌려서 살펴봐요",
+          text: "돌려 보기 · 누르면 크게 보기",
         }));
+        /* 크게 보기: 전체창 확대 뷰어 (줌인·줌아웃 자유) */
+        const bigBtn = button("크게 보기", { variant: "ghost", size: "sm", icon: "🔍", onClick: openBigViewer });
+        Object.assign(bigBtn.style, { position: "absolute", right: "6px", top: "6px", zIndex: 5, minHeight: "40px", padding: "6px 12px", fontSize: "12.5px" });
+        holder.appendChild(bigBtn);
       } else {
         fallbackImg();
       }
@@ -308,6 +312,23 @@ export default function CompletionGalleryScene(ctx) {
       });
     } }),
   ]));
+
+  /* ---- 전체창 확대 3D 뷰어 (줌인·줌아웃 자세히) ---- */
+  function openBigViewer() {
+    const big = createDokdoGlbDiorama({ width: 980, height: 520, minDistance: 2.2, maxDistance: 16 });
+    const body = el("div", { style: { position: "relative", background: "linear-gradient(180deg,#dcedfa,#c3ddf1)", borderRadius: "14px", overflow: "hidden" } }, [
+      big.el,
+      el("div", { style: { position: "absolute", left: "0", right: "0", bottom: "8px", textAlign: "center", fontSize: "13px", fontWeight: "800", color: "var(--navy)", opacity: ".8", pointerEvents: "none" },
+        text: "드래그 회전 · 휠/두 손가락 줌 — 접안시설과 등대까지 찾아봐요!" }),
+    ]);
+    const m = modal(ctx.stage, {
+      title: "독도 전시 모형 — 자세히 보기", icon: "🏝",
+      body,
+      buttons: [button("닫기", { variant: "green", onClick: () => { big.stage.dispose(); m.close(); } })],
+    });
+    m.el.querySelector(".modal").style.maxWidth = "1060px";
+    m.el.addEventListener("pointerdown", (e) => { if (e.target === m.el) big.stage.dispose(); }); // 바깥 탭 닫기 시에도 해제
+  }
 
   /* ---- 독도 영상관: 외교부 공식 영상 (유튜브 임베드, 눌러야 재생) ---- */
   const THEATER = [

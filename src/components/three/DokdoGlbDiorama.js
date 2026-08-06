@@ -9,7 +9,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { createThreeStage, registerDisposer } from "./ThreeStage.js";
 
-export function createDokdoGlbDiorama({ root = null, width = 308, height = 260, src = "public/models/dokdo_diorama.glb", onError = null } = {}) {
+export function createDokdoGlbDiorama({ root = null, width = 308, height = 260, src = "public/models/dokdo_diorama.glb", onError = null, minDistance = 4.5, maxDistance = 11 } = {}) {
   const stage = createThreeStage({ root, width, height, fov: 38, near: 0.1, far: 100, alpha: true });
   const { renderer, scene, camera } = stage;
 
@@ -23,8 +23,8 @@ export function createDokdoGlbDiorama({ root = null, width = 308, height = 260, 
   controls.enablePan = false;
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
-  controls.minDistance = 4.5;
-  controls.maxDistance = 11;
+  controls.minDistance = minDistance;
+  controls.maxDistance = maxDistance;
   controls.minPolarAngle = 0.5;
   controls.maxPolarAngle = 1.35;
   controls.target.set(0, 0.4, 0);
