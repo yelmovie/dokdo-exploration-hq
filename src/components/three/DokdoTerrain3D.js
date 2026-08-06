@@ -18,8 +18,8 @@ export const TERRAIN_MARKERS = [
   { id: "bird",    pos: [4.9, 1.4, 1.7] },     // 바닷새 서식 부속 바위
 ];
 
-/* 내부 지층(단면) 색 — 아래부터 현무암/붉은 화산암/응회암/겉흙 느낌 3~4층 */
-const STRATA_COLORS = [0x45484f, 0x8a5a3c, 0x6e6a60, 0xa08a5c].map((c) => new THREE.Color(c));
+/* 내부 지층(단면) 색 — 삼형제굴 실사(외교부) 기준: 현무암/붉은 화산암/응회암/겉층 */
+const STRATA_COLORS = [0x3f3d3a, 0x7a4a33, 0x6e675e, 0x87764a].map((c) => new THREE.Color(c));
 
 /* 위치 기반 결정적 지터 — 같은 좌표의 중복 정점은 같은 오프셋을 받아
    원기둥 이음새(seam)가 갈라지지 않는다 */
@@ -50,9 +50,10 @@ function makeRockGeometry({ topR, bottomR, height, radial = 9, rings = 5, seed =
 function paintRockColors(geo, height) {
   const p = geo.attributes.position;
   const colors = new Float32Array(p.count * 3);
-  const cBottom = new THREE.Color(0x6b543f);
-  const cMid = new THREE.Color(0x8c7b5f);
-  const cTop = new THREE.Color(0x7b8a52);
+  /* 실사 기준 팔레트(외교부 사진): 어두운 암회갈 바위 + 위쪽 비탈의 식생 초록 */
+  const cBottom = new THREE.Color(0x544d43);
+  const cMid = new THREE.Color(0x6e6659);
+  const cTop = new THREE.Color(0x5e7c46);
   const c = new THREE.Color();
   for (let i = 0; i < p.count; i++) {
     const t = Math.min(1, Math.max(0, (p.getY(i) + height / 2) / height));
@@ -121,7 +122,7 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
   /* ---- 바다: 평면 정점 y 사인파로 은은한 파도 ---- */
   const seaGeo = new THREE.PlaneGeometry(90, 90, 26, 26);
   seaGeo.rotateX(-Math.PI / 2);
-  const seaMat = new THREE.MeshLambertMaterial({ color: 0x2f86c2, flatShading: true });
+  const seaMat = new THREE.MeshLambertMaterial({ color: 0x2478ad, flatShading: true }); // 실사의 깊은 동해색
   scene.add(new THREE.Mesh(seaGeo, seaMat));
   const seaPos = seaGeo.attributes.position;
   const seaBase = seaPos.array.slice(); // 원래 x/z 보존
@@ -149,11 +150,15 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
     core.position.copy(shell.position);
     cores.add(core);
   }
-  addIsland({ x: -2.7, z: 0.5,  topR: 0.55, bottomR: 2.6, height: 4.4, seed: 3 });  // 서도(더 높고 뾰족)
-  addIsland({ x: 2.9,  z: -0.4, topR: 1.15, bottomR: 2.4, height: 3.0, seed: 11 }); // 동도(위가 비교적 평평)
-  addIsland({ x: 0.3,  z: 2.4,  topR: 0.2,  bottomR: 0.7, height: 1.2, seed: 21 }); // 부속 바위
-  addIsland({ x: 4.9,  z: 1.7,  topR: 0.18, bottomR: 0.6, height: 1.5, seed: 27 }); // 바닷새 바위
-  addIsland({ x: -5.0, z: -1.6, topR: 0.22, bottomR: 0.8, height: 1.1, seed: 33 }); // 부속 바위
+  /* 실사(외교부 사진) 실루엣 기준: 서도=뾰족한 쌍봉 피라미드(168.5m),
+     동도=낮고 위가 평평(98.6m), 사이에 촛대바위형 기둥과 부속 바위들 */
+  addIsland({ x: -2.9, z: 0.5,  topR: 0.45, bottomR: 2.7, height: 4.6, seed: 3 });   // 서도 주봉
+  addIsland({ x: -1.6, z: -0.7, topR: 0.3,  bottomR: 1.5, height: 3.3, seed: 41 });  // 서도 둘째 봉(쌍봉 실루엣)
+  addIsland({ x: 2.9,  z: -0.4, topR: 1.35, bottomR: 2.5, height: 2.8, seed: 11 });  // 동도(넓고 평평한 정상)
+  addIsland({ x: 0.6,  z: 1.9,  topR: 0.14, bottomR: 0.42, height: 2.3, seed: 45 }); // 촛대바위(가는 기둥)
+  addIsland({ x: 0.3,  z: 2.8,  topR: 0.2,  bottomR: 0.7, height: 1.2, seed: 21 });  // 부속 바위
+  addIsland({ x: 4.9,  z: 1.7,  topR: 0.18, bottomR: 0.6, height: 1.5, seed: 27 });  // 바닷새 바위
+  addIsland({ x: -5.0, z: -1.6, topR: 0.22, bottomR: 0.8, height: 1.1, seed: 33 });  // 부속 바위
 
   /* ---- 관찰 마커: 발광 배지 스프라이트 + 펄스 스케일 ---- */
   const seekTex = badgeTexture("🔍", "#f0a72e", "rgba(255,220,120,.55)");

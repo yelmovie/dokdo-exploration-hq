@@ -39,6 +39,12 @@ export const PHOTOS = ver({
   caves:    PH + "photo_caves.jpg",     // 삼형제굴바위
   boat:     PH + "photo_boat.jpg",      // 독도 전경과 배
   trail:    PH + "photo_trail.jpg",     // 탐방로
+  seodo:    PH + "photo_seodo.jpg",     // 서도 정면 (동도 정상에서)
+  dongdo:   PH + "photo_dongdo.jpg",    // 동도 정면 (서도 정상에서)
+  both:     PH + "photo_both.jpg",      // 두 섬 전체 배치 (해상)
+  pillar:   PH + "photo_pillar.jpg",    // 탕건봉 바위 기둥
+  strata:   PH + "photo_strata.jpg",    // 삼형제굴 단면 지층 질감
+  elephant: PH + "photo_elephant.jpg",  // 코끼리바위 (침식)
 });
 
 /** 독도 아이콘 세트 (번호 PNG → 의미 별칭, 옛 앱에서 복구) */

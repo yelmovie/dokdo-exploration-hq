@@ -14,8 +14,8 @@ import { GEOLOGY_QUESTIONS, GEOLOGY_COMPARE } from "../data/questions.js";
 import { supportsWebGL } from "../components/three/ThreeStage.js";
 import { createDokdoTerrain3D } from "../components/three/DokdoTerrain3D.js";
 
-/* 단서별 실사 사진 (단서 카드 모달에서 표시) */
-const CLUE_PHOTO = { cliff: "plants", flat: "trail", erosion: "caves", bird: "aerial" };
+/* 단서별 실사 사진 (단서 카드 모달에서 표시) — 외교부 실사 */
+const CLUE_PHOTO = { cliff: "seodo", flat: "dongdo", erosion: "elephant", bird: "aerial" };
 
 /* 지형 단서 4종 — fx/fy 는 실사 항공 사진 위 라벨 위치(%) */
 const GEOLOGY_CLUES = [
@@ -84,6 +84,30 @@ export default function GeologyAnalysisScene(ctx) {
     } });
     Object.assign(secBtn.style, { position: "absolute", right: "10px", bottom: "10px", zIndex: 6, padding: "6px 14px", fontSize: "13px", minHeight: "44px" });
     island.appendChild(secBtn);
+
+    /* 실사 비교: 3D 모형과 실제 독도 사진을 나란히 */
+    const photoBtn = button("실사 비교", { variant: "ghost", icon: "📷", onClick: () => {
+      const mk = (src, cap) => el("div.col", { style: { gap: "4px", alignItems: "center" } }, [
+        (() => { const i = assetImg(src, cap); Object.assign(i.style, { width: "300px", height: "186px", objectFit: "cover", borderRadius: "10px", boxShadow: "var(--shadow-sm)" }); return i; })(),
+        el("span", { style: { fontSize: "12.5px", fontWeight: "800", color: "var(--navy)" }, text: cap }),
+      ]);
+      const body = el("div.col", { style: { gap: "10px" } }, [
+        el("div.row", { style: { gap: "10px", justifyContent: "center" } }, [
+          mk(PHOTOS.seodo, "서도 — 뾰족한 쌍봉 (168.5m)"),
+          mk(PHOTOS.dongdo, "동도 — 낮고 평평한 정상 (98.6m)"),
+        ]),
+        el("div.row", { style: { gap: "10px", justifyContent: "center" } }, [
+          mk(PHOTOS.both, "두 섬의 배치 — 바다에서 본 모습"),
+          mk(PHOTOS.strata, "삼형제굴 — 파도가 깎은 단면"),
+        ]),
+        el("div.tip", { html: "3D 모형을 돌려 보며 <b>실제 사진과 같은 각도</b>를 찾아봐요! 어느 쪽이 서도일까요?" }),
+        el("div.src-tag", { text: "📎 사진: 외교부 독도" }),
+      ]);
+      const md = modal(ctx.stage, { title: "실제 독도와 비교해 봐요", icon: "📷", body,
+        buttons: [button("닫기", { variant: "green", onClick: () => md.close() })] });
+    } });
+    Object.assign(photoBtn.style, { position: "absolute", right: "10px", top: "48px", zIndex: 6, padding: "6px 14px", fontSize: "13px", minHeight: "44px" });
+    island.appendChild(photoBtn);
   } else {
     /* ---- 2D 폴백: 실사 항공 사진 + 단서 라벨 ---- */
     const islandImg = assetImg(PHOTOS.aerial, "독도 항공 사진");
