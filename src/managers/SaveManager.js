@@ -24,6 +24,7 @@ function defaults() {
     bgmEnabled: true,
     sfxEnabled: true,
     certificate: { grade: "", classNo: "", studentNo: "" },
+    dex: [],
     updatedAt: "",
   };
 }
@@ -94,6 +95,14 @@ class SaveManager {
     if (score) s.missionScores[missionKey] = Math.max(s.missionScores[missionKey] || 0, score);
     if (unlockNext && !s.unlockedMissions.includes(unlockNext)) s.unlockedMissions.push(unlockNext);
     this.persist();
+  }
+
+  /** 도감 카드 등록. 새로 등록되면 true */
+  addDex(id) {
+    if (this.state.dex.includes(id)) return false;
+    this.state.dex.push(id);
+    this.persist();
+    return true;
   }
 
   setBoardField(field, cardId) {

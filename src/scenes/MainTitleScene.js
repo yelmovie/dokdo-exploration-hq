@@ -131,6 +131,13 @@ export default function MainTitleScene(ctx) {
           "(독도의 지리적 특성과 역사 기록을 바탕으로 영토로서 독도의 중요성 이해)와 연계한 4학년 심화 활동입니다." +
           "<br><span style='color:#a05a1a'>※ 성취기준 원문은 수업 전 교육과정 고시 원문과 대조해 확인해 주세요.</span>",
       }),
+      el("div", {
+        style: { fontSize: "13.5px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.7", background: "rgba(201,150,42,.1)", borderRadius: "10px", padding: "10px 14px", wordBreak: "keep-all" },
+        html: "<b>더 배우기 (수업 자료)</b><br>" +
+          "· <a href='https://dokdo.mofa.go.kr/kor/pds/video_list02.jsp' target='_blank' rel='noopener' style='color:var(--sea-deep)'>외교부 독도 영상관 — 교육 영상·사진 자료</a><br>" +
+          "· <a href='https://dokdo.mofa.go.kr/kor/' target='_blank' rel='noopener' style='color:var(--sea-deep)'>외교부 독도 홈페이지 — 우리 영토인 근거</a><br>" +
+          "<span style='color:var(--ink-soft);font-size:12.5px'>영상은 학생과 함께 교사 기기에서 재생을 권장해요.</span>",
+      }),
     ]);
     const md = modal(ctx.stage, {
       title: "교사용 수업 가이드", icon: "📖", body,

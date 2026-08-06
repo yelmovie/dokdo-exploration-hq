@@ -3,13 +3,17 @@
    관찰 구역 3곳(바다새·해안 식물·조간대)을 눌러 생태 단서 수집(게이팅)
    → 상황 판단 문제 3개: 행동 선택 → 정답 시 '영향 예측' 카드 표시.
    ========================================================================= */
-import { el } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, modal, button, toast, coachify, uncoach, pressable, lockOverlay } from "../components/ui.js";
-import { missionFrame, hintFold, nextCoachButton, completeMission } from "./_shared.js";
-import { DOKDO } from "../config/assetManifest.js";
+import { el, assetImg } from "../core/dom.js";
+import { buildScene, placeAsset, quiz, pos, modal, button, toast, coachify, uncoach, pressable, lockOverlay, speech } from "../components/ui.js";
+import { missionFrame, hintFold, nextCoachButton, completeMission, awardDex } from "./_shared.js";
+import { DOKDO, PHOTOS } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
-import { ECOLOGY_CLUES, ECOLOGY_QUESTIONS } from "../data/questions.js";
+import { ECOLOGY_CLUES, ECOLOGY_QUESTIONS, GANGCHI_STORY, GANGCHI_QUESTION } from "../data/questions.js";
 import AudioManager from "../managers/AudioManager.js";
+
+/* 관찰 구역 → 실사 사진·도감 카드 매핑 */
+const ZONE_PHOTO = { bird: "aerial", plant: "plants", sea: "tidepool" };
+const ZONE_DEX = { bird: "d-gull", plant: "d-plants", sea: "d-tidepool" };
 
 const ZONE_STYLE = [
   { x: 40, y: 150 },
@@ -23,7 +27,8 @@ export default function EcologyProtectionScene(ctx) {
   let qi = 0;
   const collected = new Set();
   const clueTotal = ECOLOGY_CLUES.length;
-  const total = ECOLOGY_QUESTIONS.length;
+  const QUESTIONS = [...ECOLOGY_QUESTIONS, GANGCHI_QUESTION];
+  const total = QUESTIONS.length;
 
   const frame = missionFrame(ctx, layer, cfg, {
     signSrc: DOKDO.signEcology,
@@ -42,9 +47,13 @@ export default function EcologyProtectionScene(ctx) {
         padding: "10px",
       },
     }, [
-      el("div", { style: { fontSize: "32px" }, text: c.icon }),
-      el("div", { style: { fontSize: "15.5px", fontWeight: "900", color: "var(--green-deep)" }, text: c.title }),
-      el("div.pill", { style: { background: "var(--green-deep)", fontSize: "12px" }, text: "🔍 관찰하기" }),
+      (() => {
+        const ph = assetImg(PHOTOS[ZONE_PHOTO[c.id]], c.title);
+        Object.assign(ph.style, { width: "100%", height: "62px", objectFit: "cover", borderRadius: "10px" });
+        return ph;
+      })(),
+      el("div", { style: { fontSize: "14.5px", fontWeight: "900", color: "var(--green-deep)" }, text: c.icon + " " + c.title }),
+      el("div.pill", { style: { background: "var(--green-deep)", fontSize: "11.5px", padding: "2px 12px" }, text: "🔍 관찰하기" }),
     ]);
     coachify(card, { label: null });
     pressable(card);
@@ -56,9 +65,10 @@ export default function EcologyProtectionScene(ctx) {
   const clueChip = el("div.hud-chip", { style: { position: "absolute", left: "40px", top: "100px", zIndex: 9 }, text: `🔍 생태 단서 0 / ${clueTotal}` });
   layer.appendChild(clueChip);
 
-  /* ---- 캐릭터 ---- */
+  /* ---- 캐릭터 + 말풍선 ---- */
   placeAsset(layer, DOKDO.rangerBoy, { x: 330, y: 470, w: 190, h: 240, alt: "생태 수호 대원", z: 3 });
-  placeAsset(layer, DOKDO.lighthouseChar, { x: 1100, y: 470, w: 160, h: 240, alt: "등대 마스코트", float: true, z: 3 });
+  placeAsset(layer, DOKDO.otterSailor, { x: 1090, y: 480, w: 175, h: 230, alt: "강치 항해사", float: true, z: 3 });
+  speech(layer, { x: 1005, y: 388, text: "실제 독도 사진으로 관찰해 보자! 내 이야기도 들려줄게…", tail: "right", width: 245 });
 
   /* ---- 우측: 문제 보드 + 잠금 ---- */
   const board = el("div.q-board", { style: { ...pos(560, 108, 700, 566) } }, [el("div.q-board__clip")]);
@@ -81,26 +91,57 @@ export default function EcologyProtectionScene(ctx) {
   /* ---- 단서 수집 ---- */
   function openClue(c, card) {
     const done = collected.has(c.id);
+    const ph = assetImg(PHOTOS[ZONE_PHOTO[c.id]], c.title);
+    Object.assign(ph.style, { width: "360px", height: "220px", objectFit: "cover", borderRadius: "12px", boxShadow: "var(--shadow-sm)" });
     const body = el("div.col", { style: { gap: "10px", alignItems: "center", textAlign: "center" } }, [
-      el("div", { style: { fontSize: "44px" }, text: c.icon }),
-      el("div", { style: { fontWeight: "900", fontSize: "20px", color: "var(--green-deep)" }, text: c.title }),
+      ph,
+      el("div", { style: { fontWeight: "900", fontSize: "20px", color: "var(--green-deep)" }, text: c.icon + " " + c.title }),
       el("div", { style: { fontSize: "15px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.6", wordBreak: "keep-all" }, html: c.desc.join("<br>") }),
-      el("div.src-tag", { text: "📎 외교부 독도: 자연환경" }),
+      el("div.src-tag", { text: "📎 사진·자료: 외교부 독도" }),
     ]);
-    const md = modal(ctx.stage, { title: "생태 단서 카드", icon: "🌿", body, buttons: [
+    const md = modal(ctx.stage, { title: "생태 관찰 — 실제 독도", icon: "🌿", body, buttons: [
       done
         ? button("확인", { variant: "ghost", onClick: () => md.close() })
         : button("단서 획득!", { variant: "gold", icon: "✨", onClick: () => {
             md.close();
             collected.add(c.id);
+            awardDex(ctx, ZONE_DEX[c.id]);
             uncoach(card);
             card.style.borderStyle = "solid";
             card.querySelector(".pill").textContent = "✅ 관찰 완료";
             clueChip.textContent = `${collected.size >= clueTotal ? "✅" : "🔍"} 생태 단서 ${collected.size} / ${clueTotal}`;
-            if (collected.size >= clueTotal) unlockBoard();
+            if (collected.size >= clueTotal) gangchiStory();
             else toast(ctx.stage, `단서를 모았어요! (${collected.size} / ${clueTotal})`);
           } }),
     ] });
+  }
+
+  /* ---- 강치 이야기 (감정선 내레이션 컷) → 잠금 해제 ---- */
+  function gangchiStory() {
+    let idx = 0;
+    const gImg = assetImg(DOKDO.otterSailor, "강치");
+    Object.assign(gImg.style, { width: "150px", height: "185px", objectFit: "contain" });
+    const line = el("div", { style: { fontSize: "16.5px", fontWeight: "800", color: "var(--navy)", lineHeight: "1.65", wordBreak: "keep-all", textAlign: "center", minHeight: "84px" }, text: GANGCHI_STORY[0] });
+    const dots = el("div", { style: { fontSize: "12px", fontWeight: "800", color: "var(--ink-soft)" }, text: `1 / ${GANGCHI_STORY.length}` });
+    const nextBtn = button("다음", { variant: "sea", onClick: () => {
+      idx++;
+      if (idx < GANGCHI_STORY.length) {
+        line.textContent = GANGCHI_STORY[idx];
+        dots.textContent = `${idx + 1} / ${GANGCHI_STORY.length}`;
+        if (idx === GANGCHI_STORY.length - 1) {
+          nextBtn.style.display = "none";
+          doneBtn.style.display = "";
+        }
+      }
+    } });
+    const doneBtn = button("함께 지킬게!", { variant: "gold", icon: "🤝", onClick: () => {
+      md.close();
+      awardDex(ctx, "d-gangchi");
+      unlockBoard();
+    } });
+    doneBtn.style.display = "none";
+    const body = el("div.col", { style: { gap: "10px", alignItems: "center", minWidth: "420px" } }, [gImg, line, dots]);
+    const md = modal(ctx.stage, { title: "강치의 이야기", icon: "🦭", body, buttons: [nextBtn, doneBtn] });
   }
 
   function unlockBoard() {
@@ -114,7 +155,7 @@ export default function EcologyProtectionScene(ctx) {
 
   /* ---- 상황 판단 문제 ---- */
   function render() {
-    const q = ECOLOGY_QUESTIONS[qi];
+    const q = QUESTIONS[qi];
     frame.setStep(qi + 1, total, "상황");
     badgeRow.innerHTML = "";
     badgeRow.appendChild(el("span.pill.pill--sea", { text: `상황 ${qi + 1} / ${total}` }));

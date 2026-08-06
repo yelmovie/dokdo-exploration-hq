@@ -17,6 +17,7 @@ import EcologyProtectionScene from "../scenes/EcologyProtectionScene.js";
 import BriefingBoardBuildScene from "../scenes/BriefingBoardBuildScene.js";
 import PresentationPrepScene from "../scenes/PresentationPrepScene.js";
 import CompletionGalleryScene from "../scenes/CompletionGalleryScene.js";
+import DexScene from "../scenes/DexScene.js";
 
 const SCENES = {
   main: MainTitleScene,
@@ -29,6 +30,7 @@ const SCENES = {
   briefingBoard: BriefingBoardBuildScene,
   presentation: PresentationPrepScene,
   completion: CompletionGalleryScene,
+  dex: DexScene,
 };
 
 const stage = document.getElementById("stage");

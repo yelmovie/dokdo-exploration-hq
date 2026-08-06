@@ -14,6 +14,7 @@ const PAGES = {
   briefingBoard:{ key: "briefingBoard",title: "브리핑 보드 제작",    bg: BACKGROUNDS.board,        bgm: SOUNDS.bgmBriefing },
   presentation: { key: "presentation", title: "최종 발표 준비",      bg: BACKGROUNDS.presentation, bgm: SOUNDS.bgmBriefing },
   completion:   { key: "completion",   title: "수료 및 전시",        bg: BACKGROUNDS.completion,   bgm: SOUNDS.bgmBriefing },
+  dex:          { key: "dex",          title: "독도 대백과",         bg: BACKGROUNDS.history,      bgm: SOUNDS.bgmMap },
 };
 
 export default PAGES;

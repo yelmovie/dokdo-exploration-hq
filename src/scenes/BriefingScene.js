@@ -1,10 +1,10 @@
 /* =========================================================================
    2페이지 - 탐사본부 브리핑 (BriefingScene)
-   목표 카드 5장(위치·지형·역사·생태·보호)을 모두 눌러 읽어야
-   '준비 완료' 버튼이 열린다(게이팅). 외울 것보다 '모을 근거'를 확인.
+   배경(브리핑룸)의 실제 코르크보드 안에 목표 메모 5장이 핀으로 꽂혀 있다.
+   5장을 모두 읽으면 미션 지도 해금.
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
-import { buildScene, placeAsset, button, modal, toast, backButton, coachify, uncoach, pressable } from "../components/ui.js";
+import { buildScene, button, modal, toast, backButton, coachify, uncoach, speech } from "../components/ui.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { BRIEFING_FIELDS } from "../data/missions.js";
@@ -24,105 +24,105 @@ const GOAL_DETAILS = {
   protection: { goal: "독도를 지키는 알맞은 행동을 판단하기", how: "상황을 읽고 가장 알맞은 보호 행동을 골라요." },
 };
 
+/* 코르크보드 내부 좌표 (1280×720 기준, 시각 확인 후 조정) */
+const PIN_POS = [
+  { x: 462, y: 148, r: -2.5 },
+  { x: 634, y: 142, r: 1.5 },
+  { x: 806, y: 150, r: -1 },
+  { x: 546, y: 332, r: 2 },
+  { x: 726, y: 328, r: -2 },
+];
+
 export default function BriefingScene(ctx) {
   const cfg = PAGES.briefing;
-  const { root, layer } = buildScene({ bg: cfg.bg, veil: "soft" });
+  const { root, layer } = buildScene({ bg: cfg.bg });
   const read = new Set();
 
   layer.appendChild(el("div.row", { style: { position: "absolute", left: "22px", top: "20px", gap: "12px", zIndex: 12 } }, [
     backButton(() => ctx.navigate("main")),
   ]));
 
-  /* ---- 중앙 브리핑 보드 제목 ---- */
   layer.appendChild(el("div", {
     style: {
-      position: "absolute", left: "50%", top: "34px", transform: "translateX(-50%)", zIndex: 6,
-      background: "rgba(20,54,92,.92)", color: "#fff", fontWeight: "900", fontSize: "24px",
-      padding: "12px 36px", borderRadius: "18px", boxShadow: "var(--shadow)", whiteSpace: "nowrap",
+      position: "absolute", left: "50%", top: "20px", transform: "translateX(-50%)", zIndex: 10,
+      background: "rgba(20,54,92,.85)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,.3)",
+      color: "#fff", fontWeight: "800", fontSize: "19px",
+      padding: "9px 26px", borderRadius: "999px", boxShadow: "var(--shadow)", whiteSpace: "nowrap",
     },
-    text: "📋 탐사본부 브리핑 — 사라진 독도 기록을 복원하라",
-  }));
-  layer.appendChild(el("div", {
-    style: {
-      position: "absolute", left: "50%", top: "98px", transform: "translateX(-50%)", zIndex: 6,
-      background: "rgba(252,254,255,.82)", backdropFilter: "blur(8px)",
-      border: "1px solid rgba(255,255,255,.8)", borderRadius: "999px",
-      color: "var(--navy)", fontSize: "14.5px", fontWeight: "800",
-      padding: "9px 24px", boxShadow: "var(--shadow-sm)", whiteSpace: "nowrap",
-    },
-    html: "외교부 기본입장 · <b>“독도는 역사적·지리적·국제법적으로 명백한 우리 고유의 영토입니다.”</b> — 이 사실의 근거를 우리가 직접 모아요!",
+    text: "탐사본부 브리핑 — 사라진 독도 기록을 복원하라",
   }));
 
-  /* ---- 안내 캐릭터 ---- */
-  placeAsset(layer, DOKDO.robotGuide, { x: 40, y: 400, w: 230, h: 300, alt: "로봇 가이드", float: true, z: 4 });
-  placeAsset(layer, DOKDO.briefingDoc, { x: 1080, y: 480, w: 160, h: 200, alt: "브리핑 문서", z: 3 });
-
-  /* ---- 진행 칩 ---- */
-  const progChip = el("div.hud-chip", { style: { position: "absolute", right: "22px", top: "24px", zIndex: 12 }, text: "목표 확인 0 / 5" });
+  const progChip = el("div.hud-chip", { style: { position: "absolute", right: "22px", top: "22px", zIndex: 12 }, text: "목표 0 / 5" });
   layer.appendChild(progChip);
 
-  /* ---- 목표 카드 5장 ---- */
-  const cardsRow = el("div.row", {
-    style: { position: "absolute", left: "50%", top: "150px", transform: "translateX(-50%)", gap: "16px", zIndex: 6 },
-  });
-  BRIEFING_FIELDS.forEach((f) => {
+  /* ---- 외교부 기본입장 인용 (보드 아래 책상 위) ---- */
+  layer.appendChild(el("div", {
+    style: {
+      position: "absolute", left: "452px", top: "506px", width: "520px", zIndex: 6,
+      background: "rgba(253,246,227,.94)", border: "1px solid #d9c08a", borderRadius: "12px",
+      padding: "10px 16px", boxShadow: "2px 4px 10px rgba(90,64,20,.25)",
+      fontSize: "13.5px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.55", wordBreak: "keep-all",
+      transform: "rotate(-.5deg)",
+    },
+    html: "📜 <b>외교부 기본입장</b> · “독도는 역사적·지리적·국제법적으로 명백한 우리 고유의 영토입니다.”<br><span style='color:var(--ink-soft)'>— 이 사실의 근거 다섯 가지를 우리가 직접 모아요!</span>",
+  }));
+
+  /* ---- 목표 메모 5장 (코르크보드 안, 핀 꽂힌 메모지) ---- */
+  BRIEFING_FIELDS.forEach((f, i) => {
     const d = GOAL_DETAILS[f.key];
-    const card = el("div", {
-      style: {
-        width: "190px", minHeight: "220px", background: "rgba(255,255,255,.96)",
-        border: `3px solid ${f.color}`, borderRadius: "18px", boxShadow: "var(--shadow)",
-        display: "flex", flexDirection: "column", alignItems: "center", gap: "8px",
-        padding: "18px 14px", cursor: "pointer", transition: "transform .15s",
-      },
-    }, [
-      (() => {
-        const ic = assetImg(DOKDO[GOAL_ICON[f.key]], f.label);
-        Object.assign(ic.style, { width: "72px", height: "72px", objectFit: "contain" });
-        return ic;
-      })(),
-      el("div", { style: { fontSize: "20px", fontWeight: "900", color: f.color }, text: f.label }),
-      el("div", { style: { fontSize: "13.5px", fontWeight: "700", color: "var(--ink-soft)", textAlign: "center", lineHeight: "1.5", wordBreak: "keep-all" }, text: d.goal }),
-      el("div.pill", { style: { background: f.color, fontSize: "12.5px", marginTop: "auto" }, text: "눌러서 확인" }),
+    const p = PIN_POS[i];
+    const ic = assetImg(DOKDO[GOAL_ICON[f.key]], f.label);
+    Object.assign(ic.style, { width: "52px", height: "52px", objectFit: "contain" });
+    const card = el("div.pin-card", { style: { left: p.x + "px", top: p.y + "px", transform: `rotate(${p.r}deg)`, zIndex: 6 } }, [
+      ic,
+      el("div", { style: { fontSize: "16px", fontWeight: "900", color: "var(--navy)" }, text: f.label }),
+      el("div", { style: { fontSize: "11.5px", fontWeight: "700", color: "var(--ink-soft)", textAlign: "center", lineHeight: "1.4", wordBreak: "keep-all" }, text: d.goal }),
+      el("div.pill", { style: { background: "var(--sea-deep)", fontSize: "11px", padding: "2px 10px", marginTop: "auto" }, text: "읽기" }),
     ]);
     coachify(card, { label: null });
-    pressable(card);
+    card.tabIndex = 0; card.setAttribute("role", "button");
+    card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); card.click(); } });
     card.addEventListener("click", () => {
       AudioManager.unlock(); AudioManager.click();
+      const big = assetImg(DOKDO[GOAL_ICON[f.key]], f.label);
+      Object.assign(big.style, { width: "84px", height: "84px", objectFit: "contain" });
+      const body = el("div.col", { style: { gap: "10px", alignItems: "center", maxWidth: "440px" } }, [
+        big,
+        el("div", { style: { fontSize: "17px", fontWeight: "900", color: "var(--navy)", textAlign: "center", wordBreak: "keep-all" }, text: d.goal }),
+        el("div", { style: { fontSize: "14px", fontWeight: "700", color: "var(--ink-soft)", textAlign: "center", lineHeight: "1.6", wordBreak: "keep-all" }, text: "🧭 " + d.how }),
+      ]);
       const md = modal(ctx.stage, {
-        title: `${f.icon} 오늘의 목표 — ${f.label}`, icon: "🎯",
-        bodyHtml: `<div style="font-size:16px;font-weight:800;color:var(--navy);line-height:1.6;word-break:keep-all">${d.goal}</div>
-          <div style="margin-top:8px;font-size:14.5px;font-weight:700;color:var(--ink-soft);line-height:1.6;word-break:keep-all">🧭 ${d.how}</div>`,
+        title: `오늘의 목표 — ${f.label}`, icon: "🎯", body,
         buttons: [button("확인했어요!", { variant: "green", onClick: () => {
           md.close();
           if (!read.has(f.key)) {
             read.add(f.key);
             uncoach(card);
-            card.style.borderStyle = "solid";
-            card.style.transform = "translateY(-4px)";
-            card.querySelector(".pill").textContent = "✅ 확인 완료";
-            progChip.textContent = `목표 확인 ${read.size} / 5`;
+            card.querySelector(".pill").textContent = "✅ 완료";
+            card.querySelector(".pill").style.background = "var(--green)";
+            progChip.textContent = `목표 ${read.size} / 5`;
             if (read.size === 5) unlockReady();
-            else toast(ctx.stage, `목표 ${read.size}개 확인! 나머지 카드도 읽어 봐요.`);
+            else toast(ctx.stage, `목표 ${read.size}개 확인! 나머지 메모도 읽어 봐요.`);
           }
         } })],
       });
     });
-    cardsRow.appendChild(card);
+    layer.appendChild(card);
   });
-  layer.appendChild(cardsRow);
+
+  /* ---- 로봇 인형(배경 선반) 말풍선 ---- */
+  speech(layer, { x: 74, y: 190, text: "코르크보드의 목표 메모 5장을 눌러 읽어 봐! 다 읽으면 항로도가 열려.", tail: "left", width: 240 });
 
   /* ---- 하단: 준비 완료(게이팅) ---- */
   const readyHolder = el("div", {
-    style: { position: "absolute", left: "50%", bottom: "48px", transform: "translateX(-50%)", zIndex: 8 },
-  }, [
-    el("div.tip", { text: "🔒 목표 카드 5장을 모두 읽으면 미션 지도가 열려요." }),
-  ]);
+    style: { position: "absolute", right: "60px", bottom: "44px", zIndex: 8 },
+  });
   layer.appendChild(readyHolder);
 
   function unlockReady() {
     AudioManager.correct();
     readyHolder.innerHTML = "";
-    readyHolder.appendChild(nextCoachButton("준비 완료! 미션 지도로", () => ctx.navigate("missionMap"), { icon: "🗺️" }));
+    readyHolder.appendChild(nextCoachButton("준비 완료! 탐사 항로도로", () => ctx.navigate("missionMap"), { icon: "🗺" }));
     toast(ctx.stage, "목표 5개 확인 완료! 탐사를 시작해요");
   }
 

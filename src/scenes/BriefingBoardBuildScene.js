@@ -69,12 +69,15 @@ export default function BriefingBoardBuildScene(ctx) {
   BRIEFING_FIELDS.forEach((f) => {
     const z = el("div.board-zone", {
       style: {
-        border: `3px dashed ${f.color}`, borderRadius: "14px", background: "rgba(255,255,255,.88)",
+        border: "2px dashed #c9962a", borderRadius: "14px", background: "rgba(255,252,243,.9)",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start",
         gap: "4px", padding: "8px", cursor: "pointer", minHeight: "0", overflow: "hidden",
       },
     }, [
-      el("div", { style: { fontSize: "15px", fontWeight: "900", color: f.color, flex: "0 0 auto" }, text: `${f.icon} ${f.label}` }),
+      el("div.row", { style: { alignItems: "center", gap: "6px", flex: "0 0 auto" } }, [
+        el("span", { style: { width: "10px", height: "10px", borderRadius: "50%", background: f.color, display: "inline-block" } }),
+        el("span", { style: { fontSize: "15px", fontWeight: "900", color: "var(--navy)" }, text: `${f.icon} ${f.label}` }),
+      ]),
     ]);
     z.dataset.field = f.key;
     pressable(z);
@@ -104,7 +107,7 @@ export default function BriefingBoardBuildScene(ctx) {
 
   const hintHolder = el("div");
   layer.appendChild(hintHolder);
-  hintHolder.appendChild(hintFold("카드의 문장에 ‘확인할 수 있는 사실’이 있는지 봐요. 느낌·상상만 있는 카드는 근거가 약해요.", { x: 24, y: 680 }));
+  hintHolder.appendChild(hintFold("카드의 문장에 ‘확인할 수 있는 사실’이 있는지 봐요. 느낌·상상만 있는 카드는 근거가 약해요.", { x: 24, y: 660 }));
 
   /* ---- 카드 렌더링 ---- */
   function cardNode(card) {
@@ -148,7 +151,7 @@ export default function BriefingBoardBuildScene(ctx) {
       z.style.borderStyle = "solid";
       const n = el("div.zone-card", {
         style: {
-          background: "#fff", border: `2px solid ${f.color}`, borderRadius: "10px",
+          background: "#fff", border: "2px solid #c9962a", borderRadius: "10px",
           padding: "6px 8px", fontSize: "12px", fontWeight: "800", color: "var(--ink)",
           lineHeight: "1.35", whiteSpace: "pre-line", cursor: "pointer", width: "100%",
         },

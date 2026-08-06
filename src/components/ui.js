@@ -65,6 +65,20 @@ export function iconButton(icon, { title = "", onClick = null, variant = "ghost"
 export function backButton(onClick) { return button("이전", { variant: "ghost", size: "sm", icon: "◀", onClick }); }
 export function homeButton(onClick) { return button("처음으로", { variant: "ghost", size: "sm", icon: "⌂", onClick }); }
 
+/** 캐릭터 말풍선 — 씬 진입 안내 한 문장. 탭하면 닫힘 */
+export function speech(layer, { x, y, text, tail = "left", width = 250 } = {}) {
+  const b = el("div.speech.speech--" + tail, {
+    style: { position: "absolute", left: x + "px", top: y + "px", maxWidth: width + "px", zIndex: 15 },
+    text,
+  });
+  b.addEventListener("pointerdown", () => {
+    b.style.opacity = "0";
+    setTimeout(() => b.remove(), 300);
+  });
+  layer.appendChild(b);
+  return b;
+}
+
 /** HUD 알약 라벨 (관찰 영역 제목·단서 카운터 등) */
 export function hudPill(text, { variant = "navy", style = {} } = {}) {
   const colors = {

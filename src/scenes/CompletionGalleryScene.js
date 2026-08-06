@@ -8,7 +8,9 @@
 import { el } from "../core/dom.js";
 import { buildScene, placeAsset, backButton, homeButton, button, pos, toast, collapsible, modal, sign } from "../components/ui.js";
 import { assetImg } from "../core/dom.js";
-import { ICONS, DOKDO } from "../config/assetManifest.js";
+import { ICONS, DOKDO, PHOTOS } from "../config/assetManifest.js";
+import { TODAY_DOKDO } from "../data/questions.js";
+import { awardDex } from "./_shared.js";
 import PAGES from "../config/pageConfig.js";
 import { MISSIONS, BRIEFING_FIELDS, isAllComplete } from "../data/missions.js";
 import { BRIEFING_CARDS, PRESENTATION_ORDER } from "../data/questions.js";
@@ -54,6 +56,8 @@ export default function CompletionGalleryScene(ctx) {
   const save = ctx.save;
   const badges = save.get("badges");
   const allDone = isAllComplete(save.get("completedMissions"));
+
+  if (allDone) awardDex(ctx, "d-today");
 
   /* ---- 입장 연출: 임무 완수 (전체 완료 시 1회, 탭으로 건너뛰기) ---- */
   if (allDone && !ctx.stage.__finaleShown) {
@@ -182,14 +186,21 @@ export default function CompletionGalleryScene(ctx) {
     ])],
   }));
 
-  /* ---- 우측: 탐사 노트(토글) ---- */
+  /* ---- 우측: 오늘의 독도(토글) — 실사 + 정보 카드 ---- */
   layer.appendChild(collapsible({
-    title: "탐사 노트", icon: "📖", variant: "light",
+    title: "오늘의 독도", icon: "🗼", variant: "light",
     style: { ...pos(985, 96, 280), zIndex: 10 },
-    body: [el("div.col", { style: { gap: "6px" } }, MISSIONS.filter((m) => m.evidenceField).map((m) =>
-      el("div.row", { style: { gap: "8px", fontSize: "15px", fontWeight: "700", color: "var(--navy)" } }, [
-        el("span", { text: save.isCompleted(m.key) ? "✅" : "🔒" }), el("span", { text: m.title }),
-      ])))],
+    body: [el("div.col", { style: { gap: "7px" } }, [
+      (() => {
+        const ph = assetImg(PHOTOS.boat, "오늘의 독도");
+        Object.assign(ph.style, { width: "100%", height: "110px", objectFit: "cover", borderRadius: "10px" });
+        return ph;
+      })(),
+      ...TODAY_DOKDO.map((t) =>
+        el("div", { style: { fontSize: "12.5px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.45", wordBreak: "keep-all" },
+          html: `<b>${t.icon} ${t.title}</b> · ${t.text}` })),
+      el("div.src-tag", { text: "📎 사진: 외교부 독도" }),
+    ])],
   }));
 
   /* ---- 우측: 마무리 성찰 카드(토글) ---- */
@@ -257,6 +268,16 @@ export default function CompletionGalleryScene(ctx) {
   layer.appendChild(el("div.row", { style: { ...pos(40, 662, 1200), gap: "12px", justifyContent: "center", zIndex: 8 } }, [
     button("처음으로", { variant: "ghost", icon: "⌂", onClick: () => confirmGoMain() }),
     button("탐사 결과 다시보기", { icon: "📋", onClick: openReviewModal }),
+    button("더 알아보기", { variant: "ghost", icon: "🎬", onClick: () => {
+      const m2 = modal(ctx.stage, {
+        title: "독도, 더 알아보기", icon: "🎬",
+        bodyHtml: `<div style="font-size:15px;font-weight:700;color:var(--ink);line-height:1.8;word-break:keep-all">
+          선생님과 함께 외교부 독도 영상관에서 실제 독도 영상과 사진을 볼 수 있어요.<br>
+          <a href="https://dokdo.mofa.go.kr/kor/pds/video_list02.jsp" target="_blank" rel="noopener" style="color:var(--sea-deep)">🔗 외교부 독도 영상관 (교사와 함께 열기)</a><br>
+          <span style="color:var(--ink-soft);font-size:13px">이 링크는 수업용 참고 자료예요. 선생님 화면으로 함께 봐요!</span></div>`,
+        buttons: [button("닫기", { variant: "green", onClick: () => m2.close() })],
+      });
+    } }),
     button("다시 탐험하기", { variant: "gold", icon: "🔄", onClick: () => {
       const m = modal(ctx.stage, {
         title: "다시 탐험할까요?", icon: "🔄",
@@ -363,52 +384,45 @@ export default function CompletionGalleryScene(ctx) {
     });
   }
 
-  /** 수료증을 canvas 에 직접 그려 PNG 다운로드 */
+  /** 수료증을 canvas 에 직접 그려 PNG 다운로드 (생성 프레임 합성) */
   async function downloadCertificate(c) {
-    const W = 1200, H = 848;
+    const W = 1200, H = 800; // cert_frame 비율(3:2)
     const cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
-    // 배경
     const grad = g.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, "#fdfbf3"); grad.addColorStop(1, "#f3ead2");
+    grad.addColorStop(0, "#fffdf6"); grad.addColorStop(1, "#f6efdb");
     g.fillStyle = grad; g.fillRect(0, 0, W, H);
-    // 이중 테두리
-    g.strokeStyle = "#c9962a"; g.lineWidth = 10; g.strokeRect(28, 28, W - 56, H - 56);
-    g.strokeStyle = "#e5cf96"; g.lineWidth = 3; g.strokeRect(48, 48, W - 96, H - 96);
-    // 배지 이미지
-    const img = new Image();
-    img.src = badgeFinalSrc();
-    await new Promise((res) => { img.onload = res; img.onerror = res; });
-    if (img.naturalWidth) g.drawImage(img, W / 2 - 110, 84, 220, 220);
-    // 텍스트
+
+    const load = (src) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+    const [badge, frame] = await Promise.all([load(DOKDO.badgeFinal), load(DOKDO.certFrame)]);
+
+    if (badge) g.drawImage(badge, W / 2 - 88, 96, 176, 176);
     g.fillStyle = "#14365c"; g.textAlign = "center";
-    g.font = "900 58px 'Malgun Gothic', sans-serif";
-    g.fillText("독도 탐사본부 수료증", W / 2, 392);
-    g.font = "700 30px 'Malgun Gothic', sans-serif";
+    g.font = "900 52px 'Malgun Gothic', sans-serif";
+    g.fillText("독도 탐사본부 수료증", W / 2, 340);
+    g.font = "700 28px 'Malgun Gothic', sans-serif";
     g.fillStyle = "#5b6b7c";
     const who = (c.grade ? `${c.grade}학년 ` : "") + (c.classNo ? `${c.classNo}반 ` : "") + (c.studentNo ? `${c.studentNo}번 ` : "") + "탐사대원";
-    g.fillText(who, W / 2, 452);
+    g.fillText(who, W / 2, 394);
     g.fillStyle = "#2b3a4a";
-    g.font = "700 26px 'Malgun Gothic', sans-serif";
-    g.fillText("위 대원은 독도의 위치·지형·역사·생태·보호 다섯 영역의", W / 2, 528);
-    g.fillText("근거를 스스로 수집하여 탐사 임무를 완수하였기에", W / 2, 568);
-    g.fillText("이 증서를 수여합니다.", W / 2, 608);
+    g.font = "700 23px 'Malgun Gothic', sans-serif";
+    g.fillText("위 대원은 독도의 위치·지형·역사·생태·보호 다섯 영역의 근거를", W / 2, 456);
+    g.fillText("스스로 수집하여 탐사 임무를 완수하였기에 이 증서를 수여합니다.", W / 2, 492);
     g.fillStyle = "#1d6b2e";
-    g.font = "800 28px 'Malgun Gothic', sans-serif";
-    g.fillText("“독도는 역사·지리·국제법적으로 명백한 우리 땅입니다.”", W / 2, 676);
+    g.font = "800 25px 'Malgun Gothic', sans-serif";
+    g.fillText("“독도는 역사·지리·국제법적으로 명백한 대한민국의 영토입니다.”", W / 2, 560);
     const d = new Date();
     g.fillStyle = "#5b6b7c";
-    g.font = "700 24px 'Malgun Gothic', sans-serif";
-    g.fillText(`${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 · 독도 탐사본부`, W / 2, 748);
-    // 다운로드
+    g.font = "700 22px 'Malgun Gothic', sans-serif";
+    g.fillText(`${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 · 독도 탐사본부`, W / 2, 636);
+    if (frame) g.drawImage(frame, 0, 0, W, H); // 장식 프레임을 맨 위에 합성
+
     const a = document.createElement("a");
     a.download = `독도탐사수료증${c.grade ? "_" + c.grade + "-" + c.classNo + "-" + c.studentNo : ""}.png`;
     a.href = cv.toDataURL("image/png");
     a.click();
   }
-
-  function badgeFinalSrc() { return DOKDO.badgeFinal; }
 
   return root;
 }

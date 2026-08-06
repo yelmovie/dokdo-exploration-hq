@@ -4,9 +4,9 @@
    → ② 자료 매칭 퀴즈 → ③ 사실/생각 구분(문장별 토글 판단).
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, collapsible, modal, button } from "../components/ui.js";
+import { buildScene, placeAsset, quiz, pos, collapsible, modal, button, speech } from "../components/ui.js";
 import { orderInteraction } from "../components/interactions.js";
-import { missionFrame, hintFold, nextCoachButton, completeMission } from "./_shared.js";
+import { missionFrame, hintFold, nextCoachButton, completeMission, awardDex } from "./_shared.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { HISTORY_CARDS, HISTORY_TIMELINE, HISTORY_QUESTIONS, FACT_OPINION } from "../data/questions.js";
@@ -50,6 +50,8 @@ export default function HistoricalArchiveScene(ctx) {
       ]);
       cardBtn.addEventListener("click", () => {
         AudioManager.unlock(); AudioManager.click();
+        if (c.id === "h1") awardDex(ctx, "d-isabu");
+        if (c.id === "h3") awardDex(ctx, "d-anyongbok");
         const big = assetImg(DOKDO[c.icon] || DOKDO.oldBook, c.label);
         Object.assign(big.style, { width: "92px", height: "92px", objectFit: "contain" });
         const body = el("div.col", { style: { gap: "10px", alignItems: "center", maxWidth: "480px" } }, [
@@ -68,9 +70,10 @@ export default function HistoricalArchiveScene(ctx) {
     }))],
   }));
 
-  /* ---- 캐릭터 ---- */
+  /* ---- 캐릭터 + 말풍선 ---- */
   placeAsset(layer, DOKDO.sageFigure, { x: 30, y: 420, w: 220, h: 290, alt: "역사 인물", z: 3 });
   placeAsset(layer, DOKDO.readerGirl, { x: 1060, y: 440, w: 200, h: 270, alt: "책 읽는 소녀", float: true, z: 3 });
+  speech(layer, { x: 990, y: 348, text: "천장에 걸린 기록들이 보여? 다섯 기록을 시간 순서로 이어 보자!", tail: "right", width: 250 });
 
   /* ---- 중앙 활동 보드 ---- */
   const board = el("div.q-board", { style: { ...pos(280, 108, 730, 566) } }, [el("div.q-board__clip")]);
@@ -100,9 +103,10 @@ export default function HistoricalArchiveScene(ctx) {
     const order = orderInteraction({
       items: HISTORY_CARDS.map((c) => ({ id: c.id, label: c.label })),
       answer: HISTORY_TIMELINE.answer,
-      slotW: 158, slotH: 86,
+      slotW: 116, slotH: 84,
       onResult: (ok) => {
         if (!ok) return;
+        awardDex(ctx, ["d-samguk", "d-sejong", "d-taejeong", "d-chikryeong"]);
         // 정답: 연도 공개
         const yearsRow = el("div.row", { style: { justifyContent: "center", gap: "10px", flexWrap: "wrap", marginTop: "6px" } },
           HISTORY_CARDS.map((c) => el("div", {
@@ -127,6 +131,7 @@ export default function HistoricalArchiveScene(ctx) {
     nextHolder.innerHTML = "";
     const qc = quiz(q, { onResult: (ok) => {
       if (!ok) return;
+      if (q.id === "S3-Q4") awardDex(ctx, "d-dohae"); // 보너스: 일본 측 자료 카드
       nextHolder.appendChild(nextCoachButton("다음 활동", () => {
         if (qi < HISTORY_QUESTIONS.length - 1) { qi++; render(); }
         else { stage = 2; render(); }

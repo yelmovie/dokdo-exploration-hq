@@ -13,7 +13,7 @@ export function missionFrame(ctx, layer, cfg, { signSrc = null, helpText = "" } 
   layer.appendChild(el("div.row", { style: { position: "absolute", left: "22px", top: "20px", gap: "12px", zIndex: 12 } }, [
     backButton(() => ctx.navigate("missionMap")),
   ]));
-  if (signSrc) sign(layer, signSrc, { x: 108, y: -14, w: 175, h: 175, alt: cfg.title });
+  if (signSrc) sign(layer, signSrc, { x: 104, y: 0, w: 92, h: 92, alt: cfg.title }); // 상단바 슬롯 — 다른 UI와 안 겹치게 소형
 
   const stepChip = el("div.hud-chip", { style: { position: "absolute", right: "158px", top: "28px", zIndex: 12 } });
   layer.appendChild(stepChip);
@@ -60,6 +60,18 @@ export function nextCoachButton(label, onClick, { icon = "➡️" } = {}) {
   const b = button(label, { variant: "green", size: "lg", icon, onClick });
   coachify(b, { label: null });
   return b;
+}
+
+/** 도감 카드 등록 + 토스트 (새로 등록된 것만 알림) */
+export function awardDex(ctx, ids) {
+  const got = [].concat(ids).filter((id) => ctx.save.addDex(id));
+  if (got.length) {
+    import("../data/dexData.js").then(({ dexCard }) => {
+      const names = got.map((id) => dexCard(id)?.title).filter(Boolean).join(", ");
+      toast(ctx.stage, `📖 도감 등록: ${names}`);
+    });
+  }
+  return got.length;
 }
 
 /** 미션 완료 공통 처리: 저장 + 배지 + 다음 미션 해금 + 완료 모달 */

@@ -5,7 +5,7 @@
    요약/가이드는 토글 수납. 빈칸 선택·입력은 presentationDraft에 자동 저장.
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, collapsible, modal, button, pillHead } from "../components/ui.js";
+import { buildScene, placeAsset, quiz, pos, collapsible, modal, button, pillHead, speech } from "../components/ui.js";
 import { orderInteraction } from "../components/interactions.js";
 import { missionFrame, nextCoachButton, completeMission } from "./_shared.js";
 import { DOKDO } from "../config/assetManifest.js";
@@ -37,7 +37,7 @@ const CLOSING_MAX = 60;
 
 export default function PresentationPrepScene(ctx) {
   const cfg = PAGES.presentation;
-  const { root, layer } = buildScene({ bg: cfg.bg, veil: "soft" });
+  const { root, layer } = buildScene({ bg: cfg.bg }); // 무대 배경 그대로 (베일 없음)
   let stage = 0;
 
   const frame = missionFrame(ctx, layer, cfg, {
@@ -93,12 +93,13 @@ export default function PresentationPrepScene(ctx) {
       ])),
   }));
 
-  /* ---- 캐릭터: 발표 소녀(1.5배, 잘림 없이) + 마이크 ---- */
-  placeAsset(layer, DOKDO.presenterGirl, { x: 2, y: 224, w: 350, h: 490, alt: "발표 준비 탐험가", z: 3 });
-  placeAsset(layer, DOKDO.micIsland, { x: 1128, y: 548, w: 135, h: 158, alt: "발표 마이크", float: true, z: 3 });
+  /* ---- 캐릭터: 발표 소녀(무대 좌측) ---- */
+  placeAsset(layer, DOKDO.presenterGirl, { x: 6, y: 240, w: 335, h: 470, alt: "발표 준비 탐험가", z: 3 });
+  speech(layer, { x: 40, y: 152, text: "무대 스크린에 나만의 발표를 완성해 보자!", tail: "left", width: 230 });
 
-  /* ---- 중앙: 활동 보드 ---- */
-  const boardEl = el("div.q-board", { style: { ...pos(330, 128, 930, 560) } }, [el("div.q-board__clip")]);
+  /* ---- 중앙: 활동 보드 (배경 무대의 스크린 위에) ---- */
+  const boardEl = el("div.q-board", { style: { ...pos(352, 92, 600, 556) } }, [el("div.q-board__clip")]);
+  boardEl.style.background = "rgba(252, 254, 255, .62)";
   const qTitle = el("div.q-board__title");
   const qHolder = el("div", { style: { flex: "1", overflowY: "auto", paddingRight: "4px" } });
   const nextHolder = el("div.row", { style: { justifyContent: "flex-end", minHeight: "0" } });

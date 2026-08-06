@@ -10,17 +10,20 @@ const BG = "public/assets/backgrounds/";
 const DK = "public/assets/icons/dokdo/";
 const SND = "public/assets/sounds/";
 
+const PH = "public/assets/photos/";
+
 /** 에셋 캐시 버전 — 1년 immutable 캐시를 쓰므로, 에셋 파일을 교체하면 반드시 이 숫자를 올린다 */
-const V = "?v=2";
+const V = "?v=3";
 function ver(obj) { for (const k in obj) if (typeof obj[k] === "string") obj[k] += V; return obj; }
 
 /** 배경 — 10페이지 / 8장 (main·map, briefing·presentation 은 재사용) */
 export const BACKGROUNDS = ver({
   main:         BG + "bg_main.jpg",        // 노을 전망대 (1p)
-  missionMap:   BG + "bg_main.jpg",        // 재사용 (3p — 지도 패널이 화면 대부분을 덮음)
-  briefing:     BG + "bg_briefing.jpg",    // 교실 브리핑 (2p)
-  presentation: BG + "bg_briefing.jpg",    // 재사용 (9p)
+  missionMap:   BG + "bg_map_chart.jpg",   // 보물지도풍 해도 (3p, 2026-08 생성)
+  briefing:     BG + "bg_briefing2.jpg",   // 탐사본부 브리핑룸 — 빈 코르크보드 (2p)
+  presentation: BG + "bg_stage.jpg",       // 강당 발표 무대 (9p)
   route:        BG + "bg_route.jpg",       // 항로 복원실 (4p)
+  routeChart:   BG + "route_chart.jpg",    // 4p 항로 선긋기 보드 (액자 해도)
   geology:      BG + "bg_geology.jpg",     // 바위섬 분석실 (5p)
   history:      BG + "bg_history.jpg",     // 기록 보관소 (6p)
   ecology:      BG + "bg_ecology.jpg",     // 생태 관찰 데크 (7p)
@@ -28,10 +31,21 @@ export const BACKGROUNDS = ver({
   completion:   BG + "bg_completion.jpg",  // 표지석 무대 (10p)
 });
 
+/** 독도 실사 사진 (외교부 독도 사이트, 출처 표기) */
+export const PHOTOS = ver({
+  aerial:   PH + "photo_aerial.jpg",    // 항공 전경 + 괭이갈매기
+  tidepool: PH + "photo_tidepool.jpg",  // 조간대 바위 웅덩이
+  plants:   PH + "photo_plants.jpg",    // 해안 식물 절벽
+  caves:    PH + "photo_caves.jpg",     // 삼형제굴바위
+  boat:     PH + "photo_boat.jpg",      // 독도 전경과 배
+  trail:    PH + "photo_trail.jpg",     // 탐방로
+});
+
 /** 독도 아이콘 세트 (번호 PNG → 의미 별칭, 옛 앱에서 복구) */
 export const DOKDO = ver({
-  // 타이틀
+  // 타이틀·프레임
   titleLogo:     DK + "title_logo.png",  // "독도, 우리의 섬!" 로고
+  certFrame:     DK + "cert_frame.png",  // 수료증 장식 프레임 (투명, 2026-08 생성)
 
   // 스테이지 명패(간판)
   signRoute:     DK + "22.png",  // 항로 복원실
@@ -136,5 +150,5 @@ export const SOUNDS = ver({
   bgmBriefing: SND + "bgm_briefing.mp3",  // 2p·8~10p (Dokdo Final Briefing)
 });
 
-export const AssetManifest = { BACKGROUNDS, DOKDO, ICONS, SOUNDS };
+export const AssetManifest = { BACKGROUNDS, PHOTOS, DOKDO, ICONS, SOUNDS };
 export default AssetManifest;

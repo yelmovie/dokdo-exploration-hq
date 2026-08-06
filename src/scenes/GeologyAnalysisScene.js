@@ -7,20 +7,20 @@
 import { el, assetImg } from "../core/dom.js";
 import { buildScene, placeAsset, quiz, pos, collapsible, modal, button, toast, coachify, uncoach, hudPill, lockOverlay } from "../components/ui.js";
 import AudioManager from "../managers/AudioManager.js";
-import { missionFrame, nextCoachButton, completeMission } from "./_shared.js";
-import { ICONS, DOKDO } from "../config/assetManifest.js";
+import { missionFrame, nextCoachButton, completeMission, awardDex } from "./_shared.js";
+import { DOKDO, PHOTOS } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { GEOLOGY_QUESTIONS, GEOLOGY_COMPARE } from "../data/questions.js";
 
-/* 지형 단서 4종 — fx/fy 는 관찰 이미지 위 라벨 위치(%) */
+/* 지형 단서 4종 — fx/fy 는 실사 항공 사진 위 라벨 위치(%) */
 const GEOLOGY_CLUES = [
-  { id: "cliff", icon: "⛰️", title: "가파른 절벽", short: "가파른 절벽", fx: 20, fy: 28,
+  { id: "cliff", icon: "⛰️", title: "가파른 절벽", short: "가파른 절벽", fx: 30, fy: 30,
     desc: ["섬의 옆면이 거의 수직으로 깎여 있어요.", "화산 바위가 굳은 뒤 파도에 깎여 만들어진 모습이에요."] },
-  { id: "flat", icon: "🏕️", title: "좁은 평지", short: "좁은 평지", fx: 64, fy: 26,
+  { id: "flat", icon: "🏕️", title: "좁은 평지", short: "좁은 평지", fx: 72, fy: 22,
     desc: ["평평한 땅이 아주 조금뿐이에요.", "건물이나 시설을 세울 자리가 넉넉하지 않아요."] },
-  { id: "erosion", icon: "🌊", title: "파도의 침식", short: "파도의 침식", fx: 36, fy: 72,
-    desc: ["바위 아랫부분이 파도에 깎여 움푹 들어갔어요.", "센 파도가 오랜 시간에 걸쳐 바위를 조금씩 깎아 냈어요."] },
-  { id: "bird", icon: "🪶", title: "바닷새 서식 바위", short: "바닷새 바위", fx: 82, fy: 56,
+  { id: "erosion", icon: "🌊", title: "파도의 침식", short: "파도의 침식", fx: 22, fy: 62,
+    desc: ["바위 아랫부분이 파도에 깎여 움푹 들어갔어요.", "센 파도가 오랜 시간에 걸쳐 바위를 조금씩 깎아 냈어요. 삼형제굴바위도 이렇게 만들어졌어요."] },
+  { id: "bird", icon: "🪶", title: "바닷새 서식 바위", short: "바닷새 바위", fx: 76, fy: 72,
     desc: ["작은 부속 바위는 바닷새들의 쉼터예요.", "괭이갈매기 같은 새들이 바위 틈에 둥지를 틀어요."] },
 ];
 
@@ -44,10 +44,11 @@ export default function GeologyAnalysisScene(ctx) {
   const clueChip = hudPill(`🔍 단서 0 / ${clueTotal}`, { style: { position: "absolute", top: "10px", right: "10px", zIndex: 6 } });
 
   const fallbackChips = new Map();
-  const islandImg = assetImg(ICONS.dioramaIsland, "독도 바위섬");
-  islandImg.style.cssText = "width:100%;height:100%;object-fit:contain;padding:8px";
+  const islandImg = assetImg(PHOTOS.aerial, "독도 항공 사진");
+  islandImg.style.cssText = "width:100%;height:100%;object-fit:cover";
   island.appendChild(islandImg);
-  island.appendChild(hudPill("🔍 관찰 자료", { variant: "sea", style: { position: "absolute", left: "10px", top: "10px", zIndex: 6 } }));
+  island.appendChild(hudPill("🔍 실제 독도 사진", { variant: "sea", style: { position: "absolute", left: "10px", top: "10px", zIndex: 6 } }));
+  island.appendChild(el("div", { style: { position: "absolute", left: "10px", bottom: "8px", zIndex: 6, fontSize: "11px", fontWeight: "700", color: "#fff", background: "rgba(0,0,0,.68)", padding: "1px 8px", borderRadius: "999px" }, text: "사진: 외교부 독도" }));
   GEOLOGY_CLUES.forEach((c) => {
     const chip = el("button", {
       type: "button",
@@ -139,6 +140,7 @@ export default function GeologyAnalysisScene(ctx) {
   /* 단서 4개 완성 → 잠금 해제 + 문제 보드 코치 강조 */
   function unlockBoard() {
     AudioManager.correct();
+    awardDex(ctx, "d-caves");
     toast(ctx.stage, "단서 4개 완성! 문제 보드가 열렸어요");
     lock.style.opacity = "0";
     setTimeout(() => lock.remove(), 320);

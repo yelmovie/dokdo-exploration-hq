@@ -87,6 +87,88 @@ function dropAt(x, y, selector) {
 }
 
 /* -------------------------------------------------------------------------
+   routeDraw — 해도 위 항로 선긋기 활동 (4p 전용)
+   bgSrc 해도 이미지 위에 부표 노드를 순서대로 탭하면 SVG 선이 실제로 이어지고
+   배가 마지막 지점으로 이동한다. 잘못된 부표 → onWrong(다음에 이어야 할 index).
+   nodes: [{id, label, x, y}] (% 좌표), order: [id...]
+   ------------------------------------------------------------------------- */
+export function routeDraw({ bgSrc, boatSrc, nodes, order, width = 700, height = 454, onWrong = null, onComplete = null }) {
+  const wrap = el("div.routedraw", { style: { width: width + "px", height: height + "px" } });
+  wrap.style.backgroundImage = `url("${encodeURI(bgSrc)}")`;
+
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("preserveAspectRatio", "none");
+  svg.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none";
+  wrap.appendChild(svg);
+
+  const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
+  let step = 0;
+  let done = false;
+
+  // 배
+  const boat = new Image();
+  boat.src = boatSrc;
+  boat.alt = "탐사선";
+  boat.className = "routedraw__boat";
+  const start = byId[order[0]];
+  boat.style.left = start.x + "%";
+  boat.style.top = start.y + "%";
+  wrap.appendChild(boat);
+
+  const btns = new Map();
+  nodes.forEach((n) => {
+    const b = el("button.routedraw__node", { type: "button", attrs: { "aria-label": n.label } }, [
+      el("span.routedraw__dot"),
+      el("span.routedraw__label", { text: n.label }),
+    ]);
+    b.style.left = n.x + "%";
+    b.style.top = n.y + "%";
+    b.addEventListener("click", () => {
+      if (done) return;
+      AudioManager.unlock();
+      const expected = order[step];
+      if (n.id !== expected) {
+        stats.wrong++;
+        AudioManager.wrong();
+        b.classList.add("is-shake");
+        setTimeout(() => b.classList.remove("is-shake"), 400);
+        if (onWrong) onWrong(step);
+        return;
+      }
+      AudioManager.click();
+      b.classList.add("is-done");
+      if (step > 0) {
+        const prev = byId[order[step - 1]];
+        const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        ln.setAttribute("x1", prev.x); ln.setAttribute("y1", prev.y);
+        ln.setAttribute("x2", n.x); ln.setAttribute("y2", n.y);
+        ln.setAttribute("stroke", "#14568f");
+        ln.setAttribute("stroke-width", "1.1");
+        ln.setAttribute("stroke-dasharray", "2.6 1.6");
+        ln.setAttribute("stroke-linecap", "round");
+        ln.classList.add("routedraw__line");
+        svg.appendChild(ln);
+      }
+      boat.style.left = n.x + "%";
+      boat.style.top = n.y + "%";
+      step++;
+      if (step >= order.length) {
+        done = true;
+        AudioManager.correct();
+        wrap.appendChild(el("div.routedraw__badge", { text: "⚓ 항로 복원! 울릉도 → 독도 약 87.4km" }));
+        btns.forEach((x) => { x.querySelector(".routedraw__label").style.opacity = "1"; });
+        if (onComplete) onComplete();
+      }
+    });
+    btns.set(n.id, b);
+    wrap.appendChild(b);
+  });
+
+  return { node: wrap };
+}
+
+/* -------------------------------------------------------------------------
    orderInteraction — 순서 배열 활동
    items: [{id, label}], answer: [id...]  (섞어서 트레이에 표시)
    카드 탭 → 첫 빈 슬롯에 배치 / 드래그 → 원하는 슬롯에 배치
