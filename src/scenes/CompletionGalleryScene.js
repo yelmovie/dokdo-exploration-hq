@@ -12,7 +12,7 @@ import { ICONS, DOKDO, PHOTOS } from "../config/assetManifest.js";
 import { TODAY_DOKDO } from "../data/questions.js";
 import { awardDex } from "./_shared.js";
 import { supportsWebGL } from "../components/three/ThreeStage.js";
-import { createDokdoDiorama3D } from "../components/three/DokdoDiorama3D.js";
+import { createDokdoGlbDiorama } from "../components/three/DokdoGlbDiorama.js";
 import PAGES from "../config/pageConfig.js";
 import { MISSIONS, BRIEFING_FIELDS, isAllComplete } from "../data/missions.js";
 import { BRIEFING_CARDS, PRESENTATION_ORDER } from "../data/questions.js";
@@ -141,19 +141,22 @@ export default function CompletionGalleryScene(ctx) {
     ]),
     (() => {
       const holder = el("div", { style: { position: "relative", width: "100%", height: "260px", background: "linear-gradient(180deg,#eaf4fc,#d8ecf9)", display: "flex", alignItems: "center", justifyContent: "center" } });
-      let dio = null;
-      if (supportsWebGL()) dio = createDokdoDiorama3D({ root, width: 308, height: 260 });
-      if (dio) {
+      const fallbackImg = () => {
+        holder.innerHTML = "";
+        const img = assetImg(DOKDO.islandModel, "독도 전시 모형");
+        Object.assign(img.style, { width: "86%", height: "86%", objectFit: "contain" });
+        img.classList.add("floaty");
+        holder.appendChild(img);
+      };
+      if (supportsWebGL()) {
+        const dio = createDokdoGlbDiorama({ root, width: 308, height: 260, onError: fallbackImg });
         holder.appendChild(dio.el);
         holder.appendChild(el("div", {
           style: { position: "absolute", left: "0", right: "0", bottom: "6px", textAlign: "center", fontSize: "12.5px", fontWeight: "800", color: "var(--navy)", opacity: ".75", pointerEvents: "none" },
           text: "손가락으로 돌려서 살펴봐요",
         }));
       } else {
-        const img = assetImg(DOKDO.islandModel, "독도 전시 모형");
-        Object.assign(img.style, { width: "86%", height: "86%", objectFit: "contain" });
-        img.classList.add("floaty");
-        holder.appendChild(img);
+        fallbackImg();
       }
       return holder;
     })(),
