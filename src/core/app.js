@@ -37,6 +37,7 @@ const viewport = document.getElementById("viewport");
 let currentKey = null;
 let currentRoot = null;
 let transitioning = false;
+let firstNav = true;
 
 const ctx = {
   stage,
@@ -78,13 +79,18 @@ function go(key, { push = true } = {}) {
   save.set("currentPage", key);
   if (cfg && cfg.bgm) AudioManager.playBgm(cfg.bgm);
   if (push && location.hash !== "#" + key) {
-    history.replaceState(null, "", "#" + key);
+    if (firstNav) history.replaceState(null, "", "#" + key);   // 첫 진입은 히스토리 안 쌓음
+    else location.hash = "#" + key;                            // 이후엔 쌓아서 뒤로가기 지원 (B13)
   }
+  firstNav = false;
 
   setTimeout(() => {
     if (old) old.remove();
     root.classList.remove("scene--in");
     transitioning = false;
+    // 전환 중 뒤로가기 등으로 해시가 달라졌으면 따라간다
+    const want = location.hash.replace("#", "");
+    if (want && want !== currentKey && SCENES[want]) go(want, { push: false });
   }, 360);
 }
 

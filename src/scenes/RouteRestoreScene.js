@@ -63,7 +63,7 @@ export default function RouteRestoreScene(ctx) {
       ["⛰️", "지형", `${H.n3} 두 봉우리와 ${H.n4}`],
     ].map(([ico, tag, txt]) => el("div", { style: chipStyle }, [
       el("span", { text: ico }),
-      el("b", { text: tag, style: { color: "var(--sea)" } }),
+      el("b", { text: tag, style: { color: "var(--sea-deep)" } }),
       el("span", { text: txt }),
     ])));
 

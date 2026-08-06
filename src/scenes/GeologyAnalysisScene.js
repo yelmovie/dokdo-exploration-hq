@@ -5,7 +5,7 @@
    (2026-07 옛 앱 복구본에서 3D 지형 탐사를 제외하고 이식 — 3D는 이후 단계)
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, collapsible, modal, button, toast, coachify, uncoach } from "../components/ui.js";
+import { buildScene, placeAsset, quiz, pos, collapsible, modal, button, toast, coachify, uncoach, hudPill, lockOverlay } from "../components/ui.js";
 import AudioManager from "../managers/AudioManager.js";
 import { missionFrame, nextCoachButton, completeMission } from "./_shared.js";
 import { ICONS, DOKDO } from "../config/assetManifest.js";
@@ -41,14 +41,13 @@ export default function GeologyAnalysisScene(ctx) {
   const island = el("div", { style: { ...pos(28, 150, 560, 300), zIndex: 4, borderRadius: "18px", overflow: "hidden", border: "3px solid #fff", boxShadow: "var(--shadow)", background: "#bfe0f3" } });
   layer.appendChild(island);
 
-  const titlePillStyle = { position: "absolute", left: "10px", top: "10px", zIndex: 6, background: "var(--sea)", color: "#fff", fontWeight: "900", fontSize: "14px", padding: "5px 14px", borderRadius: "999px", boxShadow: "var(--shadow-sm)" };
-  const clueChip = el("div", { style: { position: "absolute", top: "10px", right: "10px", zIndex: 6, background: "rgba(20,54,92,.92)", color: "#fff", fontWeight: "900", fontSize: "14px", padding: "5px 14px", borderRadius: "999px", boxShadow: "var(--shadow-sm)" }, text: `🔍 단서 0 / ${clueTotal}` });
+  const clueChip = hudPill(`🔍 단서 0 / ${clueTotal}`, { style: { position: "absolute", top: "10px", right: "10px", zIndex: 6 } });
 
   const fallbackChips = new Map();
   const islandImg = assetImg(ICONS.dioramaIsland, "독도 바위섬");
   islandImg.style.cssText = "width:100%;height:100%;object-fit:contain;padding:8px";
   island.appendChild(islandImg);
-  island.appendChild(el("div", { style: titlePillStyle, text: "🔍 관찰 자료" }));
+  island.appendChild(hudPill("🔍 관찰 자료", { variant: "sea", style: { position: "absolute", left: "10px", top: "10px", zIndex: 6 } }));
   GEOLOGY_CLUES.forEach((c) => {
     const chip = el("button", {
       type: "button",
@@ -89,16 +88,11 @@ export default function GeologyAnalysisScene(ctx) {
   const nextHolder = el("div.row", { style: { justifyContent: "flex-end", minHeight: "0" } });
   board.appendChild(badgeRow); board.appendChild(qTitle); board.appendChild(qHolder); board.appendChild(nextHolder);
 
-  const lockOverlay = el("div", { style: { position: "absolute", inset: "0", zIndex: 40, borderRadius: "inherit",
-    background: "rgba(21,38,60,.62)", backdropFilter: "blur(3px)", display: "flex", flexDirection: "column",
-    alignItems: "center", justifyContent: "center", gap: "10px", textAlign: "center", color: "#fff",
-    transition: "opacity .3s", padding: "20px" } }, [
-    el("div", { style: { fontSize: "46px" }, text: "🔒" }),
-    el("div", { style: { fontWeight: "900", fontSize: "20px" }, text: "지형 단서 4개를 먼저 수집해요" }),
-    el("div", { style: { fontWeight: "700", fontSize: "14px", opacity: ".9", lineHeight: "1.5" },
-      text: "왼쪽 관찰 자료의 단서 라벨을 눌러 단서를 모아요" }),
-  ]);
-  board.appendChild(lockOverlay);
+  const lock = lockOverlay({
+    title: "지형 단서 4개를 먼저 수집해요",
+    desc: "왼쪽 관찰 자료의 단서 라벨을 눌러 단서를 모아요",
+  });
+  board.appendChild(lock);
   layer.appendChild(board);
 
   /* ---- 단서 수집 로직 ---- */
@@ -146,8 +140,8 @@ export default function GeologyAnalysisScene(ctx) {
   function unlockBoard() {
     AudioManager.correct();
     toast(ctx.stage, "단서 4개 완성! 문제 보드가 열렸어요");
-    lockOverlay.style.opacity = "0";
-    setTimeout(() => lockOverlay.remove(), 320);
+    lock.style.opacity = "0";
+    setTimeout(() => lock.remove(), 320);
     coachify(board, { label: null });
     board.addEventListener("pointerdown", () => uncoach(board), { once: true });
   }

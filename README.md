@@ -59,6 +59,18 @@ _recovered/           2026-07 옛 앱에서 복구한 코드(3D 컴포넌트 등
 - 효과음은 WebAudio 합성음(파일 불필요). mp3 효과음을 추가하려면 AudioManager 만 수정
 - 3D(three.js) 재도입 시 `_recovered/subagents/src/components/three/` 참고
 
+## 저장 데이터 주의 (origin 분리)
+
+진행 기록은 브라우저 localStorage 에 **주소(origin)별로 따로** 저장된다.
+`localhost:8123` 에서 하던 기록과 `dokdo-hq.vercel.app` 의 기록은 서로 다른 저장소다.
+수업은 한 주소로만 진행할 것.
+
+## 에셋 정책 (asset-bank)
+
+- `assets/` = 원본 보관소(백업). 한글·공백 파일명 그대로 두고 **코드에서 직접 참조 금지**.
+- `public/assets/` = 앱이 실제로 쓰는 최적화본. 배포에는 이것만 나간다(`.vercelignore` 로 원본 제외).
+- 원본과 최적화본의 이중 보관은 의도된 구조다 — 2026-07 코드 유실 사고 이후 원본 백업을 저장소에 유지한다.
+
 ## 저작권
 
 배경·캐릭터·아이콘 이미지는 생성형 AI로 제작한 교육용 이미지(앱 설정 화면에 고지).

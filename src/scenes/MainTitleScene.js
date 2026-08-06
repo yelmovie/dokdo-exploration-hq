@@ -92,7 +92,13 @@ export default function MainTitleScene(ctx) {
         html: "초등 4학년 사회·통합 독도교육용 <b>자료 해석형 탐사 웹앱</b>입니다.<br>" +
           "· 40분 수업 흐름: 도입 5분 → 미션 1~4단계 20분 → 브리핑 보드·발표 준비 10분 → 수료·공유 5분<br>" +
           "· 진행 기록은 이 기기 브라우저에만 저장됩니다(서버 없음).<br>" +
-          "· 오답 시 정답을 바로 알려 주지 않고 힌트로 재도전을 유도합니다." }),
+          "· 오답 시 정답을 바로 알려 주지 않고 오개념 피드백·힌트로 재도전을 유도합니다." }),
+      el("div", {
+        style: { fontSize: "13.5px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.6", background: "#f0f4f8", borderRadius: "10px", padding: "10px 14px", wordBreak: "keep-all" },
+        html: "<b>교육과정 연계</b> · 범교과 학습 주제 ‘독도 교육’ 기반, 2022 개정 사회과 <b>[6사01-02]</b>" +
+          "(독도의 지리적 특성과 역사 기록을 바탕으로 영토로서 독도의 중요성 이해)와 연계한 4학년 심화 활동입니다." +
+          "<br><span style='color:#a05a1a'>※ 성취기준 원문은 수업 전 교육과정 고시 원문과 대조해 확인해 주세요.</span>" +
+          "<br>교육 내용 출처: 대한민국 외교부 독도(dokdo.mofa.go.kr)" }),
       el("div.row", { style: { justifyContent: "center", marginTop: "4px" } }, [
         button("전체 기록 초기화", { variant: "ghost", size: "sm", icon: "🗑️", onClick: () => {
           const md2 = modal(ctx.stage, {

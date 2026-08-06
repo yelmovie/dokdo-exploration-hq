@@ -5,7 +5,7 @@
 | 배경 이미지 8장 | assets/background/ChatGPT Image 2026년 7월 29일*.png | ChatGPT 이미지 생성 (사용자 직접 생성, 2026-07-29) | 생성형 AI 이미지 — 앱 설정 화면에 고지 |
 | 아이콘 82장 | assets/icons/1~81.png, ChatGPT Image*.png | ChatGPT 이미지 생성 (사용자 직접 생성, 2026-07-27~29) | 생성형 AI 이미지 — 앱 설정 화면에 고지 |
 | 샘플 화면 18장 | assets/samplepages/ | ChatGPT 이미지 생성 (참고용, 앱 미사용) | 로딩 대상 아님 |
-| BGM 7곡 | assets/sound/sound/*.mp3 | **출처 미확인 — 확인 필요** (생성형 AI 음원으로 추정) | ⚠️ 공개 배포 전 출처·사용 조건 확인 필요 |
+| BGM 7곡 | assets/sound/sound/*.mp3 | Suno 등 생성형 AI로 사용자 직접 생성 (2026-07, 사용자 확인 2026-08-06) | 생성형 AI 음원 — 교육용 사용 |
 | 효과음 | (없음) | 앱 내 WebAudio 합성음 사용 — 외부 파일 없음 | — |
 | 폰트 | 시스템 글꼴만 사용 (Pretendard 설치 시 우선) | — | 웹폰트 미포함 |
 

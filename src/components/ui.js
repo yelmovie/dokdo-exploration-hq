@@ -4,6 +4,7 @@
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
 import AudioManager from "../managers/AudioManager.js";
+import stats from "../managers/StatsManager.js";
 
 /** 1280×720 스테이지 좌표 배치 헬퍼 */
 export function pos(x, y, w, h) {
@@ -54,6 +55,31 @@ export function button(label, { variant = "sea", size = "md", icon = "", onClick
 
 export function backButton(onClick) { return button("이전", { variant: "ghost", size: "sm", icon: "◀", onClick }); }
 export function homeButton(onClick) { return button("처음으로", { variant: "ghost", size: "sm", icon: "⌂", onClick }); }
+
+/** HUD 알약 라벨 (관찰 영역 제목·단서 카운터 등) */
+export function hudPill(text, { variant = "navy", style = {} } = {}) {
+  const colors = {
+    navy: { background: "rgba(20,54,92,.92)", color: "#fff" },
+    sea: { background: "var(--sea)", color: "#fff" },
+    green: { background: "rgba(47,158,68,.95)", color: "#fff" },
+  };
+  return el("div", { style: {
+    ...colors[variant], fontWeight: "900", fontSize: "14px", padding: "5px 14px",
+    borderRadius: "999px", boxShadow: "var(--shadow-sm)", ...style,
+  }, text });
+}
+
+/** 게이팅 잠금 오버레이 — remove() 는 호출부에서 opacity 후 제거 */
+export function lockOverlay({ icon = "🔒", title = "", desc = "" } = {}) {
+  return el("div.lock-overlay", { style: { position: "absolute", inset: "0", zIndex: 40, borderRadius: "inherit",
+    background: "rgba(21,38,60,.62)", backdropFilter: "blur(3px)", display: "flex", flexDirection: "column",
+    alignItems: "center", justifyContent: "center", gap: "10px", textAlign: "center", color: "#fff",
+    transition: "opacity .3s", padding: "20px" } }, [
+    el("div", { style: { fontSize: "46px" }, text: icon }),
+    el("div", { style: { fontWeight: "900", fontSize: "20px" }, text: title }),
+    el("div", { style: { fontWeight: "700", fontSize: "14px", opacity: ".9", lineHeight: "1.5" }, text: desc }),
+  ]);
+}
 
 /** 클릭형 div 에 키보드 접근 부여 (Enter/Space = 클릭) */
 export function pressable(node) {
@@ -202,16 +228,35 @@ export function quiz(q, { layout = "column", confirmLabel = "정답 확인", con
     list.appendChild(b);
   });
 
+  /* 찍기 방지: 오답 2회부터 '단서 다시 보기'를 눌러야 재제출 가능 */
+  const clueBtn = button("단서 다시 보기", { variant: "sea", size: "sm", icon: "🔍", onClick: () => {
+    clueRow.style.display = "none";
+    fb.className = "feedback show feedback--no";
+    fb.innerHTML = "🧭 <b>단서</b> · " + (q.clue || q.hint || "자료를 다시 읽어 봐요.") +
+      "<br>💡 " + (q.hint || "") + "<br>단서를 읽었으면 다시 골라 보세요.";
+    confirm.disabled = picked.size === 0 || (isMulti && picked.size !== answers.length);
+  } });
+  const clueRow = el("div.row", { style: { justifyContent: "center", display: "none" } }, [clueBtn]);
+
   const confirm = button(confirmLabel, { variant: "gold", icon: "🔍", disabled: true, onClick: () => {
     if (done) return;
     const ok = picked.size === answers.length && answers.every((a) => picked.has(a));
     if (!ok) {
       wrongCount++;
+      stats.wrong++;
       AudioManager.wrong();
-      const strong = wrongCount >= 3;
+      // 오개념 피드백: 잘못 고른 선택지에 맞는 설명 (정답은 비공개)
+      const firstWrong = [...picked].find((i) => !answers.includes(i));
+      const wf = q.wrongFeedback && firstWrong != null ? q.wrongFeedback[firstWrong] : null;
       fb.className = "feedback show feedback--no";
-      fb.innerHTML = (strong ? "💡 <b>힌트</b> · " : "🤔 다시 생각해 봐요 · ") + (q.hint || "단서를 다시 읽어 봐요.");
+      fb.innerHTML = "🤔 " + (wf || "다시 생각해 봐요.") +
+        (wrongCount >= 3 ? "<br>💡 <b>힌트</b> · " + (q.hint || "단서를 다시 읽어 봐요.") : "");
       btns.forEach((x, xi) => { if (picked.has(xi)) x.classList.add("is-shake"); setTimeout(() => x.classList.remove("is-shake"), 400); });
+      if (wrongCount >= 2) {
+        confirm.disabled = true;
+        clueRow.style.display = "flex";
+        coachify(clueBtn, { label: null });
+      }
       if (onResult) onResult(false);
       return;
     }
@@ -228,6 +273,7 @@ export function quiz(q, { layout = "column", confirmLabel = "정답 확인", con
 
   node.appendChild(list);
   node.appendChild(el("div.row", { style: { justifyContent: confirmAlign === "center" ? "center" : "flex-end", marginTop: "6px" } }, [confirm]));
+  node.appendChild(clueRow);
   node.appendChild(fb);
   return { node };
 }

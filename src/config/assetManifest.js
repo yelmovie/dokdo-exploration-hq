@@ -10,8 +10,12 @@ const BG = "public/assets/backgrounds/";
 const DK = "public/assets/icons/dokdo/";
 const SND = "public/assets/sounds/";
 
+/** 에셋 캐시 버전 — 1년 immutable 캐시를 쓰므로, 에셋 파일을 교체하면 반드시 이 숫자를 올린다 */
+const V = "?v=2";
+function ver(obj) { for (const k in obj) if (typeof obj[k] === "string") obj[k] += V; return obj; }
+
 /** 배경 — 10페이지 / 8장 (main·map, briefing·presentation 은 재사용) */
-export const BACKGROUNDS = {
+export const BACKGROUNDS = ver({
   main:         BG + "bg_main.jpg",        // 노을 전망대 (1p)
   missionMap:   BG + "bg_main.jpg",        // 재사용 (3p — 지도 패널이 화면 대부분을 덮음)
   briefing:     BG + "bg_briefing.jpg",    // 교실 브리핑 (2p)
@@ -22,10 +26,10 @@ export const BACKGROUNDS = {
   ecology:      BG + "bg_ecology.jpg",     // 생태 관찰 데크 (7p)
   board:        BG + "bg_board.jpg",       // 브리핑 보드 제작실 (8p)
   completion:   BG + "bg_completion.jpg",  // 표지석 무대 (10p)
-};
+});
 
 /** 독도 아이콘 세트 (번호 PNG → 의미 별칭, 옛 앱에서 복구) */
-export const DOKDO = {
+export const DOKDO = ver({
   // 타이틀
   titleLogo:     DK + "title_logo.png",  // "독도, 우리의 섬!" 로고
 
@@ -113,7 +117,7 @@ export const DOKDO = {
   passport:      DK + "77.png",  // 미션 패스포트
   certScroll:    DK + "78.png",  // 수료 두루마리
   flowerField:   DK + "81.png",  // 들꽃 무리
-};
+});
 
 /** 옛 icons/ 세트 별칭 — 원본이 사라져 DOKDO 세트로 대체 매핑 (복구 씬 호환용) */
 export const ICONS = {
@@ -122,7 +126,7 @@ export const ICONS = {
 };
 
 /** 사운드 — BGM 7곡 (효과음 파일은 없음: AudioManager 가 WebAudio 비프로 대체) */
-export const SOUNDS = {
+export const SOUNDS = ver({
   bgmMain:     SND + "bgm_main.mp3",      // 1p (Compass to Dokdo)
   bgmMap:      SND + "bgm_map.mp3",       // 3p (Dokdo Tide Map)
   bgmRoute:    SND + "bgm_route.mp3",     // 4p (Dokdo Sea Quest)
@@ -130,7 +134,7 @@ export const SOUNDS = {
   bgmHistory:  SND + "bgm_history.mp3",   // 6p (Archive Timeline)
   bgmEcology:  SND + "bgm_ecology.mp3",   // 7p (Dokdo Tide Garden)
   bgmBriefing: SND + "bgm_briefing.mp3",  // 2p·8~10p (Dokdo Final Briefing)
-};
+});
 
 export const AssetManifest = { BACKGROUNDS, DOKDO, ICONS, SOUNDS };
 export default AssetManifest;

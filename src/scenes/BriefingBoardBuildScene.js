@@ -15,6 +15,7 @@ import PAGES from "../config/pageConfig.js";
 import { BRIEFING_FIELDS } from "../data/missions.js";
 import { BRIEFING_CARDS, BOARD_CHECK_QUESTION } from "../data/questions.js";
 import AudioManager from "../managers/AudioManager.js";
+import stats from "../managers/StatsManager.js";
 
 export default function BriefingBoardBuildScene(ctx) {
   const cfg = PAGES.briefingBoard;
@@ -114,7 +115,7 @@ export default function BriefingBoardBuildScene(ctx) {
       el("div", { style: { fontSize: "13.5px", fontWeight: "800", lineHeight: "1.4", whiteSpace: "pre-line" }, text: card.label }),
       card.strong
         ? el("div", { style: { fontSize: "11px", fontWeight: "700", color: "var(--sea-deep)", background: "#eaf4fd", borderRadius: "999px", padding: "1px 8px" }, text: "📎 " + card.source })
-        : el("div", { style: { fontSize: "11px", fontWeight: "700", color: "#8a6d1a", background: "#fff3cd", borderRadius: "999px", padding: "1px 8px" }, text: "출처 없음" }),
+        : el("div", { style: { fontSize: "11px", fontWeight: "700", color: "#6b5310", background: "#fff3cd", borderRadius: "999px", padding: "1px 8px" }, text: "출처 없음" }),
     ]);
     makeDraggable(c, {
       dropSelector: ".board-zone",
@@ -171,6 +172,7 @@ export default function BriefingBoardBuildScene(ctx) {
     selectedCard = null;
     const f = BRIEFING_FIELDS.find((x) => x.key === fieldKey);
     if (!card.strong) {
+      stats.wrong++;
       AudioManager.wrong();
       const md = modal(ctx.stage, {
         title: "근거가 약한 카드예요!", icon: "⚠️",
@@ -181,6 +183,7 @@ export default function BriefingBoardBuildScene(ctx) {
       return;
     }
     if (card.field !== fieldKey) {
+      stats.wrong++;
       AudioManager.wrong();
       toast(ctx.stage, `이 카드는 ${f.label} 영역 근거가 아니에요. 내용을 다시 읽어 봐요.`);
       refresh();

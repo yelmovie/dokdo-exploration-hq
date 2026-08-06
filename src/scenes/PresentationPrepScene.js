@@ -12,6 +12,7 @@ import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { PRESENTATION_ORDER, PRESENTATION_FIX } from "../data/questions.js";
 import AudioManager from "../managers/AudioManager.js";
+import stats from "../managers/StatsManager.js";
 
 const STAGE_TITLES = [
   "🔢 발표 순서를 <b>알맞게</b> 정렬하세요",
@@ -147,6 +148,7 @@ export default function PresentationPrepScene(ctx) {
     const checkBtn = button("빈칸 확인하기", { variant: "gold", size: "lg", icon: "🔍", disabled: SCRIPT_BLANKS.some((x) => picks[x.id] == null), onClick: () => {
       const ok = SCRIPT_BLANKS.every((b) => picks[b.id] === b.answer);
       if (!ok) {
+        stats.wrong++;
         fb.className = "feedback show feedback--no";
         fb.textContent = "💡 탐사에서 확인한 ‘자료 근거’와 맞는 표현인지 빈칸을 다시 눌러 봐요.";
         AudioManager.wrong();

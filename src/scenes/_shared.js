@@ -5,9 +5,11 @@ import { el } from "../core/dom.js";
 import { button, backButton, sign, modal, toast, coachify } from "../components/ui.js";
 import { MISSIONS, nextMissionOf } from "../data/missions.js";
 import AudioManager from "../managers/AudioManager.js";
+import stats from "../managers/StatsManager.js";
 
 /** 상단: 이전 버튼 + 명패 + 단계 칩 + 도움말. 반환 { setStep } */
 export function missionFrame(ctx, layer, cfg, { signSrc = null, helpText = "" } = {}) {
+  stats.reset(); // 미션 진입 시 별점 통계 초기화
   layer.appendChild(el("div.row", { style: { position: "absolute", left: "22px", top: "20px", gap: "12px", zIndex: 12 } }, [
     backButton(() => ctx.navigate("missionMap")),
   ]));
@@ -63,10 +65,12 @@ export function completeMission(ctx, missionKey, { evidence = [], message = "" }
   const m = MISSIONS.find((x) => x.key === missionKey);
   const next = nextMissionOf(missionKey);
   const already = ctx.save.isCompleted(missionKey);
+  const score = stats.score();
+  const starCount = stats.stars(score);
   ctx.save.completeMission(missionKey, {
     badgeId: m && m.badge ? m.badge.id : null,
     evidence,
-    score: 100,
+    score,
     unlockNext: next,
   });
   AudioManager.badge();
@@ -80,6 +84,10 @@ export function completeMission(ctx, missionKey, { evidence = [], message = "" }
       img.addEventListener("error", () => { img.style.display = "none"; });
       return el("div.badge-pop", {}, [img]);
     })() : null,
+    el("div", { style: { fontSize: "30px", letterSpacing: "4px", margin: "4px 0" },
+      text: "⭐".repeat(starCount) + "☆".repeat(3 - starCount) }),
+    el("div", { style: { fontSize: "13.5px", fontWeight: "800", color: "var(--ink-soft)" },
+      text: `탐사 점수 ${score}점 · 정확도와 근거 확인으로 계산돼요` }),
     el("div", { style: { fontSize: "20px", fontWeight: "900", color: "var(--navy)", margin: "8px 0 4px" },
       text: (m ? m.badge.name : "") + " 배지 획득!" }),
     el("div", { style: { fontSize: "15px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.55", wordBreak: "keep-all" }, text: message }),

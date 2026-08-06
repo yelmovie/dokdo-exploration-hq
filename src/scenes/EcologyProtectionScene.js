@@ -4,7 +4,7 @@
    → 상황 판단 문제 3개: 행동 선택 → 정답 시 '영향 예측' 카드 표시.
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, modal, button, toast, coachify, uncoach, pressable } from "../components/ui.js";
+import { buildScene, placeAsset, quiz, pos, modal, button, toast, coachify, uncoach, pressable, lockOverlay } from "../components/ui.js";
 import { missionFrame, hintFold, nextCoachButton, completeMission } from "./_shared.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
@@ -44,7 +44,7 @@ export default function EcologyProtectionScene(ctx) {
     }, [
       el("div", { style: { fontSize: "32px" }, text: c.icon }),
       el("div", { style: { fontSize: "15.5px", fontWeight: "900", color: "var(--green-deep)" }, text: c.title }),
-      el("div.pill", { style: { background: "var(--green)", fontSize: "12px" }, text: "🔍 관찰하기" }),
+      el("div.pill", { style: { background: "var(--green-deep)", fontSize: "12px" }, text: "🔍 관찰하기" }),
     ]);
     coachify(card, { label: null });
     pressable(card);
@@ -68,15 +68,11 @@ export default function EcologyProtectionScene(ctx) {
   const nextHolder = el("div.row", { style: { justifyContent: "flex-end", minHeight: "0" } });
   board.appendChild(badgeRow); board.appendChild(qTitle); board.appendChild(qHolder); board.appendChild(nextHolder);
 
-  const lockOverlay = el("div", { style: { position: "absolute", inset: "0", zIndex: 40, borderRadius: "inherit",
-    background: "rgba(21,38,60,.62)", backdropFilter: "blur(3px)", display: "flex", flexDirection: "column",
-    alignItems: "center", justifyContent: "center", gap: "10px", textAlign: "center", color: "#fff",
-    transition: "opacity .3s", padding: "20px" } }, [
-    el("div", { style: { fontSize: "46px" }, text: "🔒" }),
-    el("div", { style: { fontWeight: "900", fontSize: "20px" }, text: "생태 단서 3개를 먼저 관찰해요" }),
-    el("div", { style: { fontWeight: "700", fontSize: "14px", opacity: ".9" }, text: "왼쪽 관찰 구역 카드를 눌러 단서를 모아요" }),
-  ]);
-  board.appendChild(lockOverlay);
+  const lock = lockOverlay({
+    title: "생태 단서 3개를 먼저 관찰해요",
+    desc: "왼쪽 관찰 구역 카드를 눌러 단서를 모아요",
+  });
+  board.appendChild(lock);
   layer.appendChild(board);
 
   const hintHolder = el("div");
@@ -110,8 +106,8 @@ export default function EcologyProtectionScene(ctx) {
   function unlockBoard() {
     AudioManager.correct();
     toast(ctx.stage, "관찰 완료! 상황 판단 작전을 시작해요");
-    lockOverlay.style.opacity = "0";
-    setTimeout(() => lockOverlay.remove(), 320);
+    lock.style.opacity = "0";
+    setTimeout(() => lock.remove(), 320);
     coachify(board, { label: null });
     board.addEventListener("pointerdown", () => uncoach(board), { once: true });
   }

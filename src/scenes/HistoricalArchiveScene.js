@@ -11,6 +11,7 @@ import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { HISTORY_CARDS, HISTORY_TIMELINE, HISTORY_QUESTIONS, FACT_OPINION } from "../data/questions.js";
 import AudioManager from "../managers/AudioManager.js";
+import stats from "../managers/StatsManager.js";
 
 export default function HistoricalArchiveScene(ctx) {
   const cfg = PAGES.history;
@@ -144,6 +145,7 @@ export default function HistoricalArchiveScene(ctx) {
       const ok = FACT_OPINION.items.every((x) => picks[x.id] === x.answer);
       if (!ok) {
         wrongCount++;
+        stats.wrong++;
         AudioManager.wrong();
         fb.className = "feedback show feedback--no";
         fb.textContent = wrongCount >= 3

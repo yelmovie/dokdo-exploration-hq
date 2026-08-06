@@ -147,6 +147,8 @@ export default function MissionMapScene(ctx) {
     detail.appendChild(el("div", { style: { fontSize: "34px" }, text: m.icon }));
     detail.appendChild(el("div", { style: { fontSize: "20px", fontWeight: "900", color: "var(--navy)" }, text: m.title }));
     detail.appendChild(el("div", { style: { fontSize: "14.5px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.6", wordBreak: "keep-all" }, text: m.desc }));
+    detail.appendChild(el("div", { style: { fontSize: "13.5px", fontWeight: "800", color: "var(--navy)" },
+      text: "난이도 " + "🔥".repeat(m.difficulty || 1) + (completed ? ` · 탐사 점수 ${save.get("missionScores")[m.key] || 0}점 ` + "⭐".repeat(save.get("missionScores")[m.key] >= 90 ? 3 : save.get("missionScores")[m.key] >= 70 ? 2 : 1) : "") }));
     detail.appendChild(el("div.pill", {
       style: { background: completed ? "var(--green)" : unlocked ? "var(--gold)" : "#7d8a97", color: completed ? "#fff" : unlocked ? "#5c3c05" : "#fff", alignSelf: "flex-start" },
       text: completed ? "✅ 완료 — 다시 도전 가능" : unlocked ? "⭐ 도전 가능" : "🔒 잠김",
