@@ -11,6 +11,11 @@ import { missionFrame, nextCoachButton, completeMission, awardDex } from "./_sha
 import { DOKDO, PHOTOS } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { GEOLOGY_QUESTIONS, GEOLOGY_COMPARE } from "../data/questions.js";
+import { supportsWebGL } from "../components/three/ThreeStage.js";
+import { createDokdoTerrain3D } from "../components/three/DokdoTerrain3D.js";
+
+/* 단서별 실사 사진 (단서 카드 모달에서 표시) */
+const CLUE_PHOTO = { cliff: "plants", flat: "trail", erosion: "caves", bird: "aerial" };
 
 /* 지형 단서 4종 — fx/fy 는 실사 항공 사진 위 라벨 위치(%) */
 const GEOLOGY_CLUES = [
@@ -32,9 +37,12 @@ export default function GeologyAnalysisScene(ctx) {
   const collected = new Set();
   const clueTotal = GEOLOGY_CLUES.length;
 
+  const use3D = supportsWebGL();
   const frame = missionFrame(ctx, layer, cfg, {
     signSrc: DOKDO.signGeology,
-    helpText: "관찰 자료의 단서 라벨 4개를 모두 누르면 문제 보드가 열려요.",
+    helpText: use3D
+      ? "3D 독도를 손가락으로 돌려 보며 반짝이는 단서 4개를 모으면 문제 보드가 열려요. ‘단면 보기’로 섬 속 지층도 관찰해요!"
+      : "관찰 자료의 단서 라벨 4개를 모두 누르면 문제 보드가 열려요.",
   });
 
   /* ---- 좌측: 관찰 영역 ---- */
@@ -44,25 +52,60 @@ export default function GeologyAnalysisScene(ctx) {
   const clueChip = hudPill(`🔍 단서 0 / ${clueTotal}`, { style: { position: "absolute", top: "10px", right: "10px", zIndex: 6 } });
 
   const fallbackChips = new Map();
-  const islandImg = assetImg(PHOTOS.aerial, "독도 항공 사진");
-  islandImg.style.cssText = "width:100%;height:100%;object-fit:cover";
-  island.appendChild(islandImg);
-  island.appendChild(hudPill("🔍 실제 독도 사진", { variant: "sea", style: { position: "absolute", left: "10px", top: "10px", zIndex: 6 } }));
-  island.appendChild(el("div", { style: { position: "absolute", left: "10px", bottom: "8px", zIndex: 6, fontSize: "11px", fontWeight: "700", color: "#fff", background: "rgba(0,0,0,.68)", padding: "1px 8px", borderRadius: "999px" }, text: "사진: 외교부 독도" }));
-  GEOLOGY_CLUES.forEach((c) => {
-    const chip = el("button", {
-      type: "button",
-      style: { position: "absolute", left: c.fx + "%", top: c.fy + "%", transform: "translate(-50%,-50%)", zIndex: 5,
-        background: "rgba(20,54,92,.92)", color: "#fff", fontWeight: "800", fontSize: "15px", padding: "12px 18px",
-        minHeight: "48px", border: "0", fontFamily: "inherit",
-        borderRadius: "999px", boxShadow: "var(--shadow-sm)", whiteSpace: "nowrap", cursor: "pointer" },
-      text: "🔍 " + c.short,
-      onClick: () => { AudioManager.unlock(); AudioManager.click(); openClue(c); },
+  let viewer = null;
+
+  if (use3D) {
+    /* ---- 3D 독도 지형 탐사 (회전·확대·단면 보기) ---- */
+    island.style.background = "linear-gradient(180deg,#8ecdf2 0%,#c8ecff 62%,#7fb6dd 100%)";
+    viewer = createDokdoTerrain3D({ root, width: 560, height: 300, onMarkerSelect: (id) => {
+      const clue = GEOLOGY_CLUES.find((c) => c.id === id);
+      if (!clue) return;
+      AudioManager.unlock(); AudioManager.click();
+      openClue(clue);
+    } });
+    Object.assign(viewer.el.style, { width: "100%", height: "100%" });
+    island.appendChild(viewer.el);
+    island.appendChild(hudPill("🧭 3D 독도 탐험", { variant: "sea", style: { position: "absolute", left: "10px", top: "10px", zIndex: 6 } }));
+    island.appendChild(el("div", { style: { position: "absolute", left: "10px", bottom: "8px", zIndex: 6, fontSize: "11.5px", fontWeight: "800", color: "var(--navy)", background: "rgba(255,255,255,.88)", padding: "3px 10px", borderRadius: "999px" }, text: "🖐 드래그 회전 · 두 손가락 확대 · 반짝이는 단서 탭" }));
+
+    /* 단면 보기 토글 + 지층 설명 */
+    const strataTipStyle = { background: "rgba(20,32,48,.85)", color: "#fff", fontWeight: "800", fontSize: "12.5px", padding: "5px 10px", borderRadius: "8px", boxShadow: "var(--shadow-sm)" };
+    const strataTips = el("div", { style: { position: "absolute", left: "12px", top: "52px", zIndex: 6, display: "none", flexDirection: "column", gap: "8px" } }, [
+      el("div", { style: strataTipStyle, text: "🟤 위층: 화산재·용암 조각이 굳은 층" }),
+      el("div", { style: strataTipStyle, text: "⬛ 아래층: 용암이 굳은 단단한 현무암 층" }),
+    ]);
+    island.appendChild(strataTips);
+    let sectionOn = false;
+    const secBtn = button("단면 보기", { variant: "gold", icon: "⛰", onClick: () => {
+      sectionOn = !sectionOn;
+      viewer.setSectionView(sectionOn);
+      strataTips.style.display = sectionOn ? "flex" : "none";
+      secBtn.querySelector("span:last-child").textContent = sectionOn ? "겉모습 보기" : "단면 보기";
+    } });
+    Object.assign(secBtn.style, { position: "absolute", right: "10px", bottom: "10px", zIndex: 6, padding: "6px 14px", fontSize: "13px", minHeight: "44px" });
+    island.appendChild(secBtn);
+  } else {
+    /* ---- 2D 폴백: 실사 항공 사진 + 단서 라벨 ---- */
+    const islandImg = assetImg(PHOTOS.aerial, "독도 항공 사진");
+    islandImg.style.cssText = "width:100%;height:100%;object-fit:cover";
+    island.appendChild(islandImg);
+    island.appendChild(hudPill("🔍 실제 독도 사진", { variant: "sea", style: { position: "absolute", left: "10px", top: "10px", zIndex: 6 } }));
+    island.appendChild(el("div", { style: { position: "absolute", left: "10px", bottom: "8px", zIndex: 6, fontSize: "11px", fontWeight: "700", color: "#fff", background: "rgba(0,0,0,.68)", padding: "1px 8px", borderRadius: "999px" }, text: "사진: 외교부 독도" }));
+    GEOLOGY_CLUES.forEach((c) => {
+      const chip = el("button", {
+        type: "button",
+        style: { position: "absolute", left: c.fx + "%", top: c.fy + "%", transform: "translate(-50%,-50%)", zIndex: 5,
+          background: "rgba(20,54,92,.92)", color: "#fff", fontWeight: "800", fontSize: "15px", padding: "12px 18px",
+          minHeight: "48px", border: "0", fontFamily: "inherit",
+          borderRadius: "999px", boxShadow: "var(--shadow-sm)", whiteSpace: "nowrap", cursor: "pointer" },
+        text: "🔍 " + c.short,
+        onClick: () => { AudioManager.unlock(); AudioManager.click(); openClue(c); },
+      });
+      coachify(chip, { label: null });
+      fallbackChips.set(c.id, chip);
+      island.appendChild(chip);
     });
-    coachify(chip, { label: null });
-    fallbackChips.set(c.id, chip);
-    island.appendChild(chip);
-  });
+  }
   island.appendChild(clueChip);
 
   /* ---- 좌하단: 분석 정리 노트(토글, 기본 접힘) ---- */
@@ -104,6 +147,7 @@ export default function GeologyAnalysisScene(ctx) {
   }
 
   function markCollectedVisual(id) {
+    if (viewer) viewer.setMarkerCollected(id);
     const chip = fallbackChips.get(id);
     if (chip) {
       uncoach(chip);
@@ -116,10 +160,13 @@ export default function GeologyAnalysisScene(ctx) {
   /* 단서 카드 팝업 — 수집 전이면 '단서 획득!' 버튼으로 수집 */
   function openClue(clue) {
     const done = collected.has(clue.id);
+    const ph = assetImg(PHOTOS[CLUE_PHOTO[clue.id]], clue.title);
+    Object.assign(ph.style, { width: "340px", height: "200px", objectFit: "cover", borderRadius: "12px", boxShadow: "var(--shadow-sm)" });
     const body = el("div.col", { style: { gap: "10px", alignItems: "center", textAlign: "center" } }, [
-      el("div", { style: { fontSize: "44px" }, text: clue.icon }),
-      el("div", { style: { fontWeight: "900", fontSize: "20px", color: "var(--navy)" }, text: clue.title }),
+      ph,
+      el("div", { style: { fontWeight: "900", fontSize: "20px", color: "var(--navy)" }, text: clue.icon + " " + clue.title }),
       el("div", { style: { fontSize: "15px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.55" }, html: clue.desc.join("<br>") }),
+      el("div.src-tag", { text: "📎 사진: 외교부 독도" }),
     ]);
     const md = modal(ctx.stage, { title: "지형 단서 카드", icon: "🔍", body, buttons: [
       done
