@@ -2,7 +2,7 @@
    _shared.js — 미션 씬 공통 프레임 (상단바·단계 표시·도움말·완료 처리)
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { button, backButton, sign, modal, toast, coachify } from "../components/ui.js";
+import { button, iconButton, backButton, sign, modal, toast, coachify } from "../components/ui.js";
 import { MISSIONS, nextMissionOf } from "../data/missions.js";
 import AudioManager from "../managers/AudioManager.js";
 import stats from "../managers/StatsManager.js";
@@ -15,20 +15,19 @@ export function missionFrame(ctx, layer, cfg, { signSrc = null, helpText = "" } 
   ]));
   if (signSrc) sign(layer, signSrc, { x: 108, y: -14, w: 175, h: 175, alt: cfg.title });
 
-  const stepChip = el("div.hud-chip", { style: { position: "absolute", right: "266px", top: "26px", zIndex: 12 } });
+  const stepChip = el("div.hud-chip", { style: { position: "absolute", right: "158px", top: "28px", zIndex: 12 } });
   layer.appendChild(stepChip);
 
   const soundOn = () => AudioManager.bgmEnabled || AudioManager.sfxEnabled;
-  const soundBtn = button(soundOn() ? "소리" : "무음", { variant: "ghost", size: "sm", icon: soundOn() ? "🔊" : "🔇", onClick: () => {
+  const soundBtn = iconButton(soundOn() ? "🔊" : "🔇", { title: "소리 켜기/끄기", onClick: () => {
     const on = !soundOn();
     AudioManager.setBgmEnabled(on);
     AudioManager.setSfxEnabled(on);
     soundBtn.querySelector(".btn__icon").textContent = on ? "🔊" : "🔇";
-    soundBtn.querySelector("span:last-child").textContent = on ? "소리" : "무음";
   } });
-  layer.appendChild(el("div.row", { style: { position: "absolute", right: "22px", top: "20px", zIndex: 12, gap: "8px" } }, [
+  layer.appendChild(el("div.row", { style: { position: "absolute", right: "22px", top: "20px", zIndex: 12, gap: "10px" } }, [
     soundBtn,
-    button("도움말", { variant: "ghost", size: "sm", icon: "❓", onClick: () => {
+    iconButton("❓", { title: "도움말", onClick: () => {
       const md = modal(ctx.stage, {
         title: cfg.title + " — 이렇게 해요", icon: "💡",
         bodyHtml: `<div style="font-size:16px;font-weight:700;line-height:1.6;color:var(--ink)">${helpText}</div>`,

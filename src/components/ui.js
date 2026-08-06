@@ -53,6 +53,15 @@ export function button(label, { variant = "sea", size = "md", icon = "", onClick
   return b;
 }
 
+/** 원형 아이콘 버튼 (우측 상단 소리·설정·도움말용) */
+export function iconButton(icon, { title = "", onClick = null, variant = "ghost" } = {}) {
+  const b = el("button.btn.btn--" + variant + ".btn--icon", { type: "button", attrs: { "aria-label": title, title } }, [
+    el("span.btn__icon", { text: icon }),
+  ]);
+  if (onClick) b.addEventListener("click", (e) => { AudioManager.unlock(); AudioManager.click(); onClick(e); });
+  return b;
+}
+
 export function backButton(onClick) { return button("이전", { variant: "ghost", size: "sm", icon: "◀", onClick }); }
 export function homeButton(onClick) { return button("처음으로", { variant: "ghost", size: "sm", icon: "⌂", onClick }); }
 

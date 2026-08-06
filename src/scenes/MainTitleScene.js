@@ -4,7 +4,7 @@
    설정 모달: 소리(배경음/효과음 분리) · 교사용 가이드 · 관리자 · AI 고지.
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
-import { buildScene, placeAsset, button, modal, toast } from "../components/ui.js";
+import { buildScene, placeAsset, button, iconButton, modal, toast } from "../components/ui.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { MISSIONS } from "../data/missions.js";
@@ -49,9 +49,22 @@ export default function MainTitleScene(ctx) {
       ctx.navigate(hasSave ? "missionMap" : "briefing");
     } }),
     hasSave ? button("처음부터", { variant: "sea", size: "lg", onClick: () => ctx.navigate("briefing") }) : null,
-    button("설정", { variant: "ghost", size: "lg", icon: "⚙", onClick: openSettings }),
   ].filter(Boolean));
   layer.appendChild(btnRow);
+
+  /* ---- 우측 상단: 소리 · 설정 아이콘 ---- */
+  const soundOn = () => AudioManager.bgmEnabled || AudioManager.sfxEnabled;
+  const soundBtn = iconButton(soundOn() ? "🔊" : "🔇", { title: "소리 켜기/끄기", onClick: () => {
+    const on = !soundOn();
+    AudioManager.setBgmEnabled(on);
+    AudioManager.setSfxEnabled(on);
+    soundBtn.querySelector(".btn__icon").textContent = on ? "🔊" : "🔇";
+    toast(ctx.stage, on ? "소리를 켰어요" : "소리를 껐어요");
+  } });
+  layer.appendChild(el("div.row", { style: { position: "absolute", right: "22px", top: "20px", gap: "10px", zIndex: 12 } }, [
+    soundBtn,
+    iconButton("⚙️", { title: "설정", onClick: openSettings }),
+  ]));
 
   /* =======================================================================
      설정 모달 — 소리 / 교사용 가이드 / 관리자 / 고지

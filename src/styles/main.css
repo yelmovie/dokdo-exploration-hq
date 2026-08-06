@@ -94,6 +94,11 @@ body {
   color: var(--navy); border: 1px solid rgba(255,255,255,.8);
 }
 .btn__icon { font-size: 1.1em; }
+.btn--icon {
+  width: 52px; height: 52px; min-height: 52px; padding: 0;
+  border-radius: 50%; font-size: 22px;
+}
+.btn--icon .btn__icon { font-size: 22px; }
 
 /* ---- 알약/HUD ---- */
 .pill { display: inline-block; font-weight: 900; font-size: 14px; padding: 5px 14px; border-radius: 999px; color: #fff; }
