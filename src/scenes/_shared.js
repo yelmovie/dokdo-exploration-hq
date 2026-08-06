@@ -2,7 +2,7 @@
    _shared.js — 미션 씬 공통 프레임 (상단바·단계 표시·도움말·완료 처리)
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { button, iconButton, backButton, sign, modal, toast, coachify } from "../components/ui.js";
+import { button, iconButton, backButton, sign, modal, toast, coachify, flyToDex } from "../components/ui.js";
 import { MISSIONS, nextMissionOf } from "../data/missions.js";
 import AudioManager from "../managers/AudioManager.js";
 import stats from "../managers/StatsManager.js";
@@ -66,6 +66,7 @@ export function nextCoachButton(label, onClick, { icon = "➡️" } = {}) {
 export function awardDex(ctx, ids) {
   const got = [].concat(ids).filter((id) => ctx.save.addDex(id));
   if (got.length) {
+    flyToDex(ctx.stage, null, "🃏");
     import("../data/dexData.js").then(({ dexCard }) => {
       const names = got.map((id) => dexCard(id)?.title).filter(Boolean).join(", ");
       toast(ctx.stage, `📖 도감 등록: ${names}`);

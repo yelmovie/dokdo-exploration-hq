@@ -31,7 +31,7 @@ export default function HistoricalArchiveScene(ctx) {
     open: true,
     body: [el("div.col", { style: { gap: "7px" } }, HISTORY_CARDS.map((c) => {
       const icon = assetImg(DOKDO[c.icon] || DOKDO.oldBook, "");
-      Object.assign(icon.style, { width: "34px", height: "34px", objectFit: "contain", flex: "0 0 auto" });
+      Object.assign(icon.style, { width: "48px", height: "48px", objectFit: "contain", flex: "0 0 auto" });
       const cardBtn = el("button", {
         type: "button",
         style: {
@@ -71,12 +71,12 @@ export default function HistoricalArchiveScene(ctx) {
   }));
 
   /* ---- 캐릭터 + 말풍선 ---- */
-  placeAsset(layer, DOKDO.sageFigure, { x: 30, y: 420, w: 220, h: 290, alt: "역사 인물", z: 3 });
-  placeAsset(layer, DOKDO.readerGirl, { x: 1060, y: 440, w: 200, h: 270, alt: "책 읽는 소녀", float: true, z: 3 });
-  speech(layer, { x: 990, y: 348, text: "천장에 걸린 기록들이 보여? 다섯 기록을 시간 순서로 이어 보자!", tail: "right", width: 250 });
+  placeAsset(layer, DOKDO.sageFigure, { x: 34, y: 464, w: 190, h: 250, alt: "역사 인물", z: 3, shadow: true });
+  placeAsset(layer, DOKDO.readerGirl, { x: 1064, y: 452, w: 195, h: 262, alt: "책 읽는 소녀", float: true, z: 3, shadow: true });
+  speech(layer, { x: 1002, y: 328, text: "천장에 걸린 기록들이 보여? 다섯 기록을 시간 순서로 이어 보자!", tail: "right", width: 235 });
 
   /* ---- 중앙 활동 보드 ---- */
-  const board = el("div.q-board", { style: { ...pos(280, 108, 730, 566) } }, [el("div.q-board__clip")]);
+  const board = el("div.q-board", { style: { ...pos(292, 116, 690, 476) } }, [el("div.q-board__clip")]);
   const qTitle = el("div.q-board__title");
   const workArea = el("div", { style: { flex: "1", minHeight: "0", overflowY: "auto", paddingRight: "4px" } });
   const nextHolder = el("div.row", { style: { justifyContent: "flex-end", minHeight: "0" } });
@@ -117,7 +117,10 @@ export default function HistoricalArchiveScene(ctx) {
         nextHolder.appendChild(nextCoachButton("다음 활동", () => { stage = 1; render(); }));
       },
     });
-    workArea.appendChild(el("div.tip", { html: "🖐️ 왼쪽 <b>기록 카드 읽어보기</b>에서 내용을 먼저 확인하면 쉬워요. 카드를 눌러 슬롯에 놓아요." }));
+    workArea.appendChild(el("div.tip", { style: { fontSize: "13px", padding: "7px 12px" }, html: "왼쪽 <b>기록 카드 읽어보기</b>에서 내용을 먼저 확인하면 쉬워요. 카드를 눌러 슬롯에 놓아요." }));
+    // 트레이를 3+2 두 줄로 고정 (폭 제한)
+    const tray = order.node.querySelector(".order__tray");
+    Object.assign(tray.style, { maxWidth: "600px", margin: "0 auto" });
     workArea.appendChild(order.node);
     setHint("가장 오래된 기록은 신라 시대(512년) 이야기예요. 가장 최근은 ‘대한제국’이 들어간 기록이에요.");
   }

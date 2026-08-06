@@ -94,7 +94,7 @@ export default function PresentationPrepScene(ctx) {
   }));
 
   /* ---- 캐릭터: 발표 소녀(무대 좌측) ---- */
-  placeAsset(layer, DOKDO.presenterGirl, { x: 6, y: 240, w: 335, h: 470, alt: "발표 준비 탐험가", z: 3 });
+  placeAsset(layer, DOKDO.presenterGirl, { x: 6, y: 240, w: 335, h: 470, alt: "발표 준비 탐험가", z: 3, shadow: true });
   speech(layer, { x: 40, y: 152, text: "무대 스크린에 나만의 발표를 완성해 보자!", tail: "left", width: 230 });
 
   /* ---- 중앙: 활동 보드 (배경 무대의 스크린 위에) ---- */
@@ -240,6 +240,8 @@ export default function PresentationPrepScene(ctx) {
   }
 
   function render() {
+    // 활동별 패널 높이 (내용만큼만 — 뒷배경 무대가 보이게)
+    boardEl.style.height = stage === 1 ? "556px" : stage === 0 ? "432px" : "462px";
     frame.setStep(stage + 1, 3, "활동");
     qTitle.innerHTML = STAGE_TITLES[stage];
     qHolder.innerHTML = "";
@@ -251,7 +253,7 @@ export default function PresentationPrepScene(ctx) {
       }));
       const order = orderInteraction({
         items: PRESENTATION_ORDER.sections.map((s) => ({ id: s.id, label: s.label })),
-        answer: PRESENTATION_ORDER.answer, slotW: 150, slotH: 80,
+        answer: PRESENTATION_ORDER.answer, slotW: 100, slotH: 72,
         freeOrder: true, confirmText: "이 순서로 정했어요",
         onResult: (ok, ids) => {
           ctx.save.setPresentationOrder(ids);

@@ -280,16 +280,7 @@ export default function CompletionGalleryScene(ctx) {
   layer.appendChild(el("div.row", { style: { ...pos(40, 662, 1200), gap: "12px", justifyContent: "center", zIndex: 8 } }, [
     button("처음으로", { variant: "ghost", icon: "⌂", onClick: () => confirmGoMain() }),
     button("탐사 결과 다시보기", { icon: "📋", onClick: openReviewModal }),
-    button("더 알아보기", { variant: "ghost", icon: "🎬", onClick: () => {
-      const m2 = modal(ctx.stage, {
-        title: "독도, 더 알아보기", icon: "🎬",
-        bodyHtml: `<div style="font-size:15px;font-weight:700;color:var(--ink);line-height:1.8;word-break:keep-all">
-          선생님과 함께 외교부 독도 영상관에서 실제 독도 영상과 사진을 볼 수 있어요.<br>
-          <a href="https://dokdo.mofa.go.kr/kor/pds/video_list02.jsp" target="_blank" rel="noopener" style="color:var(--sea-deep)">🔗 외교부 독도 영상관 (교사와 함께 열기)</a><br>
-          <span style="color:var(--ink-soft);font-size:13px">이 링크는 수업용 참고 자료예요. 선생님 화면으로 함께 봐요!</span></div>`,
-        buttons: [button("닫기", { variant: "green", onClick: () => m2.close() })],
-      });
-    } }),
+    button("독도 영상관", { variant: "ghost", icon: "🎬", onClick: openTheater }),
     button("다시 탐험하기", { variant: "gold", icon: "🔄", onClick: () => {
       const m = modal(ctx.stage, {
         title: "다시 탐험할까요?", icon: "🔄",
@@ -301,6 +292,44 @@ export default function CompletionGalleryScene(ctx) {
       });
     } }),
   ]));
+
+  /* ---- 독도 영상관: 외교부 공식 영상 (유튜브 임베드, 눌러야 재생) ---- */
+  const THEATER = [
+    { id: "muB4_LNZ2Rk", title: "대한민국의 아름다운 영토, 독도", desc: "외교부 공식 홍보 영상 — 하늘에서 본 독도의 웅장한 모습" },
+    { id: "_3cAJCnvRqU", title: "울릉도, 독도로 가는 길", desc: "울릉도에서 독도까지, 우리가 복원한 그 항로를 실제 영상으로" },
+  ];
+  function openTheater() {
+    const body = el("div.col", { style: { gap: "10px", minWidth: "480px" } }, [
+      el("div", { style: { fontSize: "14px", fontWeight: "700", color: "var(--ink-soft)", wordBreak: "keep-all" },
+        text: "외교부 공식 영상이에요. 선생님과 함께 봐요! (재생 버튼을 누르면 유튜브에서 불러와요)" }),
+      ...THEATER.map((v) => el("button", {
+        type: "button",
+        style: { fontFamily: "inherit", textAlign: "left", display: "flex", flexDirection: "column", gap: "3px",
+          background: "#fff", border: "1.5px solid rgba(31,122,194,.3)", borderRadius: "12px",
+          padding: "12px 14px", cursor: "pointer", minHeight: "56px" },
+        onClick: () => { md.close(); playVideo(v); },
+      }, [
+        el("span", { style: { fontSize: "15.5px", fontWeight: "900", color: "var(--navy)" }, text: "▶ " + v.title }),
+        el("span", { style: { fontSize: "13px", fontWeight: "700", color: "var(--ink-soft)", wordBreak: "keep-all" }, text: v.desc }),
+      ])),
+      el("div", { style: { fontSize: "12px", fontWeight: "600", color: "var(--ink-soft)" },
+        html: `출처: <a href="https://dokdo.mofa.go.kr/kor/pds/video_list.jsp" target="_blank" rel="noopener" style="color:var(--sea-deep)">외교부 독도 동영상</a>` }),
+    ]);
+    const md = modal(ctx.stage, { title: "독도 영상관", icon: "🎬", body,
+      buttons: [button("닫기", { variant: "ghost", onClick: () => md.close() })] });
+  }
+  function playVideo(v) {
+    const frame = document.createElement("iframe");
+    frame.src = `https://www.youtube-nocookie.com/embed/${v.id}?rel=0`;
+    frame.allow = "accelerometer; encrypted-media; picture-in-picture; fullscreen";
+    frame.allowFullscreen = true;
+    Object.assign(frame.style, { width: "720px", height: "405px", border: "0", borderRadius: "12px", background: "#000", display: "block" });
+    const md = modal(ctx.stage, {
+      title: v.title, icon: "🎬",
+      body: el("div", {}, [frame]),
+      buttons: [button("영상 닫기", { variant: "green", onClick: () => md.close() })],
+    });
+  }
 
   /* ---- 모달: 처음으로 확인 (진행 데이터 유지 안내) ---- */
   function confirmGoMain() {

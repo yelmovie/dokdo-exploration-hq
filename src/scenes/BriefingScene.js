@@ -4,7 +4,7 @@
    5장을 모두 읽으면 미션 지도 해금.
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
-import { buildScene, button, modal, toast, backButton, coachify, uncoach, speech } from "../components/ui.js";
+import { buildScene, button, modal, toast, backButton, coachify, uncoach, speech, titleRibbon } from "../components/ui.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { BRIEFING_FIELDS } from "../data/missions.js";
@@ -26,11 +26,11 @@ const GOAL_DETAILS = {
 
 /* 코르크보드 내부 좌표 (1280×720 기준, 시각 확인 후 조정) */
 const PIN_POS = [
-  { x: 462, y: 148, r: -2.5 },
-  { x: 634, y: 142, r: 1.5 },
-  { x: 806, y: 150, r: -1 },
-  { x: 546, y: 332, r: 2 },
-  { x: 726, y: 328, r: -2 },
+  { x: 450, y: 140, r: -2.5 },
+  { x: 632, y: 134, r: 1.5 },
+  { x: 814, y: 142, r: -1 },
+  { x: 540, y: 336, r: 2 },
+  { x: 728, y: 332, r: -2 },
 ];
 
 export default function BriefingScene(ctx) {
@@ -42,15 +42,7 @@ export default function BriefingScene(ctx) {
     backButton(() => ctx.navigate("main")),
   ]));
 
-  layer.appendChild(el("div", {
-    style: {
-      position: "absolute", left: "50%", top: "20px", transform: "translateX(-50%)", zIndex: 10,
-      background: "rgba(20,54,92,.85)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,.3)",
-      color: "#fff", fontWeight: "800", fontSize: "19px",
-      padding: "9px 26px", borderRadius: "999px", boxShadow: "var(--shadow)", whiteSpace: "nowrap",
-    },
-    text: "탐사본부 브리핑 — 사라진 독도 기록을 복원하라",
-  }));
+  titleRibbon(layer, "탐사본부 브리핑 — 사라진 독도 기록을 복원하라", { top: 14 });
 
   const progChip = el("div.hud-chip", { style: { position: "absolute", right: "22px", top: "22px", zIndex: 12 }, text: "목표 0 / 5" });
   layer.appendChild(progChip);
@@ -72,7 +64,7 @@ export default function BriefingScene(ctx) {
     const d = GOAL_DETAILS[f.key];
     const p = PIN_POS[i];
     const ic = assetImg(DOKDO[GOAL_ICON[f.key]], f.label);
-    Object.assign(ic.style, { width: "52px", height: "52px", objectFit: "contain" });
+    Object.assign(ic.style, { width: "72px", height: "72px", objectFit: "contain" });
     const card = el("div.pin-card", { style: { left: p.x + "px", top: p.y + "px", transform: `rotate(${p.r}deg)`, zIndex: 6 } }, [
       ic,
       el("div", { style: { fontSize: "16px", fontWeight: "900", color: "var(--navy)" }, text: f.label }),

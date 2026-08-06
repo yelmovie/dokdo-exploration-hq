@@ -59,11 +59,11 @@ export default function RouteRestoreScene(ctx) {
     }))));
 
   /* ---- 캐릭터 ---- */
-  placeAsset(layer, DOKDO.boyScout, { x: 1062, y: 452, w: 200, h: 262, alt: "탐험가 소년", z: 3 });
+  placeAsset(layer, DOKDO.boyScout, { x: 1062, y: 452, w: 200, h: 262, alt: "탐험가 소년", z: 3, shadow: true });
 
   /* ---- 우측: 문제 패널 (좁게) ---- */
-  const board = el("div.q-board", { style: { ...pos(748, 128, 500, 500) } }, [el("div.q-board__clip")]);
-  const qTitle = el("div.q-board__title", { style: { fontSize: "17px" } });
+  const board = el("div.q-board", { style: { ...pos(748, 100, 512, 574) } }, [el("div.q-board__clip")]);
+  const qTitle = el("div.q-board__title", { style: { fontSize: "15.5px", lineHeight: "1.45" } });
   const workArea = el("div", { style: { flex: "1", minHeight: "0", overflowY: "auto", position: "relative", paddingRight: "4px" } });
   board.appendChild(qTitle);
   board.appendChild(workArea);
@@ -111,7 +111,7 @@ export default function RouteRestoreScene(ctx) {
     workArea.appendChild(qc.node);
     workArea.appendChild(nextHolder);
     hintHolder.innerHTML = "";
-    hintHolder.appendChild(hintFold(q.clue || "단서 칩을 다시 읽어 봐요", { x: 748, y: 648 }));
+    hintHolder.appendChild(hintFold(q.clue || "단서 칩을 다시 읽어 봐요", { x: 30, y: 644 }));
   }
 
   return root;

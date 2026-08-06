@@ -121,11 +121,11 @@ export default function GeologyAnalysisScene(ctx) {
   }));
 
   /* ---- 캐릭터 ---- */
-  placeAsset(layer, DOKDO.robotCrab, { x: 440, y: 540, w: 150, h: 165, alt: "분석 로봇", float: true, z: 3 });
-  placeAsset(layer, DOKDO.girlScout, { x: 30, y: 528, w: 170, h: 190, alt: "탐험가 소녀", z: 3 });
+  placeAsset(layer, DOKDO.robotCrab, { x: 440, y: 540, w: 150, h: 165, alt: "분석 로봇", float: true, z: 3, shadow: true });
+  placeAsset(layer, DOKDO.girlScout, { x: 30, y: 528, w: 170, h: 190, alt: "탐험가 소녀", z: 3, shadow: true });
 
   /* ---- 우측: 문제 보드 + 단서 게이팅 잠금 오버레이 ---- */
-  const board = el("div.q-board", { style: { ...pos(620, 128, 640, 545) } }, [el("div.q-board__clip")]);
+  const board = el("div.q-board", { style: { ...pos(620, 128, 640, 512) } }, [el("div.q-board__clip")]);
   const badgeRow = el("div.row", { style: { justifyContent: "center", gap: "8px" } });
   const qTitle = el("div.q-board__title");
   const qHolder = el("div", { style: { flex: "1", overflowY: "auto", paddingRight: "4px" } });

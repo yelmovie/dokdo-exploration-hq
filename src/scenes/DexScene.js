@@ -3,7 +3,7 @@
    미션·관찰·기록에서 모은 카드를 한눈에. 잠긴 카드는 흐림+? 로 표시.
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
-import { buildScene, button, backButton, modal } from "../components/ui.js";
+import { buildScene, button, backButton, modal, titleRibbon } from "../components/ui.js";
 import PAGES from "../config/pageConfig.js";
 import { DEX_CARDS, DEX_GROUPS } from "../data/dexData.js";
 import AudioManager from "../managers/AudioManager.js";
@@ -16,15 +16,7 @@ export default function DexScene(ctx) {
   layer.appendChild(el("div.row", { style: { position: "absolute", left: "22px", top: "20px", gap: "12px", zIndex: 12 } }, [
     backButton(() => ctx.navigate("missionMap")),
   ]));
-  layer.appendChild(el("div", {
-    style: {
-      position: "absolute", left: "50%", top: "20px", transform: "translateX(-50%)", zIndex: 10,
-      background: "rgba(20,54,92,.85)", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,.3)",
-      color: "#fff", fontWeight: "800", fontSize: "19px",
-      padding: "9px 26px", borderRadius: "999px", boxShadow: "var(--shadow)", whiteSpace: "nowrap",
-    },
-    text: `독도 대백과 — ${owned.size} / ${DEX_CARDS.length} 수집`,
-  }));
+  titleRibbon(layer, `독도 대백과 — ${owned.size} / ${DEX_CARDS.length} 수집`, { top: 14 });
 
   const grid = el("div.dex-grid", { style: { position: "absolute", left: "60px", right: "60px", top: "92px", bottom: "40px", overflowY: "auto", padding: "6px", zIndex: 6 } });
   layer.appendChild(grid);

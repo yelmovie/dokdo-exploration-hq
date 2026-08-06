@@ -4,7 +4,7 @@
    놓인다. 패널은 우하단 상세 카드 하나뿐. HUD: 진행·도감.
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
-import { buildScene, button, backButton, toast, coachify, speech } from "../components/ui.js";
+import { buildScene, button, backButton, toast, coachify, speech, titleRibbon } from "../components/ui.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { MISSIONS, isAllComplete, missionPageKey } from "../data/missions.js";
@@ -16,9 +16,9 @@ const NODE_POS = {
   route:        { x: 33, y: 60 },
   geology:      { x: 43, y: 53 },
   history:      { x: 52, y: 46 },
-  ecology:      { x: 61, y: 39 },
-  briefing:     { x: 69, y: 32 },
-  presentation: { x: 76, y: 24 },
+  ecology:      { x: 60, y: 41 },
+  briefing:     { x: 69, y: 33 },
+  presentation: { x: 78, y: 21 },
 };
 const NODE_ICON = {
   route: "compassRose", geology: "coreSample", history: "oldBook",
@@ -33,16 +33,7 @@ export default function MissionMapScene(ctx) {
   layer.appendChild(el("div.row", { style: { position: "absolute", left: "22px", top: "20px", gap: "12px", zIndex: 12 } }, [
     backButton(() => ctx.navigate("main")),
   ]));
-  layer.appendChild(el("div", {
-    style: {
-      position: "absolute", left: "50%", top: "20px", transform: "translateX(-50%)", zIndex: 10,
-      background: "rgba(20,54,92,.85)", backdropFilter: "blur(6px)",
-      border: "1px solid rgba(255,255,255,.3)",
-      color: "#fff", fontWeight: "800", fontSize: "19px",
-      padding: "9px 26px", borderRadius: "999px", boxShadow: "var(--shadow)", whiteSpace: "nowrap",
-    },
-    text: "탐사 항로도 — 울릉도에서 독도까지",
-  }));
+  titleRibbon(layer, "탐사 항로도 — 울릉도에서 독도까지", { top: 14 });
 
   /* HUD: 진행 + 도감 */
   const doneCount = MISSIONS.filter((m) => save.isCompleted(m.key)).length;
@@ -66,7 +57,7 @@ export default function MissionMapScene(ctx) {
       type: "button",
       style: {
         position: "absolute", left: p.x + "%", top: p.y + "%", transform: "translate(-50%,-50%)",
-        width: "88px", height: "88px", borderRadius: "50%", zIndex: 6,
+        width: "100px", height: "100px", borderRadius: "50%", zIndex: 6,
         border: `4px solid ${ring}`, cursor: unlocked ? "pointer" : "not-allowed",
         background: "radial-gradient(circle at 40% 32%, rgba(255,255,255,.97), rgba(233,242,250,.92))",
         boxShadow: "0 8px 18px rgba(60,40,10,.35)", fontFamily: "inherit",
@@ -76,7 +67,7 @@ export default function MissionMapScene(ctx) {
     });
     const ic = assetImg(DOKDO[NODE_ICON[m.key]], m.title);
     Object.assign(ic.style, {
-      width: "70%", height: "70%", objectFit: "contain",
+      width: "86%", height: "86%", objectFit: "contain",
       filter: unlocked ? "none" : "grayscale(1) opacity(.55)",
     });
     node.appendChild(ic);
@@ -105,7 +96,7 @@ export default function MissionMapScene(ctx) {
 
     layer.appendChild(el("div", {
       style: {
-        position: "absolute", left: p.x + "%", top: `calc(${p.y}% + 52px)`, transform: "translate(-50%,0)",
+        position: "absolute", left: p.x + "%", top: `calc(${p.y}% + 58px)`, transform: "translate(-50%,0)",
         fontSize: "12.5px", fontWeight: "900", color: "#fff", zIndex: 6,
         background: "rgba(20,54,92,.82)", padding: "2px 11px", borderRadius: "999px", whiteSpace: "nowrap",
         pointerEvents: "none",

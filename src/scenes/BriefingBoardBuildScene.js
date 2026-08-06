@@ -7,7 +7,7 @@
    - 5칸 완성 → 사실 확인 문제 → 미션 완료
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, modal, button, toast, pressable } from "../components/ui.js";
+import { buildScene, placeAsset, quiz, pos, modal, button, toast, pressable, collapsible } from "../components/ui.js";
 import { makeDraggable } from "../components/interactions.js";
 import { missionFrame, hintFold, nextCoachButton, completeMission } from "./_shared.js";
 import { DOKDO } from "../config/assetManifest.js";
@@ -35,49 +35,29 @@ export default function BriefingBoardBuildScene(ctx) {
   const placedNow = { ...save.get("briefingBoard") }; // field -> cardId (이어하기 복원)
   let selectedCard = null;
 
-  /* ---- 좌측: 카드 보관함 ---- */
-  const tray = el("div", {
-    style: {
-      ...pos(24, 108, 300, 560), zIndex: 6, background: "rgba(255,255,255,.94)",
-      border: "2px solid var(--panel-line)", borderRadius: "18px", boxShadow: "var(--shadow)",
-      display: "flex", flexDirection: "column", gap: "8px", padding: "14px", overflowY: "auto",
-    },
-  });
-  tray.appendChild(el("div", { style: { fontSize: "16px", fontWeight: "900", color: "var(--navy)", textAlign: "center" }, text: "🗂️ 근거 카드 보관함" }));
-  const trayBody = el("div.col", { style: { gap: "8px" } });
-  tray.appendChild(trayBody);
-  layer.appendChild(tray);
-
-  /* ---- 중앙: 브리핑 보드 5칸 ---- */
-  const boardPanel = el("div", {
-    style: {
-      ...pos(350, 108, 640, 560), zIndex: 6,
-      background: "linear-gradient(160deg,#d9a05b 0%,#c8904e 100%)",
-      border: "6px solid #8a5a2b", borderRadius: "20px", boxShadow: "var(--shadow)",
-      display: "flex", flexDirection: "column", gap: "8px", padding: "16px",
-    },
-  });
-  boardPanel.appendChild(el("div", {
-    style: { textAlign: "center", fontSize: "19px", fontWeight: "900", color: "#fff", textShadow: "0 1px 3px rgba(0,0,0,.4)" },
-    text: "📌 독도 브리핑 보드 — 근거로 설명해요",
-  }));
-  const zoneWrap = el("div", { style: { flex: "1", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gridAutoRows: "1fr", gap: "10px" } });
-  boardPanel.appendChild(zoneWrap);
-  layer.appendChild(boardPanel);
-
+  /* ---- 드롭존: 배경 그림의 코르크보드 메모 위에 직접 (판때기 없음) ----
+     좌표는 bg_board.jpg 에 그려진 5개 메모지 실측값 */
+  const ZONE_RECT = {
+    location:   { x: 314, y: 172, w: 162, h: 136 },  // '독도 기본 정보' 메모
+    geology:    { x: 716, y: 176, w: 152, h: 140 },  // '지리적 특징' 메모
+    history:    { x: 502, y: 198, w: 196, h: 164 },  // '역사적 사실' 메모
+    ecology:    { x: 312, y: 324, w: 158, h: 150 },  // '독도의 생태' 메모
+    protection: { x: 714, y: 328, w: 166, h: 134 },  // '우리의 다짐' 메모
+  };
   const zones = new Map();
   BRIEFING_FIELDS.forEach((f) => {
+    const r = ZONE_RECT[f.key];
     const z = el("div.board-zone", {
       style: {
-        border: "2px dashed #c9962a", borderRadius: "14px", background: "rgba(255,252,243,.9)",
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start",
-        gap: "4px", padding: "8px", cursor: "pointer", minHeight: "0", overflow: "hidden",
+        ...pos(r.x, r.y, r.w, r.h), zIndex: 6,
+        border: "2.5px dashed rgba(201,150,42,.85)", borderRadius: "12px",
+        background: "rgba(255,255,255,.06)",
+        display: "flex", alignItems: "flex-end", justifyContent: "center",
+        padding: "6px", cursor: "pointer",
+        transition: "background .15s, border-color .15s",
       },
     }, [
-      el("div.row", { style: { alignItems: "center", gap: "6px", flex: "0 0 auto" } }, [
-        el("span", { style: { width: "10px", height: "10px", borderRadius: "50%", background: f.color, display: "inline-block" } }),
-        el("span", { style: { fontSize: "15px", fontWeight: "900", color: "var(--navy)" }, text: `${f.icon} ${f.label}` }),
-      ]),
+      el("span", { style: { fontSize: "12px", fontWeight: "900", color: "#fff", background: f.color, padding: "1px 10px", borderRadius: "999px", boxShadow: "var(--shadow-sm)", pointerEvents: "none" }, text: `${f.icon} ${f.label} 근거 놓기` }),
     ]);
     z.dataset.field = f.key;
     pressable(z);
@@ -85,37 +65,44 @@ export default function BriefingBoardBuildScene(ctx) {
       if (selectedCard) { AudioManager.unlock(); tryPlace(selectedCard, f.key); }
     });
     zones.set(f.key, z);
-    zoneWrap.appendChild(z);
+    layer.appendChild(z);
   });
 
-  /* ---- 우측: 검토 기준 ---- */
-  layer.appendChild(el("div.panel", {
-    style: { ...pos(1010, 108, 250), zIndex: 6, padding: "14px", display: "flex", flexDirection: "column", gap: "8px" },
-  }, [
-    el("div", { style: { fontSize: "15px", fontWeight: "900", color: "var(--navy)" }, text: "🔎 검토 기준" }),
-    ...[["✔️", "사실성", "확인할 수 있는 내용인가?"], ["📎", "근거성", "출처 있는 자료인가?"], ["⚖️", "균형", "5개 영역이 고루 있는가?"], ["🗣️", "표현", "설명하는 문장인가?"]].map(([i, t, d]) =>
-      el("div", {}, [
-        el("div", { style: { fontSize: "13.5px", fontWeight: "900", color: "var(--ink)" }, text: `${i} ${t}` }),
-        el("div", { style: { fontSize: "12.5px", fontWeight: "600", color: "var(--ink-soft)", wordBreak: "keep-all" }, text: d }),
-      ])),
-  ]));
+  /* ---- 하단 책상: 카드 보관함 (책상 위에 놓인 카드들) ---- */
+  const tray = el("div", { style: { ...pos(150, 498, 980, 210), zIndex: 7 } });
+  tray.appendChild(el("div.pill", { style: { background: "var(--navy)", fontFamily: "var(--font-display)", marginBottom: "6px" }, text: "🗂 근거 카드 — 알맞은 메모지에 붙여요" }));
+  const trayBody = el("div.row", { style: { gap: "8px", flexWrap: "wrap", alignItems: "flex-start" } });
+  tray.appendChild(trayBody);
+  layer.appendChild(tray);
 
-  placeAsset(layer, DOKDO.seagullMail, { x: 1050, y: 470, w: 190, h: 220, alt: "갈매기 집배원", float: true, z: 3 });
+  /* ---- 우측: 검토 기준 (수납) ---- */
+  layer.appendChild(collapsible({
+    title: "검토 기준", icon: "🔎",
+    style: { ...pos(986, 96, 276), zIndex: 9 },
+    body: [el("div.col", { style: { gap: "7px" } },
+      [["✔️", "사실성", "확인할 수 있는 내용인가?"], ["📎", "근거성", "출처 있는 자료인가?"], ["⚖️", "균형", "5개 영역이 고루 있는가?"], ["🗣️", "표현", "설명하는 문장인가?"]].map(([i, t, d]) =>
+        el("div", {}, [
+          el("div", { style: { fontSize: "13.5px", fontWeight: "900", color: "var(--ink)" }, text: `${i} ${t}` }),
+          el("div", { style: { fontSize: "12.5px", fontWeight: "600", color: "var(--ink-soft)", wordBreak: "keep-all" }, text: d }),
+        ])))],
+  }));
 
-  const progChip = el("div.hud-chip", { style: { position: "absolute", right: "150px", top: "72px", zIndex: 12 } });
+  placeAsset(layer, DOKDO.seagullMail, { x: 1074, y: 484, w: 180, h: 210, alt: "갈매기 집배원", float: true, z: 3, shadow: true });
+
+  const progChip = el("div.hud-chip", { style: { position: "absolute", left: "24px", top: "96px", zIndex: 12 } });
   layer.appendChild(progChip);
 
   const hintHolder = el("div");
   layer.appendChild(hintHolder);
-  hintHolder.appendChild(hintFold("카드의 문장에 ‘확인할 수 있는 사실’이 있는지 봐요. 느낌·상상만 있는 카드는 근거가 약해요.", { x: 24, y: 660 }));
+  hintHolder.appendChild(hintFold("카드의 문장에 ‘확인할 수 있는 사실’이 있는지 봐요. 느낌·상상만 있는 카드는 근거가 약해요.", { x: 24, y: 652 }));
 
   /* ---- 카드 렌더링 ---- */
   function cardNode(card) {
     const isWeak = !card.strong;
     const c = el("div.order__card", {
-      style: { flexDirection: "column", gap: "3px", padding: "9px 10px", borderColor: "#b9c7d6", width: "100%" },
+      style: { flexDirection: "column", gap: "3px", padding: "7px 9px", borderColor: "#b9c7d6", width: "158px", minHeight: "0" },
     }, [
-      el("div", { style: { fontSize: "13.5px", fontWeight: "800", lineHeight: "1.4", whiteSpace: "pre-line" }, text: card.label }),
+      el("div", { style: { fontSize: "12.5px", fontWeight: "800", lineHeight: "1.35", whiteSpace: "pre-line" }, text: card.label }),
       card.strong
         ? el("div", { style: { fontSize: "11px", fontWeight: "700", color: "var(--sea-deep)", background: "#eaf4fd", borderRadius: "999px", padding: "1px 8px" }, text: "📎 " + card.source })
         : el("div", { style: { fontSize: "11px", fontWeight: "700", color: "#6b5310", background: "#fff3cd", borderRadius: "999px", padding: "1px 8px" }, text: "출처 없음" }),
@@ -149,11 +136,13 @@ export default function BriefingBoardBuildScene(ctx) {
       const card = BRIEFING_CARDS.find((c) => c.id === cid);
       if (!card) return;
       z.style.borderStyle = "solid";
+      z.style.background = "rgba(255,255,255,.4)";
       const n = el("div.zone-card", {
         style: {
           background: "#fff", border: "2px solid #c9962a", borderRadius: "10px",
-          padding: "6px 8px", fontSize: "12px", fontWeight: "800", color: "var(--ink)",
+          padding: "6px 8px", fontSize: "11.5px", fontWeight: "800", color: "var(--ink)",
           lineHeight: "1.35", whiteSpace: "pre-line", cursor: "pointer", width: "100%",
+          boxShadow: "2px 3px 8px rgba(90,64,20,.3)", transform: "rotate(-1.5deg)",
         },
         text: card.label,
         onClick: (e) => {

@@ -24,8 +24,15 @@ export function buildScene({ bg, veil = "none" } = {}) {
   return { root, layer };
 }
 
-/** 캐릭터/오브젝트 배치 (float: 둥실 애니메이션) */
-export function placeAsset(layer, src, { x, y, w, h, alt = "", float = false, z = 2 } = {}) {
+/** 캐릭터/오브젝트 배치 (float: 둥실, shadow: 바닥 그림자 타원) */
+export function placeAsset(layer, src, { x, y, w, h, alt = "", float = false, z = 2, shadow = false } = {}) {
+  if (shadow) {
+    const sh = el("div.floor-shadow", { style: {
+      left: (x + w * 0.14) + "px", top: (y + h - 14) + "px",
+      width: (w * 0.72) + "px", height: "26px", zIndex: String(z - 1),
+    } });
+    layer.appendChild(sh);
+  }
   const img = assetImg(src, alt);
   Object.assign(img.style, {
     position: "absolute", left: x + "px", top: y + "px",
@@ -35,6 +42,42 @@ export function placeAsset(layer, src, { x, y, w, h, alt = "", float = false, z 
   if (float) img.classList.add("floaty");
   layer.appendChild(img);
   return img;
+}
+
+/** 리본형 씬 타이틀 (상단 중앙) */
+export function titleRibbon(layer, text, { top = 18 } = {}) {
+  const r = el("div.ribbon", { text });
+  const wrap = el("div", { style: { position: "absolute", left: "50%", top: top + "px", transform: "translateX(-50%)", zIndex: 10 } }, [r]);
+  layer.appendChild(wrap);
+  return wrap;
+}
+
+/** 정답 도장 연출 */
+export function stamp(container, text = "통과!") {
+  const s = el("div.stamp", { text });
+  container.appendChild(s);
+  setTimeout(() => { s.style.transition = "opacity .4s"; s.style.opacity = "0"; setTimeout(() => s.remove(), 420); }, 1400);
+}
+
+/** 도감 카드 획득 비행 연출 — 화면 우상단으로 날아감 */
+export function flyToDex(stage, fromEl, icon = "📖") {
+  const sr = stage.getBoundingClientRect();
+  const fr = (fromEl || stage).getBoundingClientRect();
+  const scale = sr.width / 1280;
+  const card = el("div.fly-card", { text: icon, style: {
+    left: ((fr.left - sr.left) / scale + 20) + "px",
+    top: ((fr.top - sr.top) / scale + 20) + "px",
+  } });
+  stage.appendChild(card);
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      card.style.left = "1180px";
+      card.style.top = "26px";
+      card.style.transform = "scale(.4) rotate(14deg)";
+      card.style.opacity = "0.2";
+    });
+  });
+  setTimeout(() => card.remove(), 900);
 }
 
 /** 스테이지 명패 이미지 */
@@ -290,6 +333,7 @@ export function quiz(q, { layout = "column", confirmLabel = "정답 확인", con
     }
     done = true;
     AudioManager.correct();
+    stamp(node, "통과!");
     fb.className = "feedback show feedback--ok";
     fb.innerHTML = "✅ <b>정답!</b> " + (q.rationale || "") +
       (q.sourceRef ? ` <span class="src-tag">📎 ${q.sourceRef}</span>` : "");

@@ -37,8 +37,8 @@ export default function MainTitleScene(ctx) {
   }));
 
   /* ---- 캐릭터: 1.5배, 하단 기준 배치 (잘림 방지: 720 안쪽) ---- */
-  placeAsset(layer, DOKDO.otterSailor, { x: 34, y: 292, w: 345, h: 425, alt: "강치 항해사", float: true, z: 4 });
-  placeAsset(layer, DOKDO.girlScout, { x: 846, y: 218, w: 420, h: 500, alt: "탐험가 소녀", z: 4 });
+  placeAsset(layer, DOKDO.otterSailor, { x: 34, y: 344, w: 345, h: 425, alt: "강치 항해사", float: true, z: 4, shadow: true });
+  placeAsset(layer, DOKDO.girlScout, { x: 790, y: 242, w: 420, h: 500, alt: "탐험가 소녀", z: 4, shadow: true });
   placeAsset(layer, DOKDO.gull, { x: 850, y: 70, w: 100, h: 82, alt: "갈매기", float: true, z: 3 });
 
   /* ---- 하단 버튼 ---- */
@@ -50,6 +50,7 @@ export default function MainTitleScene(ctx) {
     } }),
     hasSave ? button("처음부터", { variant: "sea", size: "lg", onClick: () => ctx.navigate("briefing") }) : null,
   ].filter(Boolean));
+  btnRow.querySelectorAll(".btn").forEach((b) => { b.style.width = "200px"; }); // 두 버튼 가로 통일
   layer.appendChild(btnRow);
 
   /* ---- 우측 상단: 소리 · 설정 아이콘 ---- */
