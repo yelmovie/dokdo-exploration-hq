@@ -141,7 +141,6 @@ export default function MissionMapScene(ctx) {
 
   function showDetail(m, unlocked) {
     const completed = save.isCompleted(m.key);
-    const score = save.get("missionScores")[m.key] || 0;
     detail.innerHTML = "";
     const head = el("div.row", { style: { alignItems: "center", gap: "10px" } });
     const hi = assetImg(DOKDO[NODE_ICON[m.key]], "");
@@ -150,8 +149,8 @@ export default function MissionMapScene(ctx) {
     head.appendChild(el("div", { style: { fontSize: "20px", fontWeight: "900", color: "var(--navy)", lineHeight: "1.3" }, text: m.title }));
     detail.appendChild(head);
     detail.appendChild(el("div", { style: { fontSize: "16px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.55", wordBreak: "keep-all" }, text: m.desc }));
-    if (completed) detail.appendChild(el("div", { style: { fontSize: "15px", fontWeight: "800", color: "var(--navy)" },
-      text: `탐사 점수 ${score}점` }));
+    if (completed) detail.appendChild(el("div", { style: { fontSize: "15px", fontWeight: "800", color: "var(--green-deep)" },
+      text: "✅ 완료한 미션이에요" }));
     if (unlocked) {
       detail.appendChild(el("div.row", { style: { justifyContent: "center", marginTop: "auto" } }, [
         button(completed ? "다시 도전" : "미션 시작", { variant: "gold", size: "lg", onClick: () => ctx.navigate(missionPageKey(m.key)) }),
