@@ -408,22 +408,38 @@ export default function CompletionGalleryScene(ctx) {
     if (badge) g.drawImage(badge, W / 2 - 102, 112, 204, 204);
     g.fillStyle = "#14365c"; g.textAlign = "center";
     g.font = "900 61px 'Malgun Gothic', sans-serif";
-    g.fillText("독도 탐사본부 수료증", W / 2, 400);
+    g.fillText("독도 탐사본부 수료증", W / 2, 396);
     g.font = "700 33px 'Malgun Gothic', sans-serif";
     g.fillStyle = "#5b6b7c";
     const who = (c.grade ? `${c.grade}학년 ` : "") + (c.classNo ? `${c.classNo}반 ` : "") + (c.studentNo ? `${c.studentNo}번 ` : "") + "탐사대원";
-    g.fillText(who, W / 2, 464);
+    g.fillText(who, W / 2, 452);
+
+    // 학교·이름 손글씨 칸 — 개인정보는 앱이 받지 않고, 학생이 사인처럼 직접 쓴다
+    g.font = "700 27px 'Malgun Gothic', sans-serif";
+    g.fillStyle = "#5b6b7c";
+    g.textAlign = "left";
+    g.strokeStyle = "#9fb0c0"; g.lineWidth = 2.5;
+    const rowY = 514; // 좌측 바위 그림을 피해 중앙 깨끗한 영역 안에만
+    g.fillText("학교", W / 2 - 320, rowY);
+    g.beginPath(); g.moveTo(W / 2 - 250, rowY + 8); g.lineTo(W / 2 - 30, rowY + 8); g.stroke();
+    g.fillText("이름", W / 2 + 30, rowY);
+    g.beginPath(); g.moveTo(W / 2 + 100, rowY + 8); g.lineTo(W / 2 + 320, rowY + 8); g.stroke();
+    g.font = "600 19px 'Malgun Gothic', sans-serif";
+    g.fillStyle = "#8a97a5";
+    g.textAlign = "center";
+    g.fillText("✍ 저장한 뒤 손글씨로 직접 써서 완성해요", W / 2, 549);
+
     g.fillStyle = "#2b3a4a";
     g.font = "700 27px 'Malgun Gothic', sans-serif";
-    g.fillText("위 대원은 독도의 위치·지형·역사·생태·보호 다섯 영역의 근거를", W / 2, 537);
-    g.fillText("스스로 수집하여 탐사 임무를 완수하였기에 이 증서를 수여합니다.", W / 2, 580);
+    g.fillText("위 대원은 독도의 위치·지형·역사·생태·보호 다섯 영역의 근거를", W / 2, 606);
+    g.fillText("스스로 수집하여 탐사 임무를 완수하였기에 이 증서를 수여합니다.", W / 2, 649);
     g.fillStyle = "#1d6b2e";
     g.font = "800 29px 'Malgun Gothic', sans-serif";
-    g.fillText("“독도는 역사·지리·국제법적으로 명백한 대한민국의 영토입니다.”", W / 2, 660);
+    g.fillText("“독도는 역사·지리·국제법적으로 명백한 대한민국의 영토입니다.”", W / 2, 706);
     const d = new Date();
     g.fillStyle = "#5b6b7c";
     g.font = "700 26px 'Malgun Gothic', sans-serif";
-    g.fillText(`${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 · 독도 탐사본부`, W / 2, 748);
+    g.fillText(`${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 · 독도 탐사본부`, W / 2, 762);
 
     // blob 다운로드 (data URL 보다 지원 폭 넓음 — 태블릿 브라우저 대응)
     const blob = await new Promise((res) => cv.toBlob(res, "image/png"));
@@ -443,7 +459,7 @@ export default function CompletionGalleryScene(ctx) {
       title: "수료증이 완성됐어요!", icon: "🖼",
       body: el("div.col", { style: { gap: "10px", minWidth: "520px" } }, [
         img,
-        el("div.tip", { html: "💾 다운로드 폴더에 저장됐어요. <b>저장이 안 보이면</b> 위 그림을 <b>길게 눌러 ‘이미지 저장’</b>을 해요.<br>카카오톡 등 앱 안 브라우저에서는 <b>Chrome 으로 열기</b>를 권장해요." }),
+        el("div.tip", { html: "✍ <b>학교와 이름 칸은 손글씨로 직접 써서</b> 나만의 사인처럼 완성해요!<br>💾 다운로드 폴더에 저장됐어요. <b>저장이 안 보이면</b> 위 그림을 <b>길게 눌러 ‘이미지 저장’</b>을 해요. 카카오톡 등 앱 안 브라우저에서는 <b>Chrome 으로 열기</b>를 권장해요." }),
       ]),
       buttons: [button("닫기", { variant: "green", onClick: () => { md.close(); setTimeout(() => URL.revokeObjectURL(url), 500); } })],
     });

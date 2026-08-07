@@ -149,6 +149,7 @@ export default function MainTitleScene(ctx) {
         html: "독도교육용 <b>자료 해석형 탐사 웹앱</b>입니다.<br>" +
           "· 수업 흐름: 도입 → 미션 1~4단계 → 브리핑 보드·발표 준비 → 수료·공유<br>" +
           "· 진행 기록은 이 기기 브라우저에만 저장됩니다(서버 없음). 수업은 한 주소로만 진행하세요.<br>" +
+          "· 이 앱은 이름 등 개인정보를 수집하지 않습니다. 학년·반·번호는 수료증 그림에만 쓰이고 이 기기 안에만 저장되며, 이름·학교는 학생이 손글씨로 직접 씁니다.<br>" +
           "· 오답 시 정답을 바로 알려 주지 않고 오개념 피드백과 힌트로 재도전을 유도합니다." }),
       el("div", {
         style: { fontSize: "13.5px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.6", background: "rgba(31,122,194,.08)", borderRadius: "10px", padding: "10px 14px", wordBreak: "keep-all" },
