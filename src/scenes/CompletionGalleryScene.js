@@ -386,12 +386,14 @@ export default function CompletionGalleryScene(ctx) {
     frame.src = `https://www.youtube-nocookie.com/embed/${v.id}?rel=0`;
     frame.allow = "accelerometer; encrypted-media; picture-in-picture; fullscreen";
     frame.allowFullscreen = true;
-    Object.assign(frame.style, { width: "720px", height: "405px", border: "0", borderRadius: "12px", background: "#000", display: "block" });
+    Object.assign(frame.style, { width: "100%", aspectRatio: "16 / 9", height: "auto", border: "0", borderRadius: "12px", background: "#000", display: "block" });
     const md = modal(ctx.stage, {
       title: v.title, icon: "🎬",
       body: el("div", {}, [frame]),
       buttons: [button("영상 닫기", { variant: "green", onClick: () => { restore(); md.close(); } })],
     });
+    // 영상이 잘리지 않게 모달 너비를 명시 (기본 max-width 720에선 패딩만큼 부족)
+    Object.assign(md.el.querySelector(".modal").style, { width: "790px", maxWidth: "94%" });
     // ESC 등 다른 경로로 닫혀도 소리 복구
     const guard = setInterval(() => { if (!md.el.isConnected) { restore(); clearInterval(guard); } }, 800);
   }
