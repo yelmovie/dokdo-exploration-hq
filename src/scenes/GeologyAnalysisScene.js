@@ -330,19 +330,24 @@ export default function GeologyAnalysisScene(ctx) {
       if (dash) ln.setAttribute("stroke-dasharray", "7 5");
       return ln;
     };
-    const dotAnchor = (fid) => {
-      const b = featBtns.get(fid);
-      return { x: b.offsetLeft + b.offsetWidth + 13, y: b.offsetTop + b.offsetHeight / 2 };
-    };
+    const featDots = new Map(), effDots = new Map(); // id -> { pad, dot }
     let tempLine = null; // 드래그 중 임시 선
+
+    /** 점(작은 원) 중심의 grid 로컬 좌표 — 스테이지 스케일 보정 */
+    function dotCenter(elm) {
+      const g = grid.getBoundingClientRect();
+      const r = elm.getBoundingClientRect();
+      const k = g.width ? grid.clientWidth / g.width : 1;
+      return { x: (r.left + r.width / 2 - g.left) * k, y: (r.top + r.height / 2 - g.top) * k };
+    }
     function drawLines() {
       svg.innerHTML = "";
       Object.entries(paired).forEach(([fid, eid]) => {
-        const eBtn = effBtns.get(eid);
-        if (!featBtns.get(fid) || !eBtn) return;
+        const fd = featDots.get(fid), ed = effDots.get(eid);
+        if (!fd || !ed) return;
         const col = PAIR_COLORS[m.pairs.findIndex((p) => p.id === fid)];
-        const a = dotAnchor(fid);
-        svg.appendChild(mkLine(a.x, a.y, eBtn.offsetLeft, eBtn.offsetTop + eBtn.offsetHeight / 2, col));
+        const a = dotCenter(fd.dot), b2 = dotCenter(ed.dot);
+        svg.appendChild(mkLine(a.x, a.y, b2.x, b2.y, col));
       });
       if (tempLine) svg.appendChild(tempLine);
     }
@@ -354,8 +359,8 @@ export default function GeologyAnalysisScene(ctx) {
         const has = !!paired[p.id];
         b.style.borderColor = has ? col : "#b9c7d6";
         b.style.background = has ? col + "18" : "#fff";
-        const dot = b.querySelector("[data-dot]");
-        if (dot) { dot.style.borderColor = has ? col : "#8fa4b8"; dot.style.background = has ? col : "#fff"; }
+        const fd = featDots.get(p.id);
+        if (fd) { fd.dot.style.borderColor = has ? col : "#8fa4b8"; fd.dot.style.background = has ? col : "#fff"; }
       });
       effects.forEach((e) => {
         const b = effBtns.get(e.id);
@@ -363,6 +368,8 @@ export default function GeologyAnalysisScene(ctx) {
         const col = owner ? PAIR_COLORS[m.pairs.findIndex((p) => p.id === owner)] : null;
         b.style.borderColor = col || "#b9c7d6";
         b.style.background = col ? col + "18" : "#fff";
+        const ed = effDots.get(e.id);
+        if (ed) { ed.dot.style.borderColor = col || "#8fa4b8"; ed.dot.style.background = col || "#fff"; }
       });
       drawLines(); // offset 읽기가 동기 레이아웃을 강제하므로 rAF 없이 즉시 정확
     }
@@ -396,87 +403,132 @@ export default function GeologyAnalysisScene(ctx) {
       const k = r.width ? grid.clientWidth / r.width : 1;
       return { x: (clientX - r.left) * k, y: (clientY - r.top) * k };
     }
-    function effectAt(clientX, clientY) {
-      for (const [eid, b] of effBtns) {
-        const r = b.getBoundingClientRect();
-        if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) return eid;
+    /** 반대편 카드/점 히트 테스트 — 카드와 터치 패드 어느 쪽에 놓아도 인식 */
+    function targetAt(btnMap, dotMap, clientX, clientY) {
+      for (const [id, b] of btnMap) {
+        const rects = [b.getBoundingClientRect()];
+        const d = dotMap.get(id);
+        if (d) rects.push(d.pad.getBoundingClientRect());
+        for (const r of rects) {
+          if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) return id;
+        }
       }
       return null;
     }
 
-    m.pairs.forEach((p, i) => {
-      const b = el("button", { type: "button", style: { ...btnBase, position: "relative" }, text: FEATURE_SHORT[p.id] || p.feature });
-      b.title = p.feature;
-      // 연결점(●): 이 점을 끌어서 오른쪽 영향 카드에 놓는다
-      const dot = el("div", { style: {
-        position: "absolute", right: "-26px", top: "50%", transform: "translateY(-50%)",
-        width: "26px", height: "26px", borderRadius: "50%", cursor: "grab",
-        background: "#fff", border: "3px solid #8fa4b8", boxShadow: "var(--shadow-sm)",
-        touchAction: "none", zIndex: 3,
+    /** 연결점: 작은 원(18px) + 넉넉한 터치 패드(44px). 양쪽 카드에 모두 붙는다 */
+    function makeDot(side) {
+      const pad = el("div", { style: {
+        position: "absolute", [side]: "-50px", top: "50%", transform: "translateY(-50%)",
+        width: "44px", height: "44px", display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: "grab", touchAction: "none", zIndex: 3,
       } });
-      dot.dataset.dot = p.id;
-      b.appendChild(dot);
+      const dot = el("div", { style: {
+        width: "18px", height: "18px", borderRadius: "50%",
+        background: "#fff", border: "2.5px solid #8fa4b8", boxShadow: "var(--shadow-sm)",
+        pointerEvents: "none",
+      } });
+      pad.appendChild(dot);
+      return { pad, dot };
+    }
 
-      dot.addEventListener("pointerdown", (ev) => {
+    /** 드래그 공통: 어느 쪽 점에서 시작해도 반대편에 놓으면 연결 */
+    function wireDrag(pad, ownDot, from) { // from: {side:"feat"|"eff", id}
+      pad.addEventListener("pointerdown", (ev) => {
         if (locked) return;
         ev.preventDefault(); ev.stopPropagation();
         AudioManager.unlock();
-        try { dot.setPointerCapture(ev.pointerId); } catch { /* 무시 */ }
-        delete paired[p.id]; // 끌기 시작하면 기존 연결은 풀고 다시
-        const col = PAIR_COLORS[i];
-        const a = dotAnchor(p.id);
+        try { pad.setPointerCapture(ev.pointerId); } catch { /* 무시 */ }
+        if (from.side === "feat") delete paired[from.id]; // 다시 끌면 기존 연결 해제
+        else for (const f of Object.keys(paired)) if (paired[f] === from.id) delete paired[f];
+        const ci = from.side === "feat"
+          ? m.pairs.findIndex((p) => p.id === from.id)
+          : Math.max(0, m.pairs.findIndex((p) => p.id === from.id));
+        const col = PAIR_COLORS[ci] || "#1f7ac2";
+        const a = dotCenter(ownDot);
         const lp = toLocal(ev.clientX, ev.clientY);
         tempLine = mkLine(a.x, a.y, lp.x, lp.y, col, true);
-        dot.style.cursor = "grabbing";
+        pad.style.cursor = "grabbing";
         paint();
       });
-      dot.addEventListener("pointermove", (ev) => {
+      pad.addEventListener("pointermove", (ev) => {
         if (!tempLine) return;
         const lp = toLocal(ev.clientX, ev.clientY);
         tempLine.setAttribute("x2", lp.x);
         tempLine.setAttribute("y2", lp.y);
-        const over = effectAt(ev.clientX, ev.clientY);
-        effects.forEach((e2) => {
-          const eb = effBtns.get(e2.id);
-          if (e2.id === over) { eb.style.borderColor = PAIR_COLORS[i]; eb.style.background = PAIR_COLORS[i] + "22"; }
-        });
+        drawLines();
+        // 드롭 후보 하이라이트
+        const overId = from.side === "feat"
+          ? targetAt(effBtns, effDots, ev.clientX, ev.clientY)
+          : targetAt(featBtns, featDots, ev.clientX, ev.clientY);
+        const overMap = from.side === "feat" ? effBtns : featBtns;
+        if (overId) {
+          const ob = overMap.get(overId);
+          ob.style.borderColor = "var(--gold-deep)";
+          ob.style.background = "#fff6da";
+        }
       });
       const endDrag = (ev) => {
         if (!tempLine) return;
         tempLine = null;
-        dot.style.cursor = "grab";
-        try { dot.releasePointerCapture(ev.pointerId); } catch { /* 무시 */ }
-        const eid = effectAt(ev.clientX, ev.clientY);
-        if (eid) {
+        pad.style.cursor = "grab";
+        try { pad.releasePointerCapture(ev.pointerId); } catch { /* 무시 */ }
+        let fid = null, eid = null;
+        if (from.side === "feat") {
+          fid = from.id;
+          eid = targetAt(effBtns, effDots, ev.clientX, ev.clientY);
+        } else {
+          eid = from.id;
+          fid = targetAt(featBtns, featDots, ev.clientX, ev.clientY);
+        }
+        if (fid && eid) {
           for (const f of Object.keys(paired)) if (paired[f] === eid) delete paired[f]; // 한 영향엔 한 특징만
-          paired[p.id] = eid;
+          paired[fid] = eid;
           AudioManager.click();
         }
         paint();
-        if (eid) autoCheck();
+        if (fid && eid) autoCheck();
       };
-      dot.addEventListener("pointerup", endDrag);
-      dot.addEventListener("pointercancel", endDrag);
+      pad.addEventListener("pointerup", endDrag);
+      pad.addEventListener("pointercancel", endDrag);
+    }
 
+    m.pairs.forEach((p) => {
+      const b = el("button", { type: "button", style: { ...btnBase, position: "relative" }, text: FEATURE_SHORT[p.id] || p.feature });
+      b.title = p.feature;
+      const { pad, dot } = makeDot("right");
+      b.appendChild(pad);
+      featDots.set(p.id, { pad, dot });
+      wireDrag(pad, dot, { side: "feat", id: p.id });
+      b.addEventListener("click", () => { // 카드 탭 = 연결 해제
+        if (locked || !paired[p.id]) return;
+        AudioManager.unlock(); AudioManager.click();
+        delete paired[p.id];
+        paint();
+      });
       featBtns.set(p.id, b);
     });
     effects.forEach((e) => {
-      const b = el("button", { type: "button", style: { ...btnBase }, text: e.effect });
+      const b = el("button", { type: "button", style: { ...btnBase, position: "relative" }, text: e.effect });
+      const { pad, dot } = makeDot("left");
+      b.appendChild(pad);
+      effDots.set(e.id, { pad, dot });
+      wireDrag(pad, dot, { side: "eff", id: e.id });
       b.addEventListener("click", () => {
         if (locked) return;
-        toast(ctx.stage, "왼쪽 특징 옆 ● 점을 끌어서 여기에 놓아요!");
+        toast(ctx.stage, "● 점을 끌어서 반대쪽 카드에 놓으면 연결돼요!");
       });
       effBtns.set(e.id, b);
     });
 
-    const grid = el("div.row", { style: { position: "relative", gap: "56px", alignItems: "stretch" } }, [
-      el("div.col", { style: { gap: "10px", flex: "0 0 176px" } }, [...featBtns.values()]),
-      el("div.col", { style: { gap: "10px", flex: "1" } }, [...effBtns.values()]),
+    const grid = el("div.row", { style: { position: "relative", gap: "104px", alignItems: "stretch" } }, [
+      el("div.col", { style: { gap: "12px", flex: "0 0 166px" } }, [...featBtns.values()]),
+      el("div.col", { style: { gap: "12px", flex: "1" } }, [...effBtns.values()]),
     ]);
     grid.appendChild(svg);
 
     const node = el("div.col", { style: { gap: "10px" } }, [
-      el("div.tip", { style: { fontSize: "14px", padding: "7px 12px" }, html: "특징 옆 <b>● 점을 끌어서</b> 어울리는 영향 카드에 놓으면 선으로 연결돼요. 4개를 다 이으면 자동으로 확인!" }),
+      el("div.tip", { style: { fontSize: "14px", padding: "7px 12px" }, html: "<b>● 점을 끌어서</b> 반대쪽 카드에 놓으면 선으로 연결돼요. 어느 쪽 점에서 시작해도 좋아요. 4개를 다 이으면 자동 확인!" }),
       grid,
       fb,
     ]);

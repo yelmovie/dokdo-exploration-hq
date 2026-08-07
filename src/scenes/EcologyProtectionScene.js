@@ -68,7 +68,7 @@ export default function EcologyProtectionScene(ctx) {
   /* ---- 캐릭터 + 말풍선 ---- */
   placeAsset(layer, DOKDO.rangerBoy, { x: 272, y: 352, w: 285, h: 355, alt: "생태 수호 대원", z: 3, shadow: true });
   placeAsset(layer, DOKDO.otterSailor, { x: 1090, y: 480, w: 175, h: 230, alt: "강치 항해사", float: true, z: 3, shadow: true });
-  speech(layer, { x: 302, y: 252, text: "실제 독도 사진으로 관찰해 보자! 내 이야기도 들려줄게…", tail: "left", width: 235 });
+  speech(layer, { x: 302, y: 252, text: "실제 독도 사진으로 관찰해 보자! 내 이야기도 들려줄게…", tail: "right", width: 235 });
 
   /* ---- 우측: 문제 보드 + 잠금 ---- */
   const board = el("div.q-board", { style: { ...pos(560, 116, 700), minHeight: "300px", maxHeight: "540px" } }, [el("div.q-board__clip")]); // 높이는 내용 맞춤
