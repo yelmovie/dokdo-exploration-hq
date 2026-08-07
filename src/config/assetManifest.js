@@ -144,6 +144,8 @@ export const DOKDO = ver({
   dohaeBan:      DK + "86.png",  // 도해금지령 문서 (도감용)
   gangchiReal:   DK + "87.png",  // 독도 강치 (자연 일러스트, 도감용)
   dokdoGuard:    DK + "88.png",  // 독도경비대 (도감용)
+  lighthouseIcon:DK + "89.png",  // 독도 등대 (도감용)
+  suibidae:      DK + "90.png",  // 독도의용수비대 (도감용)
 });
 
 /** 옛 icons/ 세트 별칭 — 원본이 사라져 DOKDO 세트로 대체 매핑 (복구 씬 호환용) */

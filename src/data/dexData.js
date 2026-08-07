@@ -39,6 +39,10 @@ export const DEX_CARDS = [
     img: DOKDO.anyongbokChar,
     desc: "조선의 어부. 일본에 두 번 건너가 울릉도와 독도가 조선 땅임을 당당히 주장했어요. 그 뒤 일본은 도해금지령을 내렸어요.",
     source: "외교부 독도: 우리 영토인 근거", how: "기록 카드 ‘안용복과 도해금지령’ 읽기" },
+  { id: "d-suibidae", group: "person", title: "독도의용수비대",
+    img: DOKDO.suibidae,
+    desc: "1953~1956년, 홍순칠 대장과 울릉도 주민들이 스스로 독도에 머물며 지킨 민간 수비대예요. 1956년 경찰에 임무를 넘겨줬어요.",
+    source: "국가보훈부 독도의용수비대", how: "최종 발표 준비 완료" },
 
   /* ---- 자연 ---- */
   { id: "d-gull", group: "nature", title: "괭이갈매기",
@@ -63,6 +67,10 @@ export const DEX_CARDS = [
     source: "사진: 외교부 독도", how: "바위섬 분석실 — 단서 4개 수집" },
 
   /* ---- 오늘의 독도 ---- */
+  { id: "d-lighthouse", group: "today", title: "독도 등대",
+    img: DOKDO.lighthouseIcon,
+    desc: "1954년 세워져 밤바다의 뱃길을 밝혀 온 등대예요. 1998년부터는 등대원이 상주하는 유인 등대로, 독도가 삶의 터전임을 보여 줘요.",
+    source: "외교부 독도: 주요시설물 현황", how: "항로 복원실 완료" },
   { id: "d-guard", group: "today", title: "독도경비대",
     img: DOKDO.dokdoGuard,
     desc: "지금 이 순간에도 독도를 지키는 경찰 경비대예요. 독도(동도)에는 경비대 숙소와 헬기장, 유인 등대가 있어요.",

@@ -5,7 +5,7 @@
    ========================================================================= */
 import { el } from "../core/dom.js";
 import { buildScene, placeAsset, quiz, pos, toast, speech } from "../components/ui.js";
-import { missionFrame, hintFold, nextCoachButton, completeMission } from "./_shared.js";
+import { missionFrame, hintFold, nextCoachButton, completeMission, awardDex } from "./_shared.js";
 import { routeDraw } from "../components/interactions.js";
 import { DOKDO, BACKGROUNDS } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
@@ -104,8 +104,10 @@ export default function RouteRestoreScene(ctx) {
       if (qi < ROUTE_QUESTIONS.length - 1) {
         nextHolder.appendChild(nextCoachButton("다음 문제", () => { qi++; renderQuiz(); }));
       } else {
-        nextHolder.appendChild(nextCoachButton("미션 완료!", () =>
-          completeMission(ctx, "route", { evidence: "c-loc", message: "독도는 울릉도 동쪽 87.4km, 우리 생활권의 섬임을 확인했어요." }), { icon: "🏅" }));
+        nextHolder.appendChild(nextCoachButton("미션 완료!", () => {
+          awardDex(ctx, "d-lighthouse"); // 복원한 뱃길을 지키는 등대 카드
+          completeMission(ctx, "route", { evidence: "c-loc", message: "독도는 울릉도 동쪽 87.4km, 우리 생활권의 섬임을 확인했어요." });
+        }, { icon: "🏅" }));
       }
     } });
     workArea.appendChild(qc.node);

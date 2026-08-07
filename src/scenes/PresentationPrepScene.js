@@ -7,7 +7,7 @@
 import { el } from "../core/dom.js";
 import { buildScene, placeAsset, quiz, pos, collapsible, modal, button, pillHead, speech, toast } from "../components/ui.js";
 import { orderInteraction } from "../components/interactions.js";
-import { missionFrame, nextCoachButton, completeMission } from "./_shared.js";
+import { missionFrame, nextCoachButton, completeMission, awardDex } from "./_shared.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { PRESENTATION_ORDER, PRESENTATION_FIX } from "../data/questions.js";
@@ -289,6 +289,7 @@ export default function PresentationPrepScene(ctx) {
         button("발표 준비 완료!", { variant: "gold", icon: "🏅", onClick: () => {
           cleanupRec();
           md.close();
+          awardDex(ctx, "d-suibidae"); // 발표로 독도를 알리는 우리 = 독도를 지켜 온 사람들
           completeMission(ctx, "presentation", { message: "발표 순서·근거 문장·나의 마무리 문장까지 모두 완성했어요!" });
         } }),
       ],
