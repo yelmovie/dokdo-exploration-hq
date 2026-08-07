@@ -28,11 +28,12 @@ export default function BriefingBoardBuildScene(ctx) {
   });
   frame.setStep(1, 2, "활동");
 
-  /* 수집한 근거 카드 + 약한 카드 1장만 섞기 (6장 균형 배치) */
-  const owned = new Set(save.get("evidenceCards"));
+  /* 근거 카드 5장 + 약한 카드 1장 (6장 균형 배치)
+     강한 카드는 항상 전부 제공 — 관리자 '전체 단계 해금'으로 진입해도
+     (미션 수집 기록이 없어도) 보드 5칸을 채울 수 있어야 활동이 안 막힌다 */
   const weakCards = BRIEFING_CARDS.filter((c) => !c.strong);
   const weakPick = weakCards[Math.floor(Math.random() * weakCards.length)];
-  const pool = BRIEFING_CARDS.filter((c) => (c.strong ? owned.has(c.id) : c === weakPick))
+  const pool = BRIEFING_CARDS.filter((c) => c.strong || c === weakPick)
     .sort(() => Math.random() - 0.5);
   const placedNow = { ...save.get("briefingBoard") }; // field -> cardId (이어하기 복원)
   let selectedCard = null;

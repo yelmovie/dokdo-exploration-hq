@@ -271,6 +271,8 @@ export function orderInteraction({ items, answer, slotW = 150, slotH = 80, onRes
     fb.className = "feedback show feedback--ok";
     fb.textContent = freeOrder ? "나만의 순서가 완성됐어요!" : "✅ 순서를 바르게 복원했어요!";
     confirm.style.display = "none";
+    trayRow.style.display = "none";                 // 빈 트레이 공백 제거
+    confirm.parentElement.style.display = "none";   // 확인 버튼 줄 공백 제거
     slots.forEach((s) => s.classList.add("is-correct"));
     if (onResult) onResult(true, placed.map((p) => p.id));
   });

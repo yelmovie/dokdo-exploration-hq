@@ -5,7 +5,7 @@
    요약/가이드는 토글 수납. 빈칸 선택·입력은 presentationDraft에 자동 저장.
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, collapsible, modal, button, pillHead, speech } from "../components/ui.js";
+import { buildScene, placeAsset, quiz, pos, collapsible, modal, button, pillHead, speech, toast } from "../components/ui.js";
 import { orderInteraction } from "../components/interactions.js";
 import { missionFrame, nextCoachButton, completeMission } from "./_shared.js";
 import { DOKDO } from "../config/assetManifest.js";
@@ -96,11 +96,11 @@ export default function PresentationPrepScene(ctx) {
   /* ---- 캐릭터: 발표 소녀(무대 좌측) ---- */
   // 발표자는 무대 우측(스크린 옆) — 좌 토글·중앙 스크린·우 발표자로 화면 균형.
   // 새 63.png 는 2:3 전신 — 발이 무대 바닥(화분 라인 y≈500)에 닿게
-  placeAsset(layer, DOKDO.presenterGirl, { x: 1030, y: 200, w: 200, h: 300, alt: "발표 준비 탐험가", z: 3, shadow: true });
-  speech(layer, { x: 995, y: 96, text: "무대 스크린에 나만의 발표를 완성해 보자!", tail: "right", width: 230 });
+  placeAsset(layer, DOKDO.presenterGirl, { x: 1030, y: 245, w: 200, h: 300, alt: "발표 준비 탐험가", z: 3, shadow: true });
+  speech(layer, { x: 995, y: 150, text: "무대 스크린에 나만의 발표를 완성해 보자!", tail: "right", width: 230 });
 
   /* ---- 중앙: 활동 보드 (배경 무대의 스크린 위에) ---- */
-  const boardEl = el("div.q-board", { style: { ...pos(352, 92, 600, 556) } }, [el("div.q-board__clip")]);
+  const boardEl = el("div.q-board", { style: { ...pos(352, 92, 600), maxHeight: "570px" } }, [el("div.q-board__clip")]); // 높이는 내용 맞춤
   boardEl.style.background = "rgba(252, 254, 255, .62)";
   const qTitle = el("div.q-board__title");
   const qHolder = el("div", { style: { flex: "1", overflowY: "auto", paddingRight: "4px" } });
@@ -227,23 +227,64 @@ export default function PresentationPrepScene(ctx) {
         el("div", { style: { fontSize: "12px", fontWeight: "900", color: "var(--green-deep)" }, text: "마무리" }),
         el("div", { style: { fontSize: "16px", fontWeight: "800", color: "var(--ink)", lineHeight: "1.55" }, text: closingLine }),
       ]),
-      el("div.tip", { html: "🎤 발표문을 <b>큰 소리로</b> 한 번 읽어 보며 연습해요!" }),
+      el("div.tip", { html: "🎤 발표문을 <b>큰 소리로</b> 읽으며 녹음해 보고, 내 발표를 직접 들어 봐요!" }),
     ]);
+
+    /* ---- 발표 녹음 + 들어보기 (이 기기에서만, 저장 안 함) ---- */
+    let recorder = null, recURL = null, chunks = [];
+    const player = document.createElement("audio");
+    const playBtn = button("들어보기", { variant: "ghost", icon: "▶", disabled: true, onClick: () => {
+      AudioManager.unlock();
+      player.currentTime = 0;
+      player.play();
+    } });
+    const recBtn = button("녹음 시작", { variant: "sea", icon: "🎙", onClick: async () => {
+      if (recorder && recorder.state === "recording") { recorder.stop(); return; }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        chunks = [];
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+        recorder.onstop = () => {
+          stream.getTracks().forEach((t) => t.stop()); // 마이크 해제
+          if (recURL) URL.revokeObjectURL(recURL);
+          recURL = URL.createObjectURL(new Blob(chunks, { type: recorder.mimeType || "audio/webm" }));
+          player.src = recURL;
+          playBtn.disabled = false;
+          recBtn.querySelector("span:last-child").textContent = "다시 녹음";
+          toast(ctx.stage, "녹음 완료! ‘들어보기’로 내 발표를 확인해요.");
+        };
+        recorder.start();
+        recBtn.querySelector("span:last-child").textContent = "녹음 끝내기";
+        toast(ctx.stage, "녹음 중… 발표문을 큰 소리로 읽어요!");
+      } catch {
+        toast(ctx.stage, "마이크 사용을 허용해야 녹음할 수 있어요.");
+      }
+    } });
+    content.appendChild(el("div.row", { style: { justifyContent: "center", gap: "10px" } }, [recBtn, playBtn]));
+
+    function cleanupRec() {
+      if (recorder && recorder.state === "recording") recorder.stop();
+      player.pause();
+      if (recURL) { URL.revokeObjectURL(recURL); recURL = null; }
+    }
+
     const md = modal(ctx.stage, {
       title: "발표 연습 — 전체 발표문", icon: "🎤", body: content,
       buttons: [
-        button("더 다듬기", { variant: "ghost", onClick: () => md.close() }),
+        button("더 다듬기", { variant: "ghost", onClick: () => { cleanupRec(); md.close(); } }),
         button("발표 준비 완료!", { variant: "gold", icon: "🏅", onClick: () => {
+          cleanupRec();
           md.close();
           completeMission(ctx, "presentation", { message: "발표 순서·근거 문장·나의 마무리 문장까지 모두 완성했어요!" });
         } }),
       ],
     });
+    // ESC 등으로 닫혀도 마이크가 남지 않게 감시
+    const guard = setInterval(() => { if (!md.el.isConnected) { cleanupRec(); clearInterval(guard); } }, 800);
   }
 
   function render() {
-    // 활동별 패널 높이 (내용만큼만 — 뒷배경 무대가 보이게)
-    boardEl.style.height = stage === 1 ? "556px" : stage === 0 ? "432px" : "462px";
     frame.setStep(stage + 1, 3, "활동");
     qTitle.innerHTML = STAGE_TITLES[stage];
     qHolder.innerHTML = "";

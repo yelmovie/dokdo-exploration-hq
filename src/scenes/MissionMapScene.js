@@ -125,9 +125,11 @@ export default function MissionMapScene(ctx) {
     layer.appendChild(g);
     const next = MISSIONS.find((m) => !save.isCompleted(m.key));
     speech(layer, {
-      x: 36, y: 262,
-      text: next ? `다음 목적지는 ‘${next.title.replace(/^\d단계 /, "")}’야! 부표를 눌러 봐.` : "모든 항로를 정복했어! 수료관으로 가자!",
-      tail: "left", width: 250,
+      x: 36, y: 212,
+      text: next
+        ? `다음 목적지는 ‘${next.title.replace(/^\d단계 /, "")}’야! 미션에서 자료를 살펴보면 📖 도감 카드가 모여 — 오른쪽 위 ‘도감’에서 확인해 봐!`
+        : "모든 항로를 정복했어! 수료관으로 가자! 모은 📖 도감 카드도 오른쪽 위에서 다시 볼 수 있어.",
+      tail: "left", width: 260,
     });
   }
 
@@ -146,12 +148,11 @@ export default function MissionMapScene(ctx) {
     const hi = assetImg(DOKDO[NODE_ICON[m.key]], "");
     Object.assign(hi.style, { width: "46px", height: "46px", objectFit: "contain" });
     head.appendChild(hi);
-    head.appendChild(el("div", { style: { fontSize: "18px", fontWeight: "900", color: "var(--navy)", lineHeight: "1.3" }, text: m.title }));
+    head.appendChild(el("div", { style: { fontSize: "20px", fontWeight: "900", color: "var(--navy)", lineHeight: "1.3" }, text: m.title }));
     detail.appendChild(head);
-    detail.appendChild(el("div", { style: { fontSize: "13.5px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.55", wordBreak: "keep-all" }, text: m.desc }));
-    detail.appendChild(el("div", { style: { fontSize: "13px", fontWeight: "800", color: "var(--navy)" },
-      text: "난이도 " + "●".repeat(m.difficulty || 1) + "○".repeat(3 - (m.difficulty || 1)) +
-        (completed ? `  ·  ${score}점 ` + "⭐".repeat(stars) : "") }));
+    detail.appendChild(el("div", { style: { fontSize: "16px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.55", wordBreak: "keep-all" }, text: m.desc }));
+    if (completed) detail.appendChild(el("div", { style: { fontSize: "15px", fontWeight: "800", color: "var(--navy)" },
+      text: `${score}점 ` + "⭐".repeat(stars) }));
     if (unlocked) {
       detail.appendChild(el("div.row", { style: { justifyContent: "center", marginTop: "auto" } }, [
         button(completed ? "다시 도전" : "미션 시작", { variant: "gold", size: "lg", onClick: () => ctx.navigate(missionPageKey(m.key)) }),

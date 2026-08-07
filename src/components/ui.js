@@ -357,10 +357,19 @@ export function quiz(q, { layout = "column", confirmLabel = "정답 확인", con
     AudioManager.correct();
     stamp(node, "통과!");
     fb.className = "feedback show feedback--ok";
-    fb.innerHTML = "✅ <b>정답!</b> " + (q.rationale || "") +
-      (q.sourceRef ? ` <span class="src-tag">📎 ${q.sourceRef}</span>` : "");
+    fb.textContent = "✅ 정답!";
     btns.forEach((x, xi) => { x.disabled = true; if (answers.includes(xi)) x.classList.add("is-correct"); });
     confirm.style.display = "none";
+    clueRow.style.display = "none";
+    // 해설은 별도 카드로 — 패널은 문제 크기만 유지 (여백 최소화)
+    if (q.rationale) {
+      const stageEl = document.getElementById("stage") || document.body;
+      const md = modal(stageEl, {
+        title: "정답! 왜 그럴까요?", icon: "💡",
+        bodyHtml: `<div style="font-size:16.5px;font-weight:700;color:var(--ink);line-height:1.65;word-break:keep-all">${q.rationale}${q.sourceRef ? ` <span class="src-tag">📎 ${q.sourceRef}</span>` : ""}</div>`,
+        buttons: [button("알겠어요!", { variant: "green", onClick: () => md.close() })],
+      });
+    }
     if (onResult) onResult(true);
   } });
   if (isMulti) confirm.disabled = true;

@@ -72,11 +72,11 @@ export default function HistoricalArchiveScene(ctx) {
 
   /* ---- 캐릭터 + 말풍선 (책 읽는 소녀 1.5배 확대, 우측) ---- */
   placeAsset(layer, DOKDO.readerGirl, { x: 856, y: 156, w: 420, h: 564, alt: "책 읽는 소녀", float: true, z: 3, shadow: true });
-  speech(layer, { x: 975, y: 78, text: "천장에 걸린 기록들이 보여? 다섯 기록을 시간 순서로 이어 보자!", tail: "right", width: 250 });
+  speech(layer, { x: 975, y: 62, text: "천장에 걸린 기록들이 보여? 다섯 기록을 시간 순서로 이어 보자!", tail: "right", width: 250 });
 
   /* ---- 중앙 활동 보드 ---- */
   /* 활동 패널: 천장의 연도 기록 카드들이 보이도록 아래로, 배경이 비치게 더 투명 */
-  const board = el("div.q-board", { style: { ...pos(292, 154, 690, 474) } }, [el("div.q-board__clip")]);
+  const board = el("div.q-board", { style: { ...pos(292, 154, 690), maxHeight: "500px" } }, [el("div.q-board__clip")]); // 높이는 내용 맞춤 — 배경이 보이게
   board.style.background = "rgba(250, 253, 255, .55)";
   const qTitle = el("div.q-board__title");
   const workArea = el("div", { style: { flex: "1", minHeight: "0", overflowY: "auto", paddingRight: "4px" } });
@@ -189,7 +189,14 @@ export default function HistoricalArchiveScene(ctx) {
       }
       AudioManager.correct();
       fb.className = "feedback show feedback--ok";
-      fb.innerHTML = "✅ <b>정답!</b> " + FACT_OPINION.items.map((x) => `「${x.text.slice(0, 14)}…」→ ${x.answer === "fact" ? "사실" : "생각"} (${x.why})`).join("<br>");
+      fb.textContent = "✅ 정답!";
+      // 해설은 별도 카드로
+      const md = modal(ctx.stage, {
+        title: "사실과 생각 — 왜 그럴까요?", icon: "💡",
+        bodyHtml: `<div style="font-size:15.5px;font-weight:700;color:var(--ink);line-height:1.7;word-break:keep-all">` +
+          FACT_OPINION.items.map((x) => `「${x.text.slice(0, 14)}…」→ <b>${x.answer === "fact" ? "사실" : "생각"}</b> (${x.why})`).join("<br>") + "</div>",
+        buttons: [button("알겠어요!", { variant: "green", onClick: () => md.close() })],
+      });
       checkBtn.style.display = "none";
       nextHolder.appendChild(nextCoachButton("미션 완료!", () =>
         completeMission(ctx, "history", { evidence: "c-his", message: "옛 기록을 연표로 복원하고, 사실과 생각을 구분했어요." }), { icon: "🏅" }));
@@ -212,8 +219,6 @@ export default function HistoricalArchiveScene(ctx) {
   }
 
   function render() {
-    // 활동별 보드 높이 — 내용만큼만 쓰고 빈 여백을 남기지 않는다
-    board.style.height = stage === 0 ? "430px" : "474px";
     if (stage === 0) renderTimeline();
     else if (stage === 1) renderQuizzes();
     else renderFactOpinion();

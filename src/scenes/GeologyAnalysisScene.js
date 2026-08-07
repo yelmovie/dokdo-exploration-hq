@@ -227,7 +227,7 @@ export default function GeologyAnalysisScene(ctx) {
   placeAsset(layer, DOKDO.girlScout, { x: 30, y: 528, w: 170, h: 190, alt: "탐험가 소녀", z: 3, shadow: true });
 
   /* ---- 우측: 문제 보드 + 단서 게이팅 잠금 오버레이 ---- */
-  const board = el("div.q-board", { style: { ...pos(620, 128, 640, 512) } }, [el("div.q-board__clip")]);
+  const board = el("div.q-board", { style: { ...pos(620, 128, 640), minHeight: "300px", maxHeight: "524px" } }, [el("div.q-board__clip")]); // 높이는 내용 맞춤
   const badgeRow = el("div.row", { style: { justifyContent: "center", gap: "8px" } });
   const qTitle = el("div.q-board__title");
   const qHolder = el("div", { style: { flex: "1", overflowY: "auto", paddingRight: "4px" } });
@@ -305,7 +305,7 @@ export default function GeologyAnalysisScene(ctx) {
   };
   function renderMatch(m, onDone) {
     const paired = {}; // featureId -> effect pair id
-    let selFeat = null, locked = false;
+    let locked = false;
     const effects = [...m.pairs].sort(() => Math.random() - 0.5);
     const fb = el("div.feedback");
     const btnBase = {
@@ -320,22 +320,31 @@ export default function GeologyAnalysisScene(ctx) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible";
 
+    const mkLine = (x1, y1, x2, y2, col, dash) => {
+      const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      ln.setAttribute("x1", x1); ln.setAttribute("y1", y1);
+      ln.setAttribute("x2", x2); ln.setAttribute("y2", y2);
+      ln.setAttribute("stroke", col);
+      ln.setAttribute("stroke-width", "3.5");
+      ln.setAttribute("stroke-linecap", "round");
+      if (dash) ln.setAttribute("stroke-dasharray", "7 5");
+      return ln;
+    };
+    const dotAnchor = (fid) => {
+      const b = featBtns.get(fid);
+      return { x: b.offsetLeft + b.offsetWidth + 13, y: b.offsetTop + b.offsetHeight / 2 };
+    };
+    let tempLine = null; // 드래그 중 임시 선
     function drawLines() {
       svg.innerHTML = "";
       Object.entries(paired).forEach(([fid, eid]) => {
-        const fBtn = featBtns.get(fid), eBtn = effBtns.get(eid);
-        if (!fBtn || !eBtn) return;
+        const eBtn = effBtns.get(eid);
+        if (!featBtns.get(fid) || !eBtn) return;
         const col = PAIR_COLORS[m.pairs.findIndex((p) => p.id === fid)];
-        const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        ln.setAttribute("x1", fBtn.offsetLeft + fBtn.offsetWidth);
-        ln.setAttribute("y1", fBtn.offsetTop + fBtn.offsetHeight / 2);
-        ln.setAttribute("x2", eBtn.offsetLeft);
-        ln.setAttribute("y2", eBtn.offsetTop + eBtn.offsetHeight / 2);
-        ln.setAttribute("stroke", col);
-        ln.setAttribute("stroke-width", "3.5");
-        ln.setAttribute("stroke-linecap", "round");
-        svg.appendChild(ln);
+        const a = dotAnchor(fid);
+        svg.appendChild(mkLine(a.x, a.y, eBtn.offsetLeft, eBtn.offsetTop + eBtn.offsetHeight / 2, col));
       });
+      if (tempLine) svg.appendChild(tempLine);
     }
 
     function paint() {
@@ -343,8 +352,10 @@ export default function GeologyAnalysisScene(ctx) {
         const b = featBtns.get(p.id);
         const col = PAIR_COLORS[i];
         const has = !!paired[p.id];
-        b.style.borderColor = selFeat === p.id ? "var(--gold-deep)" : has ? col : "#b9c7d6";
-        b.style.background = selFeat === p.id ? "#fff6da" : has ? col + "18" : "#fff";
+        b.style.borderColor = has ? col : "#b9c7d6";
+        b.style.background = has ? col + "18" : "#fff";
+        const dot = b.querySelector("[data-dot]");
+        if (dot) { dot.style.borderColor = has ? col : "#8fa4b8"; dot.style.background = has ? col : "#fff"; }
       });
       effects.forEach((e) => {
         const b = effBtns.get(e.id);
@@ -380,28 +391,81 @@ export default function GeologyAnalysisScene(ctx) {
       }, 380);
     }
 
-    m.pairs.forEach((p) => {
-      const b = el("button", { type: "button", style: { ...btnBase }, text: FEATURE_SHORT[p.id] || p.feature });
+    /* 좌표 변환: 화면(client) → grid 로컬 px (스테이지 scale 보정) */
+    function toLocal(clientX, clientY) {
+      const r = grid.getBoundingClientRect();
+      const k = r.width ? grid.clientWidth / r.width : 1;
+      return { x: (clientX - r.left) * k, y: (clientY - r.top) * k };
+    }
+    function effectAt(clientX, clientY) {
+      for (const [eid, b] of effBtns) {
+        const r = b.getBoundingClientRect();
+        if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) return eid;
+      }
+      return null;
+    }
+
+    m.pairs.forEach((p, i) => {
+      const b = el("button", { type: "button", style: { ...btnBase, position: "relative" }, text: FEATURE_SHORT[p.id] || p.feature });
       b.title = p.feature;
-      b.addEventListener("click", () => {
+      // 연결점(●): 이 점을 끌어서 오른쪽 영향 카드에 놓는다
+      const dot = el("div", { style: {
+        position: "absolute", right: "-26px", top: "50%", transform: "translateY(-50%)",
+        width: "26px", height: "26px", borderRadius: "50%", cursor: "grab",
+        background: "#fff", border: "3px solid #8fa4b8", boxShadow: "var(--shadow-sm)",
+        touchAction: "none", zIndex: 3,
+      } });
+      dot.dataset.dot = p.id;
+      b.appendChild(dot);
+
+      dot.addEventListener("pointerdown", (ev) => {
         if (locked) return;
-        AudioManager.unlock(); AudioManager.click();
-        if (paired[p.id]) delete paired[p.id]; // 다시 누르면 연결 해제
-        selFeat = selFeat === p.id ? null : p.id;
+        ev.preventDefault(); ev.stopPropagation();
+        AudioManager.unlock();
+        try { dot.setPointerCapture(ev.pointerId); } catch { /* 무시 */ }
+        delete paired[p.id]; // 끌기 시작하면 기존 연결은 풀고 다시
+        const col = PAIR_COLORS[i];
+        const a = dotAnchor(p.id);
+        const lp = toLocal(ev.clientX, ev.clientY);
+        tempLine = mkLine(a.x, a.y, lp.x, lp.y, col, true);
+        dot.style.cursor = "grabbing";
         paint();
       });
+      dot.addEventListener("pointermove", (ev) => {
+        if (!tempLine) return;
+        const lp = toLocal(ev.clientX, ev.clientY);
+        tempLine.setAttribute("x2", lp.x);
+        tempLine.setAttribute("y2", lp.y);
+        const over = effectAt(ev.clientX, ev.clientY);
+        effects.forEach((e2) => {
+          const eb = effBtns.get(e2.id);
+          if (e2.id === over) { eb.style.borderColor = PAIR_COLORS[i]; eb.style.background = PAIR_COLORS[i] + "22"; }
+        });
+      });
+      const endDrag = (ev) => {
+        if (!tempLine) return;
+        tempLine = null;
+        dot.style.cursor = "grab";
+        try { dot.releasePointerCapture(ev.pointerId); } catch { /* 무시 */ }
+        const eid = effectAt(ev.clientX, ev.clientY);
+        if (eid) {
+          for (const f of Object.keys(paired)) if (paired[f] === eid) delete paired[f]; // 한 영향엔 한 특징만
+          paired[p.id] = eid;
+          AudioManager.click();
+        }
+        paint();
+        if (eid) autoCheck();
+      };
+      dot.addEventListener("pointerup", endDrag);
+      dot.addEventListener("pointercancel", endDrag);
+
       featBtns.set(p.id, b);
     });
     effects.forEach((e) => {
       const b = el("button", { type: "button", style: { ...btnBase }, text: e.effect });
       b.addEventListener("click", () => {
-        if (locked || !selFeat) return;
-        AudioManager.unlock(); AudioManager.click();
-        for (const f of Object.keys(paired)) if (paired[f] === e.id) delete paired[f]; // 한 영향엔 한 특징만
-        paired[selFeat] = e.id;
-        selFeat = null;
-        paint();
-        autoCheck();
+        if (locked) return;
+        toast(ctx.stage, "왼쪽 특징 옆 ● 점을 끌어서 여기에 놓아요!");
       });
       effBtns.set(e.id, b);
     });
@@ -413,7 +477,7 @@ export default function GeologyAnalysisScene(ctx) {
     grid.appendChild(svg);
 
     const node = el("div.col", { style: { gap: "10px" } }, [
-      el("div.tip", { style: { fontSize: "13px", padding: "7px 12px" }, html: "<b>특징</b>을 누르고 어울리는 <b>영향</b>을 이어 누르면 선으로 연결돼요. 4개를 다 이으면 자동으로 확인!" }),
+      el("div.tip", { style: { fontSize: "14px", padding: "7px 12px" }, html: "특징 옆 <b>● 점을 끌어서</b> 어울리는 영향 카드에 놓으면 선으로 연결돼요. 4개를 다 이으면 자동으로 확인!" }),
       grid,
       fb,
     ]);

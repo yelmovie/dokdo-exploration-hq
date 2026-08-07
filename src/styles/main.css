@@ -91,9 +91,9 @@ body {
 .btn:hover { filter: brightness(1.06); }
 .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--btn-edge, #0d3f6b), 0 3px 6px rgba(13,39,67,.25); }
 .btn:disabled { filter: grayscale(.6) opacity(.55); cursor: not-allowed; }
-.btn--sm { font-size: 14.5px; padding: 10px 18px; min-height: 48px; }
-.btn--md { font-size: 16px; padding: 10px 22px; min-height: 48px; }
-.btn--lg { font-size: 19px; padding: 14px 30px; min-height: 56px; }
+.btn--sm { font-size: 15.5px; padding: 10px 18px; min-height: 48px; }
+.btn--md { font-size: 17px; padding: 10px 22px; min-height: 48px; }
+.btn--lg { font-size: 20px; padding: 14px 30px; min-height: 56px; }
 
 /* 키보드 포커스 표시 (접근성) */
 .btn:focus-visible, .choice:focus-visible, .collapsible__head:focus-visible,
@@ -215,7 +215,7 @@ body {
   background: linear-gradient(90deg, var(--sea-light), var(--sea-deep) 55%, var(--gold));
   opacity: .85;
 }
-.q-board__title { font-family: var(--font-display); font-size: 19px; font-weight: 400; color: var(--navy); line-height: 1.45; word-break: keep-all; flex: 0 0 auto; }
+.q-board__title { font-family: var(--font-display); font-size: 21px; font-weight: 400; color: var(--navy); line-height: 1.45; word-break: keep-all; flex: 0 0 auto; }
 .q-board__title b { font-weight: 400; color: var(--sea-deep); }
 
 /* ---- 퀴즈 ---- */
@@ -224,7 +224,7 @@ body {
 .quiz__choices--grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .choice {
   display: flex; align-items: center; gap: 9px; text-align: left;
-  font-family: inherit; font-size: 14.5px; font-weight: 700; color: var(--ink);
+  font-family: inherit; font-size: 16.5px; font-weight: 700; color: var(--ink);
   background: rgba(255,255,255,.82);
   border: 1.5px solid rgba(31, 122, 194, .18); border-radius: 13px;
   padding: 9px 13px; cursor: pointer; min-height: 48px;
@@ -241,7 +241,7 @@ body {
 
 /* ---- 피드백 ---- */
 .feedback {
-  display: none; font-size: 15px; font-weight: 800; line-height: 1.5;
+  display: none; font-size: 16px; font-weight: 800; line-height: 1.5;
   border-radius: 12px; padding: 10px 14px; word-break: keep-all;
 }
 .feedback.show { display: block; }
@@ -251,7 +251,7 @@ body {
 
 .tip {
   background: #fff8e1; border: 1.5px solid #ecd48a; border-radius: 12px;
-  padding: 9px 14px; font-size: 14.5px; font-weight: 700; color: #6b5310;
+  padding: 9px 14px; font-size: 15.5px; font-weight: 700; color: #6b5310;
   line-height: 1.5; word-break: keep-all;
 }
 
@@ -293,7 +293,7 @@ body {
 .hintfold__body {
   display: none; max-width: 460px; width: max-content;
   background: #fff8e1; border: 1.5px solid #ecd48a; border-radius: 12px;
-  padding: 9px 14px; font-size: 14px; font-weight: 700; color: #6b5310; line-height: 1.5;
+  padding: 9px 14px; font-size: 15px; font-weight: 700; color: #6b5310; line-height: 1.5;
   word-break: keep-all;
 }
 .hintfold.is-open .hintfold__body { display: block; }
@@ -370,7 +370,7 @@ body {
   flex: 0 0 auto;  /* 카드가 눌려 줄어들지 않게 — 줄바꿈으로 균형 배치 */
   background: linear-gradient(180deg, #fffdf6, #fdf4dd);
   border: 1.5px solid #d9b45e; border-radius: 12px;
-  font-size: 14.5px; font-weight: 800; color: var(--ink); text-align: center;
+  font-size: 15.5px; font-weight: 800; color: var(--ink); text-align: center;
   padding: 10px 14px; cursor: grab;
   box-shadow: 0 3px 8px rgba(13,39,67,.16), inset 0 1px 0 rgba(255,255,255,.8);
   word-break: keep-all; line-height: 1.35; min-height: 44px;
@@ -421,20 +421,33 @@ body {
 }
 .blank-pop button:hover { border-color: var(--sea); background: #eaf4fd; }
 
-/* ---- 말풍선 ---- */
+/* ---- 말풍선 — 만화풍: 둥근 몸통 + 회전 꼬리 + 보조 점 ---- */
 .speech {
-  background: rgba(255,255,255,.95); border: 2px solid var(--navy);
-  border-radius: 16px; padding: 11px 15px;
-  font-size: 14.5px; font-weight: 700; color: var(--navy); line-height: 1.5;
-  box-shadow: var(--shadow); word-break: keep-all; cursor: pointer;
+  background: linear-gradient(180deg, #ffffff 0%, #f3f9ff 100%);
+  border: 2.5px solid var(--sea-deep);
+  border-radius: 22px; padding: 12px 16px;
+  font-size: 15.5px; font-weight: 700; color: var(--navy); line-height: 1.5;
+  box-shadow: 0 10px 22px rgba(13, 39, 67, .24), inset 0 1.5px 0 #fff;
+  word-break: keep-all; cursor: pointer;
   transition: opacity .3s; animation: finaleUp .4s ease both;
 }
+/* 꼬리: 테두리를 이어받은 회전 사각형 (삼각형 화살표 금지) */
 .speech::after {
-  content: ""; position: absolute; bottom: -12px; width: 0; height: 0;
-  border: 8px solid transparent; border-top: 14px solid var(--navy);
+  content: ""; position: absolute; bottom: -10.5px; width: 19px; height: 19px;
+  background: #f3f9ff;
+  border-right: 2.5px solid var(--sea-deep); border-bottom: 2.5px solid var(--sea-deep);
+  border-bottom-right-radius: 6px;
+  transform: rotate(45deg);
 }
-.speech--left::after { left: 28px; }
-.speech--right::after { right: 28px; }
+/* 만화식 보조 점 — 캐릭터 머리 쪽으로 톡 */
+.speech::before {
+  content: ""; position: absolute; bottom: -26px; width: 10px; height: 10px;
+  border-radius: 50%; background: #fff; border: 2.5px solid var(--sea-deep);
+}
+.speech--left::after { left: 30px; }
+.speech--left::before { left: 22px; }
+.speech--right::after { right: 30px; }
+.speech--right::before { right: 22px; }
 
 /* ---- 항로 선긋기 (routeDraw) ---- */
 .routedraw {
