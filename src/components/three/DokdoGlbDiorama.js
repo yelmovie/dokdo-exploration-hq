@@ -27,7 +27,7 @@ export function createDokdoGlbDiorama({ root = null, width = 308, height = 260, 
   controls.maxDistance = maxDistance;
   controls.minPolarAngle = 0.5;
   controls.maxPolarAngle = 1.35;
-  controls.target.set(0, 0.4, 0);
+  controls.target.set(0, 0.6, 0);
   controls.autoRotate = true;
   controls.autoRotateSpeed = 1.1;
   controls.addEventListener("start", () => { controls.autoRotate = false; });
@@ -46,7 +46,7 @@ export function createDokdoGlbDiorama({ root = null, width = 308, height = 260, 
       model.scale.setScalar(scale);
       const center = box.getCenter(new THREE.Vector3()).multiplyScalar(scale);
       model.position.sub(center);
-      model.position.y += size.y * scale * 0.18; // 받침대가 살짝 위로 오게
+      model.position.y += size.y * scale * 0.34; // 원판이 화면 중앙에 오게 위로
       scene.add(model);
     },
     undefined,

@@ -16,9 +16,9 @@ const ZONE_PHOTO = { bird: "aerial", plant: "plants", sea: "tidepool" };
 const ZONE_DEX = { bird: "d-gull", plant: "d-plants", sea: "d-tidepool" };
 
 const ZONE_STYLE = [
-  { x: 40, y: 150 },
-  { x: 40, y: 300 },
-  { x: 40, y: 450 },
+  { x: 40, y: 142 },
+  { x: 40, y: 302 },
+  { x: 40, y: 462 },
 ];
 
 export default function EcologyProtectionScene(ctx) {
@@ -40,7 +40,7 @@ export default function EcologyProtectionScene(ctx) {
   ECOLOGY_CLUES.forEach((c, i) => {
     const card = el("div", {
       style: {
-        ...pos(ZONE_STYLE[i].x, ZONE_STYLE[i].y, 250, 120), zIndex: 6,
+        ...pos(ZONE_STYLE[i].x, ZONE_STYLE[i].y, 250, 150), zIndex: 6,
         background: "rgba(255,255,255,.94)", border: "3px solid var(--green)",
         borderRadius: "16px", boxShadow: "var(--shadow)", cursor: "pointer",
         display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px",
@@ -49,7 +49,7 @@ export default function EcologyProtectionScene(ctx) {
     }, [
       (() => {
         const ph = assetImg(PHOTOS[ZONE_PHOTO[c.id]], c.title);
-        Object.assign(ph.style, { width: "100%", height: "62px", objectFit: "cover", borderRadius: "10px" });
+        Object.assign(ph.style, { width: "100%", height: "92px", objectFit: "cover", borderRadius: "10px" });
         return ph;
       })(),
       el("div", { style: { fontSize: "14.5px", fontWeight: "900", color: "var(--green-deep)" }, text: c.icon + " " + c.title }),
@@ -66,7 +66,7 @@ export default function EcologyProtectionScene(ctx) {
   layer.appendChild(clueChip);
 
   /* ---- 캐릭터 + 말풍선 ---- */
-  placeAsset(layer, DOKDO.rangerBoy, { x: 330, y: 470, w: 190, h: 240, alt: "생태 수호 대원", z: 3, shadow: true });
+  placeAsset(layer, DOKDO.rangerBoy, { x: 272, y: 352, w: 285, h: 355, alt: "생태 수호 대원", z: 3, shadow: true });
   placeAsset(layer, DOKDO.otterSailor, { x: 1090, y: 480, w: 175, h: 230, alt: "강치 항해사", float: true, z: 3, shadow: true });
   speech(layer, { x: 1005, y: 388, text: "실제 독도 사진으로 관찰해 보자! 내 이야기도 들려줄게…", tail: "right", width: 245 });
 
@@ -169,6 +169,8 @@ export default function EcologyProtectionScene(ctx) {
       if (!ok) return;
       effectCard.style.display = "block";
       effectCard.innerHTML = "🌱 <b>영향 예측</b> · " + q.effect;
+      // 피드백이 패널 아래로 잘리지 않게 자동 스크롤
+      requestAnimationFrame(() => qHolder.scrollTo({ top: qHolder.scrollHeight, behavior: "smooth" }));
       if (qi < total - 1) {
         nextHolder.appendChild(nextCoachButton("다음 상황", () => { qi++; render(); }));
       } else {

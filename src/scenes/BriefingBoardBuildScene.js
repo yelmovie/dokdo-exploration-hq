@@ -28,9 +28,11 @@ export default function BriefingBoardBuildScene(ctx) {
   });
   frame.setStep(1, 2, "활동");
 
-  /* 수집한 근거 카드 + 약한 카드 3장 섞기 */
+  /* 수집한 근거 카드 + 약한 카드 1장만 섞기 (6장 균형 배치) */
   const owned = new Set(save.get("evidenceCards"));
-  const pool = BRIEFING_CARDS.filter((c) => (c.strong ? owned.has(c.id) : true))
+  const weakCards = BRIEFING_CARDS.filter((c) => !c.strong);
+  const weakPick = weakCards[Math.floor(Math.random() * weakCards.length)];
+  const pool = BRIEFING_CARDS.filter((c) => (c.strong ? owned.has(c.id) : c === weakPick))
     .sort(() => Math.random() - 0.5);
   const placedNow = { ...save.get("briefingBoard") }; // field -> cardId (이어하기 복원)
   let selectedCard = null;
@@ -69,7 +71,7 @@ export default function BriefingBoardBuildScene(ctx) {
   });
 
   /* ---- 하단 책상: 카드 보관함 (책상 위에 놓인 카드들) ---- */
-  const tray = el("div", { style: { ...pos(150, 498, 980, 210), zIndex: 7 } });
+  const tray = el("div", { style: { ...pos(170, 496, 520, 216), zIndex: 7 } });
   tray.appendChild(el("div.pill", { style: { background: "var(--navy)", fontFamily: "var(--font-display)", marginBottom: "6px" }, text: "🗂 근거 카드 — 알맞은 메모지에 붙여요" }));
   const trayBody = el("div.row", { style: { gap: "8px", flexWrap: "wrap", alignItems: "flex-start" } });
   tray.appendChild(trayBody);
@@ -87,7 +89,7 @@ export default function BriefingBoardBuildScene(ctx) {
         ])))],
   }));
 
-  placeAsset(layer, DOKDO.seagullMail, { x: 1074, y: 484, w: 180, h: 210, alt: "갈매기 집배원", float: true, z: 3, shadow: true });
+  placeAsset(layer, DOKDO.seagullMail, { x: 862, y: 492, w: 170, h: 200, alt: "갈매기 집배원", float: true, z: 3, shadow: true });
 
   const progChip = el("div.hud-chip", { style: { position: "absolute", left: "24px", top: "96px", zIndex: 12 } });
   layer.appendChild(progChip);

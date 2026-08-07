@@ -231,7 +231,12 @@ export function orderInteraction({ items, answer, slotW = 150, slotH = 80, onRes
     slots.forEach((s, i) => {
       s.querySelectorAll(".order__card").forEach((c) => c.remove());
       s.classList.toggle("is-filled", !!placed[i]);
-      if (placed[i]) s.appendChild(cardEl(placed[i]));
+      if (placed[i]) {
+        const c = cardEl(placed[i]);
+        // 슬롯 안에서는 슬롯 크기에 맞춰 축소 (글자가 밖으로 안 넘치게)
+        Object.assign(c.style, { width: "100%", height: "100%", minHeight: "0", fontSize: "12px", lineHeight: "1.3", padding: "4px 4px", boxShadow: "none" });
+        s.appendChild(c);
+      }
     });
     trayRow.innerHTML = "";
     const inSlots = new Set(placed.filter(Boolean).map((p) => p.id));

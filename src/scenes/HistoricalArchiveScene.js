@@ -70,13 +70,14 @@ export default function HistoricalArchiveScene(ctx) {
     }))],
   }));
 
-  /* ---- 캐릭터 + 말풍선 ---- */
-  placeAsset(layer, DOKDO.sageFigure, { x: 34, y: 464, w: 190, h: 250, alt: "역사 인물", z: 3, shadow: true });
-  placeAsset(layer, DOKDO.readerGirl, { x: 1064, y: 452, w: 195, h: 262, alt: "책 읽는 소녀", float: true, z: 3, shadow: true });
-  speech(layer, { x: 1002, y: 328, text: "천장에 걸린 기록들이 보여? 다섯 기록을 시간 순서로 이어 보자!", tail: "right", width: 235 });
+  /* ---- 캐릭터 + 말풍선 (책 읽는 소녀 1.5배, 우측 하단) ---- */
+  placeAsset(layer, DOKDO.readerGirl, { x: 986, y: 330, w: 290, h: 390, alt: "책 읽는 소녀", float: true, z: 3, shadow: true });
+  speech(layer, { x: 1010, y: 226, text: "천장에 걸린 기록들이 보여? 다섯 기록을 시간 순서로 이어 보자!", tail: "right", width: 245 });
 
   /* ---- 중앙 활동 보드 ---- */
-  const board = el("div.q-board", { style: { ...pos(292, 116, 690, 476) } }, [el("div.q-board__clip")]);
+  /* 활동 패널: 천장의 연도 기록 카드들이 보이도록 아래로, 배경이 비치게 더 투명 */
+  const board = el("div.q-board", { style: { ...pos(292, 154, 690, 474) } }, [el("div.q-board__clip")]);
+  board.style.background = "rgba(250, 253, 255, .55)";
   const qTitle = el("div.q-board__title");
   const workArea = el("div", { style: { flex: "1", minHeight: "0", overflowY: "auto", paddingRight: "4px" } });
   const nextHolder = el("div.row", { style: { justifyContent: "flex-end", minHeight: "0" } });

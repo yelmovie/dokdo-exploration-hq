@@ -117,7 +117,7 @@ export default function CompletionGalleryScene(ctx) {
   layer.appendChild(el("div.row", { style: { ...pos(22, 20), gap: "12px", zIndex: 12 } }, [
     backButton(() => ctx.navigate("missionMap")),
   ]));
-  sign(layer, DOKDO.signComplete, { x: 108, y: -14, w: 175, h: 175, alt: "탐사 수료관" });
+  sign(layer, DOKDO.signComplete, { x: 106, y: -24, w: 118, h: 118, alt: "탐사 수료관" }); // 아래 '나의 보호 다짐' 카드와 안 겹치게 소형·상향
   layer.appendChild(el("div.row", { style: { ...pos(920, 20, 340), gap: "10px", zIndex: 12, justifyContent: "flex-end", alignItems: "center" } }, [
     button("수료증 저장", { variant: "gold", size: "sm", icon: "🖼", onClick: openCertSaveModal }),
     homeButton(() => confirmGoMain()),
@@ -125,7 +125,7 @@ export default function CompletionGalleryScene(ctx) {
 
   /* ---- 장식 + 축하 캐릭터 ---- */
   placeAsset(layer, ICONS.bunting, { x: 360, y: 46, w: 560, h: 110, alt: "축하 장식", z: 3 });
-  placeAsset(layer, DOKDO.girlScout, { x: 900, y: 335, w: 245, h: 335, alt: "축하하는 탐험가 소녀", z: 5 });
+  placeAsset(layer, DOKDO.girlScout, { x: 872, y: 292, w: 225, h: 310, alt: "축하하는 탐험가 소녀", z: 5 }); // 위로 올려 우측 팻말 글자가 보이게
 
   /* ---- 좌측: 전시 모형 (독도 모형 이미지 — 3D 디오라마는 이후 단계) ---- */
   layer.appendChild(el("div", {
@@ -165,22 +165,22 @@ export default function CompletionGalleryScene(ctx) {
       return holder;
     })(),
   ]));
-  placeAsset(layer, DOKDO.boyScout, { x: 822, y: 408, w: 180, h: 250, alt: "축하하는 탐험가 소년", z: 4 });
+  placeAsset(layer, DOKDO.boyScout, { x: 66, y: 446, w: 185, h: 258, alt: "축하하는 탐험가 소년", z: 4 }); // 좌측 꽃밭 앞으로 이동 (배지 줄과 안 겹침)
 
   /* ---- 중앙 수료증(CSS) + 수료 배지(이미지) ---- */
-  const cert = el("div.panel.panel--parchment", { style: { ...pos(390, 150, 500), zIndex: 4, textAlign: "center", padding: "0", border: "4px solid var(--gold-deep)" } }, [
-    el("div", { style: { padding: "20px 30px 24px" } }, [
+  const cert = el("div.panel.panel--parchment", { style: { ...pos(390, 140, 500), zIndex: 4, textAlign: "center", padding: "0", border: "4px solid var(--gold-deep)" } }, [
+    el("div", { style: { padding: "14px 30px 20px" } }, [
       (() => {
-        const w = el("div", { style: { width: "110px", height: "110px", margin: "0 auto" } });
+        const w = el("div", { style: { width: "154px", height: "154px", margin: "0 auto" } });
         const img = assetImg(DOKDO.badgeFinal, "수료 배지");
         Object.assign(img.style, { width: "100%", height: "100%", objectFit: "contain" });
         w.appendChild(img);
         return w;
       })(),
-      el("div", { style: { fontSize: "30px", fontWeight: "900", color: "var(--navy)", margin: "6px 0" }, text: "독도 탐사본부 수료" }),
-      el("div", { style: { fontSize: "15px", color: "var(--ink-soft)", fontWeight: "700" }, text: "위치 · 지형 · 역사 · 생태 · 보호 미션 완료" }),
-      el("div", { style: { margin: "12px auto", width: "60%", height: "2px", background: "var(--gold-deep)" } }),
-      el("div", { style: { fontSize: "17px", fontWeight: "800", color: "var(--green-deep)", lineHeight: "1.5", wordBreak: "keep-all" },
+      el("div", { style: { fontSize: "28px", fontWeight: "900", color: "var(--navy)", margin: "8px 0 3px" }, text: "독도 탐사본부 수료" }),
+      el("div", { style: { fontSize: "14.5px", color: "var(--ink-soft)", fontWeight: "700" }, text: "위치 · 지형 · 역사 · 생태 · 보호 미션 완료" }),
+      el("div", { style: { margin: "10px auto", width: "60%", height: "2px", background: "var(--gold-deep)" } }),
+      el("div", { style: { fontSize: "16px", fontWeight: "800", color: "var(--green-deep)", lineHeight: "1.5", wordBreak: "keep-all" },
         text: "“독도는 역사적·지리적·국제법적으로 명백한 대한민국의 영토입니다. 우리가 그 근거를 직접 확인했습니다.”" }),
     ]),
   ]);

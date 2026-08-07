@@ -94,8 +94,9 @@ export default function PresentationPrepScene(ctx) {
   }));
 
   /* ---- 캐릭터: 발표 소녀(무대 좌측) ---- */
-  placeAsset(layer, DOKDO.presenterGirl, { x: 6, y: 240, w: 335, h: 470, alt: "발표 준비 탐험가", z: 3, shadow: true });
-  speech(layer, { x: 40, y: 152, text: "무대 스크린에 나만의 발표를 완성해 보자!", tail: "left", width: 230 });
+  // 무대 바닥(화분 라인 y≈500)에 발이 닿게 — 다리가 무대 아래로 잘리지 않는 크기
+  placeAsset(layer, DOKDO.presenterGirl, { x: 44, y: 226, w: 196, h: 275, alt: "발표 준비 탐험가", z: 3, shadow: true });
+  speech(layer, { x: 198, y: 146, text: "무대 스크린에 나만의 발표를 완성해 보자!", tail: "left", width: 185 });
 
   /* ---- 중앙: 활동 보드 (배경 무대의 스크린 위에) ---- */
   const boardEl = el("div.q-board", { style: { ...pos(352, 92, 600, 556) } }, [el("div.q-board__clip")]);

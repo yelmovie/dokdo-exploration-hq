@@ -43,10 +43,11 @@ export function missionFrame(ctx, layer, cfg, { signSrc = null, helpText = "" } 
   };
 }
 
-/** 접이식 힌트 */
+/** 접이식 힌트 — 화면 하단에 있으므로 본문은 버튼 '위로' 펼쳐진다 (잘림 방지) */
 export function hintFold(text, { x = 22, y = 640 } = {}) {
   const wrap = el("div.hintfold", { style: { position: "absolute", left: x + "px", top: y + "px", zIndex: 10 } });
   const body = el("div.hintfold__body", { text: "💡 " + text });
+  Object.assign(body.style, { position: "absolute", bottom: "calc(100% + 6px)", left: "0", marginTop: "0" });
   const head = button("힌트 보기", { variant: "ghost", size: "sm", icon: "💡", onClick: () => {
     wrap.classList.toggle("is-open");
   } });
