@@ -439,15 +439,16 @@ body {
   border-bottom-right-radius: 6px;
   transform: rotate(45deg);
 }
-/* 만화식 보조 점 — 캐릭터 머리 쪽으로 톡 */
+/* 만화식 보조 점 2개 — 캐릭터 머리 쪽으로 점점 작아지며 이어짐
+   (두 번째 점은 box-shadow 두 겹: 겉 남색 링 + 속 흰 원) */
 .speech::before {
-  content: ""; position: absolute; bottom: -26px; width: 10px; height: 10px;
+  content: ""; position: absolute; bottom: -30px; width: 12px; height: 12px;
   border-radius: 50%; background: #fff; border: 2.5px solid var(--sea-deep);
 }
 .speech--left::after { left: 30px; }
-.speech--left::before { left: 22px; }
+.speech--left::before { left: 20px; box-shadow: -8px 19px 0 -3.5px #fff, -8px 19px 0 -1px var(--sea-deep); }
 .speech--right::after { right: 30px; }
-.speech--right::before { right: 22px; }
+.speech--right::before { right: 20px; box-shadow: 8px 19px 0 -3.5px #fff, 8px 19px 0 -1px var(--sea-deep); }
 
 /* ---- 항로 선긋기 (routeDraw) ---- */
 .routedraw {
