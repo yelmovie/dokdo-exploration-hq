@@ -11,6 +11,7 @@ import { assetImg } from "../core/dom.js";
 import { ICONS, DOKDO, PHOTOS } from "../config/assetManifest.js";
 import { TODAY_DOKDO } from "../data/questions.js";
 import { awardDex } from "./_shared.js";
+import AudioManager from "../managers/AudioManager.js";
 import { supportsWebGL } from "../components/three/ThreeStage.js";
 import { createDokdoGlbDiorama } from "../components/three/DokdoGlbDiorama.js";
 import PAGES from "../config/pageConfig.js";
@@ -125,7 +126,7 @@ export default function CompletionGalleryScene(ctx) {
 
   /* ---- 장식 + 축하 캐릭터 ---- */
   placeAsset(layer, ICONS.bunting, { x: 360, y: 46, w: 560, h: 110, alt: "축하 장식", z: 3 });
-  placeAsset(layer, DOKDO.girlScout, { x: 872, y: 292, w: 225, h: 310, alt: "축하하는 탐험가 소녀", z: 5 }); // 위로 올려 우측 팻말 글자가 보이게
+  placeAsset(layer, DOKDO.girlScout, { x: 985, y: 292, w: 225, h: 310, alt: "축하하는 탐험가 소녀", z: 5 }); // 망원경과 팻말 사이 울타리 앞
 
   /* ---- 좌측: 전시 모형 (독도 모형 이미지 — 3D 디오라마는 이후 단계) ---- */
   layer.appendChild(el("div", {
@@ -220,11 +221,11 @@ export default function CompletionGalleryScene(ctx) {
 
   /* ---- 우측: 오늘의 독도(토글) — 실사 + 정보 카드 ---- */
   layer.appendChild(collapsible({
-    title: "오늘의 독도", icon: "🗼", variant: "light",
+    title: "지금의 독도", icon: "🗼", variant: "light",
     style: { ...pos(985, 96, 280), zIndex: 10 },
     body: [el("div.col", { style: { gap: "7px" } }, [
       (() => {
-        const ph = assetImg(PHOTOS.boat, "오늘의 독도");
+        const ph = assetImg(PHOTOS.boat, "지금의 독도");
         Object.assign(ph.style, { width: "100%", height: "110px", objectFit: "cover", borderRadius: "10px" });
         return ph;
       })(),
@@ -237,6 +238,24 @@ export default function CompletionGalleryScene(ctx) {
 
   /* ---- 우측: 마무리 성찰 카드(토글) ---- */
   let memoField = fieldOf(savedMemo.field) ? savedMemo.field : null;
+  /* 영역별 핵심 한 문장 — 고르면 '기억해요' 문장이 표시된다 (외교부 자료 기반) */
+  const CORE_SENTENCE = {
+    location: "📍 독도는 울릉도에서 동쪽 약 87.4km, 동도와 서도로 이루어진 우리 영토예요.",
+    geology: "⛰️ 독도는 화산활동으로 만들어진 가파른 바위섬이라 평지가 좁아요.",
+    history: "📜 세종실록 지리지(1454)와 대한제국 칙령 제41호(1900)에 독도가 기록되어 있어요.",
+    ecology: "🌿 독도에는 식물 약 60종, 새 약 160종이 사는 소중한 생태 공간이에요.",
+    protection: "🛡️ 표시된 길에서 조용히 관찰하고 기록으로만 남기며 독도를 지켜요.",
+  };
+  const coreBox = el("div", { style: {
+    display: "none", fontSize: "14.5px", fontWeight: "800", color: "var(--navy)",
+    background: "rgba(31,122,194,.08)", borderRadius: "10px", padding: "8px 12px",
+    lineHeight: "1.55", wordBreak: "keep-all",
+  } });
+  function showCore() {
+    if (!memoField) return;
+    coreBox.style.display = "block";
+    coreBox.textContent = CORE_SENTENCE[memoField] || "";
+  }
   const chips = BRIEFING_FIELDS.map((f) => {
     const node = el("button", {
       type: "button",
@@ -246,7 +265,7 @@ export default function CompletionGalleryScene(ctx) {
         cursor: "pointer", fontFamily: "inherit", lineHeight: "1.3",
       },
       text: f.icon + " " + f.label,
-      onClick: () => { memoField = f.key; paintChips(); },
+      onClick: () => { memoField = f.key; paintChips(); showCore(); },
     });
     return { node, f };
   });
@@ -267,8 +286,9 @@ export default function CompletionGalleryScene(ctx) {
     title: "마무리 성찰 카드", icon: "💭", variant: "gold",
     style: { ...pos(985, 152, 280), zIndex: 9 },
     body: [el("div.col", { style: { gap: "8px" } }, [
-      el("div", { style: { fontSize: "14px", fontWeight: "700", color: "var(--navy)", wordBreak: "keep-all" }, text: "가장 기억에 남는 근거 영역을 고르고, 그 까닭을 적어요." }),
+      el("div", { style: { fontSize: "14.5px", fontWeight: "700", color: "var(--navy)", wordBreak: "keep-all" }, text: "가장 기억에 남는 근거 영역을 고르고, 핵심 문장을 기억해요." }),
       el("div.row", { style: { gap: "6px", flexWrap: "wrap" } }, chips.map((c) => c.node)),
+      coreBox,
       memoTa,
       counterFor(memoTa, 60),
       el("div.row", { style: { justifyContent: "flex-end" } }, [
@@ -356,6 +376,12 @@ export default function CompletionGalleryScene(ctx) {
       buttons: [button("닫기", { variant: "ghost", onClick: () => md.close() })] });
   }
   function playVideo(v) {
+    // 영상 재생 중에는 배경음·효과음 정지, 닫으면 원래대로
+    const prevBgm = AudioManager.bgmEnabled, prevSfx = AudioManager.sfxEnabled;
+    AudioManager.setBgmEnabled(false);
+    AudioManager.setSfxEnabled(false);
+    let restored = false;
+    const restore = () => { if (restored) return; restored = true; AudioManager.setBgmEnabled(prevBgm); AudioManager.setSfxEnabled(prevSfx); };
     const frame = document.createElement("iframe");
     frame.src = `https://www.youtube-nocookie.com/embed/${v.id}?rel=0`;
     frame.allow = "accelerometer; encrypted-media; picture-in-picture; fullscreen";
@@ -364,8 +390,10 @@ export default function CompletionGalleryScene(ctx) {
     const md = modal(ctx.stage, {
       title: v.title, icon: "🎬",
       body: el("div", {}, [frame]),
-      buttons: [button("영상 닫기", { variant: "green", onClick: () => md.close() })],
+      buttons: [button("영상 닫기", { variant: "green", onClick: () => { restore(); md.close(); } })],
     });
+    // ESC 등 다른 경로로 닫혀도 소리 복구
+    const guard = setInterval(() => { if (!md.el.isConnected) { restore(); clearInterval(guard); } }, 800);
   }
 
   /* ---- 모달: 처음으로 확인 (진행 데이터 유지 안내) ---- */

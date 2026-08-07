@@ -167,9 +167,11 @@ export default function MissionMapScene(ctx) {
   showDetail(next || MISSIONS[0], !!next || save.isUnlocked(MISSIONS[0].key));
 
   if (isAllComplete(save.get("completedMissions")) && save.isCompleted("presentation")) {
-    const goDone = button("탐사 수료관 입장", { variant: "green", size: "lg", icon: "🏛", onClick: () => ctx.navigate("completion") });
+    // 최종 목표 버튼 — 우측 빈 바다 영역(상세 패널 위)에 크게, 금색 글로우로 강조
+    const goDone = button("탐사 수료관 입장", { variant: "gold", size: "lg", icon: "🏛", onClick: () => ctx.navigate("completion") });
+    Object.assign(goDone.style, { fontSize: "21px", padding: "16px 34px", boxShadow: "0 0 0 5px rgba(255,217,104,.4), 0 10px 24px rgba(90,64,20,.45)" });
     coachify(goDone, { label: null });
-    layer.appendChild(el("div", { style: { position: "absolute", right: "26px", top: "84px", zIndex: 8 } }, [goDone]));
+    layer.appendChild(el("div", { style: { position: "absolute", right: "34px", top: "366px", zIndex: 8 } }, [goDone]));
   }
 
   return root;
