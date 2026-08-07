@@ -18,6 +18,14 @@ import { createDokdoGlbDiorama } from "../components/three/DokdoGlbDiorama.js";
 /* 단서별 실사 사진 (단서 카드 모달에서 표시) — 외교부 실사 */
 const CLUE_PHOTO = { cliff: "seodo", flat: "dongdo", erosion: "elephant", bird: "aerial" };
 
+/* 단면 모형 번호 배지 ①~④ 설명 (3D 오버레이 — 이미지에 글자를 박지 않는다) */
+const SECTION_FEATURES = [
+  { n: 1, label: "가파른 바위 절벽", desc: "이동과 시설 설치가 어려워요" },
+  { n: 2, label: "좁은 평지", desc: "넓은 생활공간을 만들기 어려워요" },
+  { n: 3, label: "화산 조각이 굳은 암석층", desc: "독도가 화산활동과 관련 있음을 보여 줘요" },
+  { n: 4, label: "파도에 깎인 해안 바위", desc: "바람과 파도가 지형에 영향을 줘요" },
+];
+
 /* 지형 단서 4종 — fx/fy 는 실사 항공 사진 위 라벨 위치(%) */
 const GEOLOGY_CLUES = [
   { id: "cliff", icon: "⛰️", title: "가파른 절벽", short: "가파른 절벽", fx: 30, fy: 30,
@@ -60,36 +68,78 @@ export default function GeologyAnalysisScene(ctx) {
   if (use3D) {
     /* ---- 3D 독도 지형 탐사 (회전·확대·단면 보기) ---- */
     island.style.background = "linear-gradient(180deg,#8ecdf2 0%,#c8ecff 62%,#7fb6dd 100%)";
-    viewer = createDokdoTerrain3D({ root, width: 560, height: 300, glbSrc: "public/models/dokdo_diorama.glb", onMarkerSelect: (id) => {
-      const clue = GEOLOGY_CLUES.find((c) => c.id === id);
-      if (!clue) return;
-      AudioManager.unlock(); AudioManager.click();
-      openClue(clue);
-    } });
+    viewer = createDokdoTerrain3D({ root, width: 560, height: 300, glbSrc: "public/models/dokdo_diorama.glb",
+      onMarkerSelect: (id) => {
+        const clue = GEOLOGY_CLUES.find((c) => c.id === id);
+        if (!clue) return;
+        AudioManager.unlock(); AudioManager.click();
+        openClue(clue);
+      },
+      onSectionMarkerSelect: (n) => showSectionCaption(n),
+    });
     Object.assign(viewer.el.style, { width: "100%", height: "100%" });
     island.appendChild(viewer.el);
-    island.appendChild(hudPill("🧭 3D 독도 탐험", { variant: "sea", style: { position: "absolute", left: "10px", top: "10px", zIndex: 6 } }));
+    const explorePill = hudPill("🧭 3D 독도 탐험", { variant: "sea", style: { position: "absolute", left: "10px", top: "10px", zIndex: 6 } });
+    island.appendChild(explorePill);
     island.appendChild(el("div", { style: { position: "absolute", left: "10px", bottom: "8px", zIndex: 6, fontSize: "11.5px", fontWeight: "800", color: "var(--navy)", background: "rgba(255,255,255,.88)", padding: "3px 10px", borderRadius: "999px" }, text: "🖐 드래그 회전 · 두 손가락 확대 · 반짝이는 단서 탭" }));
 
-    /* 단면 보기 토글 — '단순화 단면 모형' 안내 (실제 지질 단면이 아님을 명시) */
-    const strataTipStyle = { background: "rgba(20,32,48,.85)", color: "#fff", fontWeight: "800", fontSize: "12px", padding: "4px 10px", borderRadius: "8px", boxShadow: "var(--shadow-sm)" };
-    const strataTips = el("div", { style: { position: "absolute", left: "12px", top: "48px", zIndex: 6, display: "none", flexDirection: "column", gap: "5px", maxWidth: "252px" } }, [
-      el("div", { style: { ...strataTipStyle, background: "rgba(20,54,92,.94)", fontSize: "12.5px", wordBreak: "keep-all" }, text: "독도 지형을 쉽게 이해하기 위한 단순화 단면 모형이에요." }),
-      el("div", { style: strataTipStyle, text: "1. 가파른 바위 절벽" }),
-      el("div", { style: strataTipStyle, text: "2. 좁은 평지" }),
-      el("div", { style: strataTipStyle, text: "3. 화산 조각이 굳은 암석층" }),
-      el("div", { style: strataTipStyle, text: "4. 파도에 깎인 해안 바위" }),
-      el("div", { style: { ...strataTipStyle, background: "rgba(255,255,255,.92)", color: "var(--ink-soft)", fontWeight: "700", fontSize: "11.5px", wordBreak: "keep-all", lineHeight: "1.45" },
-        text: "실제 지질은 여러 암석과 지형이 복잡하게 나타나요 — 특징을 이해하기 쉽게 단순화했어요." }),
+    /* 단면 보기 — 라벨은 3D 위 번호 배지(①~④)로, 텍스트는 헤더 한 줄 + ⓘ 모달로 수납 */
+    const secHeader = el("div", { style: { position: "absolute", left: "10px", top: "10px", zIndex: 6, display: "none", alignItems: "center", gap: "6px" } }, [
+      el("div", { style: { background: "rgba(20,54,92,.94)", color: "#fff", fontWeight: "800", fontSize: "12.5px", padding: "5px 12px", borderRadius: "999px", boxShadow: "var(--shadow-sm)", wordBreak: "keep-all" },
+        text: "🧩 단순화 단면 모형 · 번호를 눌러 봐요" }),
+      (() => {
+        const b = el("button", { type: "button", attrs: { "aria-label": "단면 모형 설명" }, style: {
+          width: "30px", height: "30px", borderRadius: "50%", border: "0", cursor: "pointer",
+          background: "rgba(255,255,255,.92)", color: "var(--sea-deep)", fontWeight: "900", fontSize: "15px",
+          boxShadow: "var(--shadow-sm)", fontFamily: "inherit",
+        }, text: "ⓘ" });
+        b.addEventListener("click", () => {
+          AudioManager.unlock(); AudioManager.click();
+          const md = modal(ctx.stage, {
+            title: "단순화 단면 모형이란?", icon: "🧩",
+            body: el("div.col", { style: { gap: "10px", maxWidth: "440px" } }, [
+              el("div", { style: { fontSize: "14.5px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.6", wordBreak: "keep-all" },
+                text: "독도는 화산활동으로 만들어진 바위섬이에요. 실제 지질은 여러 암석과 지형이 복잡하게 나타나지만, 이 화면에서는 독도의 특징을 이해하기 쉽게 단순화해 보여 줍니다." }),
+              el("div.col", { style: { gap: "5px" } }, SECTION_FEATURES.map((f) =>
+                el("div", { style: { fontSize: "13.5px", fontWeight: "800", color: "var(--navy)", background: "rgba(31,122,194,.08)", borderRadius: "9px", padding: "6px 12px", wordBreak: "keep-all" },
+                  text: `${"①②③④"[f.n - 1]} ${f.label} — ${f.desc}` }))),
+            ]),
+            buttons: [button("알겠어요!", { variant: "green", onClick: () => md.close() })],
+          });
+        });
+        return b;
+      })(),
     ]);
-    island.appendChild(strataTips);
+    island.appendChild(secHeader);
+
+    /* 번호 배지 탭 → 하단 한 줄 설명 (자동 숨김) */
+    const secCaption = el("div", { style: {
+      position: "absolute", left: "50%", bottom: "42px", transform: "translateX(-50%)", zIndex: 6,
+      display: "none", maxWidth: "92%", background: "rgba(20,54,92,.94)", color: "#fff",
+      fontWeight: "800", fontSize: "13px", padding: "7px 16px", borderRadius: "999px",
+      boxShadow: "var(--shadow-sm)", wordBreak: "keep-all", textAlign: "center", pointerEvents: "none",
+    } });
+    island.appendChild(secCaption);
+    let capTimer = 0;
+    function showSectionCaption(n) {
+      const f = SECTION_FEATURES.find((x) => x.n === n);
+      if (!f) return;
+      AudioManager.click();
+      secCaption.textContent = `${"①②③④"[n - 1]} ${f.label} — ${f.desc}`;
+      secCaption.style.display = "block";
+      clearTimeout(capTimer);
+      capTimer = setTimeout(() => { secCaption.style.display = "none"; }, 4500);
+    }
+
     let sectionOn = false;
     const secBtn = button("단면 보기", { variant: "gold", icon: "⛰", onClick: () => {
       sectionOn = !sectionOn;
       viewer.setSectionView(sectionOn);
-      strataTips.style.display = sectionOn ? "flex" : "none";
+      secHeader.style.display = sectionOn ? "flex" : "none";
+      if (explorePill) explorePill.style.display = sectionOn ? "none" : "";
+      if (!sectionOn) { secCaption.style.display = "none"; clearTimeout(capTimer); }
       secBtn.querySelector("span:last-child").textContent = sectionOn ? "겉모습 보기" : "단면 보기";
-      toast(ctx.stage, sectionOn ? "단순화 단면 모형으로 전환 — 섬의 특징을 관찰해요" : "겉모습 모형으로 전환");
+      toast(ctx.stage, sectionOn ? "단순화 단면 모형 — 번호 배지를 눌러 특징을 살펴봐요" : "겉모습 모형으로 전환");
     } });
     Object.assign(secBtn.style, { position: "absolute", right: "10px", bottom: "10px", zIndex: 6, padding: "6px 14px", fontSize: "13px", minHeight: "44px" });
     island.appendChild(secBtn);
@@ -247,41 +297,92 @@ export default function GeologyAnalysisScene(ctx) {
     board.addEventListener("pointerdown", () => uncoach(board), { once: true });
   }
 
-  /* ---- 연결 활동: 지형 특징 ↔ 영향 (특징을 누르고 어울리는 영향을 이어 누르기) ---- */
+  /* ---- 연결 활동: 특징 탭 → 영향 탭 = 두 카드 사이에 실선 (4개 완성 시 자동 채점) ---- */
   const PAIR_COLORS = ["#1f7ac2", "#2f9e44", "#c9962a", "#8a5a2b"];
+  const FEATURE_SHORT = {
+    steep_cliff: "⛰ 바위 절벽", narrow_flatland: "🏕 좁은 평지",
+    volcanic_rock_layer: "🪨 굳은 암석층", wave_eroded_coast: "🌊 해안 바위",
+  };
   function renderMatch(m, onDone) {
     const paired = {}; // featureId -> effect pair id
-    let selFeat = null;
+    let selFeat = null, locked = false;
     const effects = [...m.pairs].sort(() => Math.random() - 0.5);
     const fb = el("div.feedback");
     const btnBase = {
       fontFamily: "inherit", textAlign: "left", fontSize: "14px", fontWeight: "800", color: "var(--ink)",
       background: "#fff", border: "2px solid #b9c7d6", borderRadius: "12px", padding: "9px 12px",
       cursor: "pointer", lineHeight: "1.4", wordBreak: "keep-all", minHeight: "48px", width: "100%",
+      transition: "border-color .12s, background .12s",
     };
     const featBtns = new Map(), effBtns = new Map();
-    let locked = false;
+
+    /* 카드 사이 실선용 SVG 오버레이 */
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible";
+
+    function drawLines() {
+      svg.innerHTML = "";
+      Object.entries(paired).forEach(([fid, eid]) => {
+        const fBtn = featBtns.get(fid), eBtn = effBtns.get(eid);
+        if (!fBtn || !eBtn) return;
+        const col = PAIR_COLORS[m.pairs.findIndex((p) => p.id === fid)];
+        const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        ln.setAttribute("x1", fBtn.offsetLeft + fBtn.offsetWidth);
+        ln.setAttribute("y1", fBtn.offsetTop + fBtn.offsetHeight / 2);
+        ln.setAttribute("x2", eBtn.offsetLeft);
+        ln.setAttribute("y2", eBtn.offsetTop + eBtn.offsetHeight / 2);
+        ln.setAttribute("stroke", col);
+        ln.setAttribute("stroke-width", "3.5");
+        ln.setAttribute("stroke-linecap", "round");
+        svg.appendChild(ln);
+      });
+    }
 
     function paint() {
       m.pairs.forEach((p, i) => {
-        const fBtn = featBtns.get(p.id);
+        const b = featBtns.get(p.id);
         const col = PAIR_COLORS[i];
         const has = !!paired[p.id];
-        fBtn.style.borderColor = selFeat === p.id ? "var(--gold-deep)" : has ? col : "#b9c7d6";
-        fBtn.style.background = selFeat === p.id ? "#fff6da" : has ? col + "18" : "#fff";
+        b.style.borderColor = selFeat === p.id ? "var(--gold-deep)" : has ? col : "#b9c7d6";
+        b.style.background = selFeat === p.id ? "#fff6da" : has ? col + "18" : "#fff";
       });
       effects.forEach((e) => {
-        const eBtn = effBtns.get(e.id);
+        const b = effBtns.get(e.id);
         const owner = Object.keys(paired).find((f) => paired[f] === e.id);
         const col = owner ? PAIR_COLORS[m.pairs.findIndex((p) => p.id === owner)] : null;
-        eBtn.style.borderColor = col || "#b9c7d6";
-        eBtn.style.background = col ? col + "18" : "#fff";
+        b.style.borderColor = col || "#b9c7d6";
+        b.style.background = col ? col + "18" : "#fff";
       });
-      confirm.disabled = Object.keys(paired).length < m.pairs.length;
+      requestAnimationFrame(drawLines);
+    }
+
+    /* 4개 연결 완료 → 자동 채점 (확인 버튼 없음) */
+    function autoCheck() {
+      if (Object.keys(paired).length < m.pairs.length) return;
+      setTimeout(() => {
+        const wrong = m.pairs.filter((p) => paired[p.id] !== p.id);
+        if (wrong.length) {
+          stats.wrong++;
+          AudioManager.wrong();
+          wrong.forEach((p) => delete paired[p.id]); // 틀린 연결만 풀어 재도전
+          grid.classList.add("is-shake");
+          setTimeout(() => grid.classList.remove("is-shake"), 400);
+          paint();
+          fb.className = "feedback show feedback--no";
+          fb.textContent = `🤔 ${wrong.length}개 연결이 풀렸어요. 그 특징이 생활·자연에 어떤 영향을 줄지 다시 생각해 봐요.`;
+          return;
+        }
+        locked = true;
+        AudioManager.correct();
+        fb.className = "feedback show feedback--ok";
+        fb.textContent = "✅ 지형 특징과 영향을 모두 바르게 연결했어요!";
+        onDone();
+      }, 380);
     }
 
     m.pairs.forEach((p) => {
-      const b = el("button", { type: "button", style: { ...btnBase }, text: "⛰ " + p.feature });
+      const b = el("button", { type: "button", style: { ...btnBase }, text: FEATURE_SHORT[p.id] || p.feature });
+      b.title = p.feature;
       b.addEventListener("click", () => {
         if (locked) return;
         AudioManager.unlock(); AudioManager.click();
@@ -300,37 +401,20 @@ export default function GeologyAnalysisScene(ctx) {
         paired[selFeat] = e.id;
         selFeat = null;
         paint();
+        autoCheck();
       });
       effBtns.set(e.id, b);
     });
 
-    const confirm = button("연결 확인", { variant: "gold", icon: "🔗", disabled: true, onClick: () => {
-      const wrong = m.pairs.filter((p) => paired[p.id] !== p.id);
-      if (wrong.length) {
-        stats.wrong++;
-        AudioManager.wrong();
-        wrong.forEach((p) => delete paired[p.id]); // 틀린 연결만 풀어 재도전
-        paint();
-        fb.className = "feedback show feedback--no";
-        fb.textContent = `🤔 ${wrong.length}개 연결이 아직 맞지 않아요. 특징이 생활·자연에 어떤 영향을 줄지 다시 생각해 봐요.`;
-        return;
-      }
-      locked = true;
-      AudioManager.correct();
-      fb.className = "feedback show feedback--ok";
-      fb.textContent = "✅ 지형 특징과 영향을 모두 바르게 연결했어요!";
-      confirm.style.display = "none";
-      onDone();
-    } });
-
-    const grid = el("div.row", { style: { gap: "10px", alignItems: "stretch" } }, [
-      el("div.col", { style: { gap: "8px", flex: "1" } }, [...featBtns.values()]),
-      el("div.col", { style: { gap: "8px", flex: "1" } }, [...effBtns.values()]),
+    const grid = el("div.row", { style: { position: "relative", gap: "56px", alignItems: "stretch" } }, [
+      el("div.col", { style: { gap: "10px", flex: "0 0 176px" } }, [...featBtns.values()]),
+      el("div.col", { style: { gap: "10px", flex: "1" } }, [...effBtns.values()]),
     ]);
+    grid.appendChild(svg);
+
     const node = el("div.col", { style: { gap: "10px" } }, [
-      el("div.tip", { style: { fontSize: "13px", padding: "7px 12px" }, html: "왼쪽 <b>특징</b>을 누른 뒤, 어울리는 <b>영향</b>을 이어서 눌러요. 색이 같으면 연결된 거예요." }),
+      el("div.tip", { style: { fontSize: "13px", padding: "7px 12px" }, html: "<b>특징</b>을 누르고 어울리는 <b>영향</b>을 이어 누르면 선으로 연결돼요. 4개를 다 이으면 자동으로 확인!" }),
       grid,
-      el("div.row", { style: { justifyContent: "center" } }, [confirm]),
       fb,
     ]);
     paint();
@@ -346,6 +430,9 @@ export default function GeologyAnalysisScene(ctx) {
     badgeRow.appendChild(el("span", { style: { background: "linear-gradient(180deg,var(--sea),var(--sea-deep))", color: "#fff", fontWeight: "900", fontSize: "14px", padding: "5px 16px", borderRadius: "999px" }, text: `문제 ${qi + 1} / ${total}` }));
     if (isMulti) badgeRow.appendChild(el("span", { style: { background: "var(--gold)", color: "#5c3c05", fontWeight: "800", fontSize: "13px", padding: "5px 12px", borderRadius: "999px" }, text: `정답 ${q.answer.length}개` }));
     if (q.type === "match") badgeRow.appendChild(el("span", { style: { background: "var(--green)", color: "#fff", fontWeight: "800", fontSize: "13px", padding: "5px 12px", borderRadius: "999px" }, text: "연결하기" }));
+    // 진행 도트 — 6단계 위치를 한눈에
+    badgeRow.appendChild(el("span", { style: { alignSelf: "center", fontSize: "12px", letterSpacing: "3px", color: "var(--sea-deep)", fontWeight: "900" },
+      text: FLOW.map((_, i) => (i <= qi ? "●" : "○")).join("") }));
 
     qTitle.innerHTML = q.prompt;
     qHolder.innerHTML = "";

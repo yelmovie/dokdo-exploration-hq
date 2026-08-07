@@ -118,7 +118,7 @@ function badgeTexture(text, bg, ring) {
  *  - onMarkerSelect(id): 마커 클릭 콜백
  * @returns {{ el, stage, setMarkerCollected, setSectionView, sectionOn }}
  */
-export function createDokdoTerrain3D({ root = null, width = 560, height = 300, onMarkerSelect = null, glbSrc = null } = {}) {
+export function createDokdoTerrain3D({ root = null, width = 560, height = 300, onMarkerSelect = null, onSectionMarkerSelect = null, glbSrc = null } = {}) {
   const stage = createThreeStage({ root, width, height, fov: 42, near: 0.1, far: 300, alpha: true });
   const { renderer, scene, camera } = stage;
   renderer.localClippingEnabled = true; // 단면 보기(클리핑)용
@@ -191,6 +191,27 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
   // 공유 재질/텍스처는 traverse 해제에서 빠질 수 있어 별도 등록
   if (root) registerDisposer(root, () => { seekMat.dispose(); doneMat.dispose(); seekTex.dispose(); doneTex.dispose(); });
 
+  /* ---- 단면 모드 전용 번호 배지 ①~④ (특징 위치 — 탭하면 씬이 설명을 보여 준다) ---- */
+  const SECTION_MARKERS = [
+    { n: 1, pos: [-2.9, 4.4, 0.9] },   // 가파른 바위 절벽 (서도 상부)
+    { n: 2, pos: [2.9, 3.2, -0.3] },   // 좁은 평지 (동도 정상)
+    { n: 3, pos: [0.6, 1.9, 0.6] },    // 화산 조각이 굳은 암석층 (단면 노출부)
+    { n: 4, pos: [-1.4, 0.55, 2.5] },  // 파도에 깎인 해안 바위 (물가)
+  ];
+  const secSprites = SECTION_MARKERS.map((m, i) => {
+    const tex = badgeTexture(String(m.n), "#14568f", "rgba(130,190,245,.6)");
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    const sp = new THREE.Sprite(mat);
+    sp.position.set(m.pos[0], m.pos[1], m.pos[2]);
+    sp.scale.set(0.95, 0.95, 1);
+    sp.renderOrder = 11;
+    sp.userData = { sectionN: m.n, phase: i * 1.1, baseY: m.pos[1] };
+    sp.visible = false;
+    scene.add(sp);
+    if (root) registerDisposer(root, () => { mat.dispose(); tex.dispose(); });
+    return sp;
+  });
+
   /* ---- 카메라 + OrbitControls (회전/줌만, 지평선 아래 금지) ---- */
   camera.position.set(2.5, 5.2, 12.8);
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -248,13 +269,22 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
   /* ---- 단면 보기: 클리핑 평면으로 앞쪽 절반을 잘라 지층 노출 ---- */
   const clipPlane = new THREE.Plane(new THREE.Vector3(0, 0, -1), 0.15); // z > 0.15 잘림
   let sectionOn = false;
+  let camGoal = null; // 단면 진입 시 절단면 정면으로 카메라 이동 (tick 에서 lerp)
   function setSectionView(on) {
     sectionOn = !!on;
     const planes = sectionOn ? [clipPlane] : null;
     shellMat.clippingPlanes = planes;
     coreMat.clippingPlanes = planes;
     cores.visible = sectionOn;
-    if (sectionOn) controls.autoRotate = false;
+    // 단면 = 번호 배지 관찰 모드 / 겉모습 = 단서 수집 모드
+    secSprites.forEach((s) => { s.visible = sectionOn; });
+    sprites.forEach((s) => { s.visible = !sectionOn; });
+    if (sectionOn) {
+      controls.autoRotate = false;
+      camGoal = { pos: new THREE.Vector3(0, 3.6, 12.4), tgt: new THREE.Vector3(0, 1.3, 0) };
+    } else {
+      camGoal = null;
+    }
     if (glbModel) {
       // 겉모습 = 실사 GLB / 단면 = 절차 지층 모형
       glbModel.visible = !sectionOn;
@@ -281,12 +311,23 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
   renderer.domElement.addEventListener("pointerdown", (e) => { downX = e.clientX; downY = e.clientY; });
   renderer.domElement.addEventListener("pointerup", (e) => {
     if (Math.hypot(e.clientX - downX, e.clientY - downY) > 7) return;
+    if (sectionOn) {
+      const hits = stage.raycastFromEvent(e, secSprites, false);
+      if (hits.length && onSectionMarkerSelect) onSectionMarkerSelect(hits[0].object.userData.sectionN);
+      return;
+    }
     const hits = stage.raycastFromEvent(e, sprites, false);
     if (hits.length && onMarkerSelect) onMarkerSelect(hits[0].object.userData.markerId);
   });
 
   /* ---- 프레임 루프: 컨트롤 감쇠 + 파도 + 마커 펄스 ---- */
   stage.setTick((dt, t) => {
+    if (camGoal) {
+      const k = Math.min(1, dt * 3.2);
+      camera.position.lerp(camGoal.pos, k);
+      controls.target.lerp(camGoal.tgt, k);
+      if (camera.position.distanceTo(camGoal.pos) < 0.06) camGoal = null;
+    }
     controls.update();
     for (let i = 0; i < seaPos.count; i++) {
       const x = seaBase[i * 3], z = seaBase[i * 3 + 2];
@@ -299,6 +340,10 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
       sp.scale.set(s, s, 1);
       // 위아래 둥실 — 움직임으로 단서 위치가 한눈에 보이게
       sp.position.y = sp.userData.baseY + Math.sin(t * 2.2 + sp.userData.phase) * 0.14;
+    }
+    for (const sp of secSprites) {
+      if (!sp.visible) continue;
+      sp.position.y = sp.userData.baseY + Math.sin(t * 2 + sp.userData.phase) * 0.1;
     }
   });
   stage.start();

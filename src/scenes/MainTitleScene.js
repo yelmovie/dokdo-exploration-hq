@@ -161,7 +161,7 @@ export default function MainTitleScene(ctx) {
     const body = el("div.col", { style: { gap: "10px", minWidth: "420px" } }, [
       el("div", { style: { fontSize: "14px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.5", wordBreak: "keep-all" },
         text: "시범·복습 수업용 기능이에요. 이 기기의 기록에만 적용됩니다." }),
-      el("div.row", { style: { gap: "10px", justifyContent: "center" } }, [
+      el("div.col", { style: { gap: "10px", alignItems: "stretch" } }, [
         button("전체 단계 해금", { variant: "gold", onClick: () => {
           const all = MISSIONS.map((m) => m.key);
           ctx.save.set("unlockedMissions", all);
