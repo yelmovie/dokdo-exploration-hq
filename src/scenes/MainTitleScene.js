@@ -9,6 +9,7 @@ import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { MISSIONS } from "../data/missions.js";
 import AudioManager from "../managers/AudioManager.js";
+import I18n from "../managers/I18nManager.js";
 
 export default function MainTitleScene(ctx) {
   const cfg = PAGES.main;
@@ -100,6 +101,29 @@ export default function MainTitleScene(ctx) {
       sectionTitle("소리"),
       toggleRow("배경 음악", () => AudioManager.bgmEnabled, (v) => AudioManager.setBgmEnabled(v)),
       toggleRow("효과음", () => AudioManager.sfxEnabled, (v) => AudioManager.setSfxEnabled(v)),
+
+      sectionTitle("언어 · Language"),
+      el("div.row", { style: { gap: "8px", padding: "6px 0", flexWrap: "wrap" } },
+        Object.entries(I18n.LANGS).map(([code, label]) => {
+          const active = I18n.lang === code;
+          const b = el("button", {
+            type: "button",
+            style: {
+              fontFamily: "inherit", fontSize: "14.5px", fontWeight: "900", minHeight: "42px",
+              padding: "8px 18px", borderRadius: "999px", cursor: "pointer",
+              border: active ? "2.5px solid var(--sea)" : "2px solid #b9c7d6",
+              background: active ? "#eaf4fd" : "#fff",
+              color: active ? "var(--sea-deep)" : "var(--ink)",
+            },
+            text: label,
+          });
+          b.addEventListener("click", () => {
+            if (I18n.lang === code) return;
+            I18n.setLang(code);
+            location.reload(); // 사전 로딩 + 전체 씬 재렌더
+          });
+          return b;
+        })),
 
       sectionTitle("교사용"),
       el("div.row", { style: { gap: "8px", padding: "6px 0" } }, [

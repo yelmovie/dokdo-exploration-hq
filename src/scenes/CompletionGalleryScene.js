@@ -188,7 +188,7 @@ export default function CompletionGalleryScene(ctx) {
   }));
 
   /* ---- 우측: 마무리 성찰 카드(토글) ---- */
-  let memoField = fieldOf(savedMemo.field) ? savedMemo.field : null;
+  let memoField = null;
   /* 영역별 핵심 한 문장 — 고르면 '기억해요' 문장이 표시된다 (외교부 자료 기반) */
   const CORE_SENTENCE = {
     location: "📍 독도는 울릉도에서 동쪽 약 87.4km, 동도와 서도로 이루어진 우리 영토예요.",
@@ -341,45 +341,6 @@ export default function CompletionGalleryScene(ctx) {
         button("취소", { variant: "ghost", onClick: () => m.close() }),
         button("메인으로", { variant: "green", onClick: () => { m.close(); ctx.navigate("main"); } }),
       ],
-    });
-  }
-
-  /* ---- 모달: 탐사 결과 다시보기 (저장값이 없어도 "—"로 안전 표시) ---- */
-  function openReviewModal() {
-    const board = save.get("briefingBoard") || {};
-    const draft = save.get("presentationDraft") || {};
-    const refl = save.get("reflection") || {};
-    const memo = (refl.memorable && typeof refl.memorable === "object") ? refl.memorable : {};
-
-    const secTitle = (t) => el("div", { style: { fontSize: "17px", fontWeight: "900", color: "var(--sea-deep)" }, text: t });
-    const line = (k, v, color) => el("div.row", { style: { gap: "8px", alignItems: "baseline", fontSize: "15px" } }, [
-      el("span", { style: { fontWeight: "800", color: color || "var(--navy)", flex: "0 0 auto" }, text: k }),
-      el("span", { style: { fontWeight: "600", color: "var(--ink)", wordBreak: "keep-all" }, text: v }),
-    ]);
-
-    const boardRows = BRIEFING_FIELDS.map((f) => line(`${f.icon} ${f.label}`, cardLabelOf(board[f.key]) || "—", f.color));
-
-    const orderIds = Array.isArray(draft.orderedSections) ? draft.orderedSections : [];
-    const orderRows = orderIds.length
-      ? orderIds.map((id, i) => el("div", { style: { fontSize: "15px", fontWeight: "700", color: "var(--ink)" }, text: `${i + 1}. ${sectionLabelOf(id) || "—"}` }))
-      : [el("div", { style: { fontSize: "15px", fontWeight: "600", color: "var(--ink-soft)" }, text: "아직 발표 순서를 정하지 않았어요." })];
-
-    const pledgeText = (typeof refl.pledge === "string" && refl.pledge.trim()) ? refl.pledge : "아직 적지 않았어요.";
-    const mf = fieldOf(memo.field);
-    const memoText = mf ? `${mf.icon} ${mf.label} — ${typeof memo.sentence === "string" ? memo.sentence : ""}` : "아직 고르지 않았어요.";
-
-    const body = el("div.col", { style: { gap: "14px", maxHeight: "380px", overflowY: "auto", paddingRight: "6px" } }, [
-      el("div.col", { style: { gap: "6px" } }, [secTitle("📌 브리핑 보드에 붙인 근거"), ...boardRows]),
-      el("div.col", { style: { gap: "6px" } }, [secTitle("🎤 발표 순서"), ...orderRows]),
-      el("div.col", { style: { gap: "6px" } }, [secTitle("🌿 나의 보호 다짐"),
-        el("div", { style: { fontSize: "15px", fontWeight: "600", color: "var(--ink)", lineHeight: "1.5", wordBreak: "keep-all" }, text: pledgeText })]),
-      el("div.col", { style: { gap: "6px" } }, [secTitle("💭 가장 기억에 남는 근거"),
-        el("div", { style: { fontSize: "15px", fontWeight: "600", color: "var(--ink)", lineHeight: "1.5", wordBreak: "keep-all" }, text: memoText })]),
-    ]);
-
-    const m = modal(ctx.stage, {
-      title: "탐사 결과 다시보기", icon: "📋", body,
-      buttons: [button("닫기", { variant: "ghost", onClick: () => m.close() })],
     });
   }
 

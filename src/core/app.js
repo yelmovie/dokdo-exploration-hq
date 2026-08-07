@@ -5,6 +5,7 @@
    ========================================================================= */
 import save from "../managers/SaveManager.js";
 import AudioManager from "../managers/AudioManager.js";
+import I18n from "../managers/I18nManager.js";
 import PAGES from "../config/pageConfig.js";
 
 import MainTitleScene from "../scenes/MainTitleScene.js";
@@ -126,7 +127,9 @@ window.addEventListener("hashchange", () => {
 /* ---- 첫 사용자 제스처에서 오디오 잠금 해제 ---- */
 window.addEventListener("pointerdown", () => AudioManager.unlock(), { once: true });
 
-/* ---- 시작 ---- */
+/* ---- 시작 (다국어 사전 로딩 후 첫 씬 렌더) ---- */
 fitStageRetry();
-const initial = location.hash.replace("#", "");
-go(SCENES[initial] ? initial : "main", { push: true });
+I18n.init().finally(() => {
+  const initial = location.hash.replace("#", "");
+  go(SCENES[initial] ? initial : "main", { push: true });
+});
