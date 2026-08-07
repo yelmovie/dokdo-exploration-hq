@@ -4,6 +4,7 @@
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
 import AudioManager from "../managers/AudioManager.js";
+import I18n from "../managers/I18nManager.js";
 
 /** 1280×720 스테이지 좌표 배치 헬퍼 */
 export function pos(x, y, w, h) {
@@ -109,6 +110,7 @@ export function homeButton(onClick) { return button("처음으로", { variant: "
 
 /** 캐릭터 말풍선 — 타이핑 애니메이션으로 한 글자씩 출력. 탭하면 닫힘 */
 export function speech(layer, { x, y, text, tail = "left", width = 250 } = {}) {
+  text = I18n.t(text); // 다국어: 번역문을 처음부터 타이핑
   const b = el("div.speech.speech--" + tail, {
     style: { position: "absolute", left: x + "px", top: y + "px", maxWidth: width + "px", zIndex: 15 },
   });

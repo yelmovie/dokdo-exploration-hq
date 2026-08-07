@@ -51,6 +51,12 @@ const I18n = {
         return this.dict[cap] || cap;
       });
     }
+    // 폴백: "이모지 + 텍스트" 조합은 이모지를 떼고 재조회 (📔 분석 정리 노트 등)
+    const em = s.match(/^([\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}⭐✅❌][️]?\s+)(.+)$/u);
+    if (em) {
+      const rest = this.dict[em[2]];
+      if (rest) return em[1] + rest;
+    }
     return null;
   },
 
