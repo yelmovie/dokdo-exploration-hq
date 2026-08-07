@@ -219,7 +219,7 @@ body {
 .q-board__title b { font-weight: 400; color: var(--sea-deep); }
 
 /* ---- 퀴즈 ---- */
-.quiz { display: flex; flex-direction: column; gap: 6px; position: relative; }
+.quiz { display: flex; flex-direction: column; gap: 6px; position: relative; padding-bottom: 6px; /* 3D 버튼 밑단(엣지)이 스크롤 경계에 안 잘리게 */ }
 .quiz__choices { display: flex; flex-direction: column; gap: 6px; }
 .quiz__choices--grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .choice {
@@ -349,7 +349,7 @@ body {
 @keyframes floaty { 50% { transform: translateY(-10px); } }
 
 /* ---- 순서 배열 활동 ---- */
-.order { display: flex; flex-direction: column; gap: 14px; }
+.order { display: flex; flex-direction: column; gap: 14px; padding-bottom: 6px; /* 3D 버튼 밑단 잘림 방지 */ }
 .order__slots { display: flex; column-gap: 10px; row-gap: 20px; justify-content: center; flex-wrap: wrap; padding-top: 10px; /* 슬롯 번호 배지가 위 요소와 안 겹치게 */ }
 .order__slot {
   position: relative; border: 2.5px dashed var(--sea-light); border-radius: 14px;

@@ -62,7 +62,7 @@ export default function RouteRestoreScene(ctx) {
   placeAsset(layer, DOKDO.boyScout, { x: 1062, y: 452, w: 200, h: 262, alt: "탐험가 소년", z: 3, shadow: true });
 
   /* ---- 우측: 문제 패널 (좁게) ---- */
-  const board = el("div.q-board", { style: { ...pos(748, 100, 512, 574) } }, [el("div.q-board__clip")]);
+  const board = el("div.q-board", { style: { ...pos(748, 100, 512), maxHeight: "590px" } }, [el("div.q-board__clip")]); // 높이는 내용 맞춤 — 배경이 보이게
   const qTitle = el("div.q-board__title", { style: { fontSize: "15.5px", lineHeight: "1.45" } });
   const workArea = el("div", { style: { flex: "1", minHeight: "0", overflowY: "auto", position: "relative", paddingRight: "4px" } });
   board.appendChild(qTitle);

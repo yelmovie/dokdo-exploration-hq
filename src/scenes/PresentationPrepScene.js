@@ -100,7 +100,8 @@ export default function PresentationPrepScene(ctx) {
   speech(layer, { x: 995, y: 150, text: "무대 스크린에 나만의 발표를 완성해 보자!", tail: "right", width: 230 });
 
   /* ---- 중앙: 활동 보드 (배경 무대의 스크린 위에) ---- */
-  const boardEl = el("div.q-board", { style: { ...pos(352, 92, 600), maxHeight: "570px" } }, [el("div.q-board__clip")]); // 높이는 내용 맞춤
+  // 배경 무대 스크린 영역(약 x337~946, y80~540)에 맞춘 투명막
+  const boardEl = el("div.q-board", { style: { ...pos(346, 94, 612), minHeight: "424px", maxHeight: "560px" } }, [el("div.q-board__clip")]);
   boardEl.style.background = "rgba(252, 254, 255, .62)";
   const qTitle = el("div.q-board__title");
   const qHolder = el("div", { style: { flex: "1", overflowY: "auto", paddingRight: "4px" } });
@@ -238,8 +239,7 @@ export default function PresentationPrepScene(ctx) {
       player.currentTime = 0;
       player.play();
     } });
-    const recBtn = button("녹음 시작", { variant: "sea", icon: "🎙", onClick: async () => {
-      if (recorder && recorder.state === "recording") { recorder.stop(); return; }
+    async function startRecording() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         chunks = [];
@@ -258,8 +258,23 @@ export default function PresentationPrepScene(ctx) {
         recBtn.querySelector("span:last-child").textContent = "녹음 끝내기";
         toast(ctx.stage, "녹음 중… 발표문을 큰 소리로 읽어요!");
       } catch {
-        toast(ctx.stage, "마이크 사용을 허용해야 녹음할 수 있어요.");
+        toast(ctx.stage, "마이크가 차단됐어요. 주소창 옆 🔒에서 마이크를 허용해 주세요.");
       }
+    }
+    const recBtn = button("녹음 시작", { variant: "sea", icon: "🎙", onClick: () => {
+      if (recorder && recorder.state === "recording") { recorder.stop(); return; }
+      // 사용자에게 먼저 물어보고 → 동의하면 브라우저 마이크 허용 창이 뜬다
+      const ask = modal(ctx.stage, {
+        title: "마이크를 사용할까요?", icon: "🎙",
+        bodyHtml: "<div style='font-size:15.5px;font-weight:700;color:var(--ink);line-height:1.7;word-break:keep-all'>" +
+          "내 발표를 녹음해서 <b>이 자리에서 들어보는 데만</b> 사용해요.<br>" +
+          "녹음은 저장되거나 어디로도 전송되지 않아요.<br><br>" +
+          "‘녹음 시작’을 누르면 브라우저가 마이크 사용을 물어봐요 — <b>[허용]</b>을 눌러 주세요.</div>",
+        buttons: [
+          button("취소", { variant: "ghost", onClick: () => ask.close() }),
+          button("녹음 시작", { variant: "sea", icon: "🎙", onClick: () => { ask.close(); startRecording(); } }),
+        ],
+      });
     } });
     content.appendChild(el("div.row", { style: { justifyContent: "center", gap: "10px" } }, [recBtn, playBtn]));
 
@@ -300,7 +315,8 @@ export default function PresentationPrepScene(ctx) {
         freeOrder: true, confirmText: "이 순서로 정했어요",
         onResult: (ok, ids) => {
           ctx.save.setPresentationOrder(ids);
-          nextHolder.appendChild(nextCoachButton("다음 활동", () => { stage = 1; render(); }));
+          toast(ctx.stage, "나만의 발표 순서 완성! 다음 활동으로 넘어가요");
+          setTimeout(() => { stage = 1; render(); }, 900); // 확인 즉시 자동 진행
         },
       });
       qHolder.appendChild(order.node);

@@ -244,16 +244,23 @@ export function orderInteraction({ items, answer, slotW = 150, slotH = 80, onRes
       if (!inSlots.has(item.id)) trayRow.appendChild(cardEl(item));
     });
     if (evicted && !inSlots.has(evicted.id)) { /* render 가 이미 트레이로 되돌림 */ }
-    confirm.disabled = placed.some((p) => p === null);
+    confirm.style.opacity = placed.some((p) => p === null) ? ".6" : "1"; // 비활성 대신 흐림 (누르면 안내)
   }
 
   const confirm = el("button.btn.btn--gold.btn--md", { type: "button" }, [
     el("span", { text: confirmText }),
   ]);
-  confirm.disabled = true;
+  const ready = () => !placed.some((p) => p === null);
   confirm.addEventListener("click", () => {
     if (done) return;
-    AudioManager.unlock(); AudioManager.click();
+    AudioManager.unlock();
+    // 카드가 덜 놓였을 때 눌러도 '왜 안 되는지' 알려준다 (disabled 무반응 방지)
+    if (!ready()) {
+      fb.className = "feedback show feedback--no";
+      fb.textContent = "🃏 카드를 모두 슬롯에 놓은 뒤 눌러요!";
+      return;
+    }
+    AudioManager.click();
     // freeOrder: 정답 없음 — 5칸 다 채우면 학습자의 배치 그대로 통과
     const ok = freeOrder || placed.every((p, i) => p && p.id === answer[i]);
     if (!ok) {
