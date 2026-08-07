@@ -122,14 +122,14 @@ export default function MainTitleScene(ctx) {
   function openTeacherGuide() {
     const body = el("div.col", { style: { gap: "10px", maxWidth: "560px" } }, [
       el("div", { style: { fontSize: "15px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.65", wordBreak: "keep-all" },
-        html: "초등 4학년 사회·통합 독도교육용 <b>자료 해석형 탐사 웹앱</b>입니다.<br>" +
-          "· 40분 수업 흐름: 도입 5분 → 미션 1~4단계 20분 → 브리핑 보드·발표 준비 10분 → 수료·공유 5분<br>" +
+        html: "독도교육용 <b>자료 해석형 탐사 웹앱</b>입니다.<br>" +
+          "· 수업 흐름: 도입 → 미션 1~4단계 → 브리핑 보드·발표 준비 → 수료·공유<br>" +
           "· 진행 기록은 이 기기 브라우저에만 저장됩니다(서버 없음). 수업은 한 주소로만 진행하세요.<br>" +
           "· 오답 시 정답을 바로 알려 주지 않고 오개념 피드백과 힌트로 재도전을 유도합니다." }),
       el("div", {
         style: { fontSize: "13.5px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.6", background: "rgba(31,122,194,.08)", borderRadius: "10px", padding: "10px 14px", wordBreak: "keep-all" },
         html: "<b>교육과정 연계</b> · 범교과 학습 주제 ‘독도 교육’ 기반, 2022 개정 사회과 <b>[6사01-02]</b>" +
-          "(독도의 지리적 특성과 역사 기록을 바탕으로 영토로서 독도의 중요성 이해)와 연계한 4학년 심화 활동입니다." +
+          "(독도의 지리적 특성과 역사 기록을 바탕으로 영토로서 독도의 중요성 이해)와 연계한 심화 활동입니다." +
           "<br><span style='color:#a05a1a'>※ 성취기준 원문은 수업 전 교육과정 고시 원문과 대조해 확인해 주세요.</span>",
       }),
       el("div", {
