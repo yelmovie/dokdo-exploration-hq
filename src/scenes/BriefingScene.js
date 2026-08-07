@@ -102,9 +102,9 @@ export default function BriefingScene(ctx) {
     layer.appendChild(card);
   });
 
-  /* ---- 등대 마스코트(우측 책상) + 머리 위 말풍선 (타이핑) ---- */
-  placeAsset(layer, DOKDO.lighthouseChar, { x: 1020, y: 415, w: 175, h: 205, alt: "등대 마스코트", float: true, z: 5, shadow: true });
-  speech(layer, { x: 950, y: 300, text: "코르크보드의 목표 메모 5장을 눌러 읽어 봐! 다 읽으면 항로도가 열려.", tail: "right", width: 235 });
+  /* ---- 등대 마스코트(좌측 창가 책상) + 머리 위 말풍선 (타이핑) ---- */
+  placeAsset(layer, DOKDO.lighthouseChar, { x: 58, y: 442, w: 168, h: 198, alt: "등대 마스코트", float: true, z: 5, shadow: true });
+  speech(layer, { x: 46, y: 328, text: "코르크보드의 목표 메모 5장을 눌러 읽어 봐! 다 읽으면 항로도가 열려.", tail: "left", width: 225 });
 
   /* ---- 하단: 준비 완료(게이팅) ---- */
   const readyHolder = el("div", {

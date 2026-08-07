@@ -7,9 +7,9 @@
    - 5칸 완성 → 사실 확인 문제 → 미션 완료
    ========================================================================= */
 import { el } from "../core/dom.js";
-import { buildScene, placeAsset, quiz, pos, modal, button, toast, pressable, collapsible } from "../components/ui.js";
+import { buildScene, placeAsset, quiz, pos, modal, button, toast, pressable, collapsible, speech } from "../components/ui.js";
 import { makeDraggable } from "../components/interactions.js";
-import { missionFrame, hintFold, nextCoachButton, completeMission } from "./_shared.js";
+import { missionFrame, nextCoachButton, completeMission } from "./_shared.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { BRIEFING_FIELDS } from "../data/missions.js";
@@ -90,13 +90,12 @@ export default function BriefingBoardBuildScene(ctx) {
   }));
 
   placeAsset(layer, DOKDO.seagullMail, { x: 862, y: 492, w: 170, h: 200, alt: "갈매기 집배원", float: true, z: 3, shadow: true });
+  // 힌트를 갈매기 말풍선(타이핑)으로 안내 — 별도 힌트 버튼 없음
+  speech(layer, { x: 788, y: 380, text: "카드의 문장에 ‘확인할 수 있는 사실’이 있는지 봐요. 느낌·상상만 있는 카드는 근거가 약해요.", tail: "right", width: 240 });
 
   const progChip = el("div.hud-chip", { style: { position: "absolute", left: "24px", top: "96px", zIndex: 12 } });
   layer.appendChild(progChip);
 
-  const hintHolder = el("div");
-  layer.appendChild(hintHolder);
-  hintHolder.appendChild(hintFold("카드의 문장에 ‘확인할 수 있는 사실’이 있는지 봐요. 느낌·상상만 있는 카드는 근거가 약해요.", { x: 24, y: 652 }));
 
   /* ---- 카드 렌더링 ---- */
   function cardNode(card) {

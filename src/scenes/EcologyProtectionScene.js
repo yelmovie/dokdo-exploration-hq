@@ -68,7 +68,7 @@ export default function EcologyProtectionScene(ctx) {
   /* ---- 캐릭터 + 말풍선 ---- */
   placeAsset(layer, DOKDO.rangerBoy, { x: 272, y: 352, w: 285, h: 355, alt: "생태 수호 대원", z: 3, shadow: true });
   placeAsset(layer, DOKDO.otterSailor, { x: 1090, y: 480, w: 175, h: 230, alt: "강치 항해사", float: true, z: 3, shadow: true });
-  speech(layer, { x: 1005, y: 388, text: "실제 독도 사진으로 관찰해 보자! 내 이야기도 들려줄게…", tail: "right", width: 245 });
+  speech(layer, { x: 302, y: 264, text: "실제 독도 사진으로 관찰해 보자! 내 이야기도 들려줄게…", tail: "left", width: 235 });
 
   /* ---- 우측: 문제 보드 + 잠금 ---- */
   const board = el("div.q-board", { style: { ...pos(560, 116, 700, 524) } }, [el("div.q-board__clip")]);
@@ -121,7 +121,7 @@ export default function EcologyProtectionScene(ctx) {
     let idx = 0;
     const gImg = assetImg(DOKDO.otterSailor, "강치");
     Object.assign(gImg.style, { width: "150px", height: "185px", objectFit: "contain" });
-    const line = el("div", { style: { fontSize: "16.5px", fontWeight: "800", color: "var(--navy)", lineHeight: "1.65", wordBreak: "keep-all", textAlign: "center", minHeight: "84px" }, text: GANGCHI_STORY[0] });
+    const line = el("div", { style: { fontSize: "16.5px", fontWeight: "800", color: "var(--navy)", lineHeight: "1.65", wordBreak: "keep-all", whiteSpace: "pre-line", textAlign: "center", minHeight: "84px" }, text: GANGCHI_STORY[0] });
     const dots = el("div", { style: { fontSize: "12px", fontWeight: "800", color: "var(--ink-soft)" }, text: `1 / ${GANGCHI_STORY.length}` });
     const nextBtn = button("다음", { variant: "sea", onClick: () => {
       idx++;

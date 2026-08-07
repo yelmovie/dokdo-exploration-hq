@@ -19,12 +19,13 @@ export const TERRAIN_MARKERS = [
   { id: "bird",    pos: [4.9, 1.4, 1.7] },     // 바닷새 서식 부속 바위
 ];
 
-/* 실사 GLB 모드용 마커 위치 (모델 중심 원점, 지름 ~10.5 정규화 기준) */
+/* 실사 GLB 모드용 마커 위치 — y 는 로딩 시 지형 표면을 레이캐스트로 실측해 결정
+   (모델 중심 원점, 지름 ~10.5 정규화 기준. 폴백용 y 포함) */
 const GLB_MARKERS = {
-  cliff:   [-2.5, 2.2, 0.9],   // 서도 봉우리 절벽
-  flat:    [2.5, 1.7, -0.3],   // 동도 평평한 정상
-  erosion: [0.2, 0.4, 2.2],    // 물가 침식 바위(아치 부근)
-  bird:    [4.2, 0.5, 1.3],    // 오른쪽 부속 바위
+  cliff:   [-2.5, 4.0, 0.9],   // 서도 봉우리 절벽 (높은 섬 쪽으로 자동 배정)
+  flat:    [2.5, 3.0, -0.3],   // 동도 평평한 정상 (낮은 섬 쪽으로 자동 배정)
+  erosion: [0.2, 1.5, 2.2],    // 물가 침식 바위(아치 부근)
+  bird:    [4.2, 1.6, 1.3],    // 부속 바위
 };
 
 /* 내부 지층(단면) 색 — 삼형제굴 실사(외교부) 기준: 현무암/붉은 화산암/응회암/겉층 */
@@ -173,14 +174,17 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
   /* ---- 관찰 마커: 발광 배지 스프라이트 + 펄스 스케일 ---- */
   const seekTex = badgeTexture("🔍", "#f0a72e", "rgba(255,220,120,.55)");
   const doneTex = badgeTexture("✓", "#2f9e44", "rgba(140,230,160,.5)");
-  const seekMat = new THREE.SpriteMaterial({ map: seekTex, transparent: true, depthTest: true });
-  const doneMat = new THREE.SpriteMaterial({ map: doneTex, transparent: true, depthTest: true });
+  // depthTest 끔: 지형 뒤·경사면에 있어도 단서 아이콘이 항상 보이게
+  const seekMat = new THREE.SpriteMaterial({ map: seekTex, transparent: true, depthTest: false });
+  const doneMat = new THREE.SpriteMaterial({ map: doneTex, transparent: true, depthTest: false });
   const sprites = [];
+  const setSpritePos = (sp, p) => { sp.position.set(p[0], p[1], p[2]); sp.userData.baseY = p[1]; };
   TERRAIN_MARKERS.forEach((m, i) => {
     const sp = new THREE.Sprite(seekMat);
-    sp.position.set(m.pos[0], m.pos[1], m.pos[2]);
+    sp.userData = { markerId: m.id, phase: i * 1.4, collected: false, baseY: m.pos[1] };
+    setSpritePos(sp, m.pos);
     sp.scale.set(1.05, 1.05, 1);
-    sp.userData = { markerId: m.id, phase: i * 1.4, collected: false };
+    sp.renderOrder = 10;
     sprites.push(sp);
     scene.add(sp);
   });
@@ -207,6 +211,7 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
   /* ---- 실사 GLB (겉모습 모드): 성공 시 절차 모델·바다를 GLB 디오라마로 대체.
      단면 보기는 언제나 절차 지층 모형으로 전환한다 (교육 기능 유지). ---- */
   let glbModel = null;
+  let glbPos = { ...GLB_MARKERS }; // 로딩 후 표면 실측값으로 갱신
   if (glbSrc) {
     new GLTFLoader().load(glbSrc, (gltf) => {
       glbModel = gltf.scene;
@@ -219,10 +224,24 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
       glbModel.position.y += 1.15; // 원판이 화면 중앙에 오도록 (카메라 타깃 y=1.2 기준)
       scene.add(glbModel);
       if (!sectionOn) { islands.visible = false; seaMesh.visible = false; }
-      sprites.forEach((sp) => {
-        const p = GLB_MARKERS[sp.userData.markerId];
-        if (p && !sectionOn) sp.position.set(p[0], p[1], p[2]);
-      });
+      // 지형 표면 높이를 레이캐스트로 실측 → 마커를 표면 위에 띄운다 (섬 속에 묻힘 방지)
+      const ray = new THREE.Raycaster();
+      const surfaceY = (x, z) => {
+        ray.set(new THREE.Vector3(x, 30, z), new THREE.Vector3(0, -1, 0));
+        const hit = ray.intersectObject(glbModel, true);
+        return hit.length ? hit[0].point.y : 1.2;
+      };
+      // 절벽 단서 = 더 높은 봉우리(서도), 평지 단서 = 낮은 섬(동도) — 실제 지형 기준 자동 배정
+      const hL = surfaceY(-2.5, 0.6), hR = surfaceY(2.5, -0.3);
+      const west = hL >= hR ? [-2.5, 0.6] : [2.5, -0.3];
+      const east = hL >= hR ? [2.5, -0.3] : [-2.5, 0.6];
+      glbPos = {
+        cliff:   [west[0], surfaceY(west[0], west[1]) + 0.65, west[1]],
+        flat:    [east[0], surfaceY(east[0], east[1]) + 0.65, east[1]],
+        erosion: [0.2, surfaceY(0.2, 2.2) + 0.6, 2.2],
+        bird:    [4.2, surfaceY(4.2, 1.3) + 0.6, 1.3],
+      };
+      if (!sectionOn) sprites.forEach((sp) => setSpritePos(sp, glbPos[sp.userData.markerId]));
     }, undefined, (err) => console.warn("[glb] 지형 모델 로딩 실패 — 절차 모델 유지:", err));
   }
 
@@ -242,8 +261,8 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
       islands.visible = sectionOn;
       seaMesh.visible = sectionOn;
       sprites.forEach((sp) => {
-        const src = sectionOn ? TERRAIN_MARKERS.find((m) => m.id === sp.userData.markerId).pos : GLB_MARKERS[sp.userData.markerId];
-        if (src) sp.position.set(src[0], src[1], src[2]);
+        const src = sectionOn ? TERRAIN_MARKERS.find((m) => m.id === sp.userData.markerId).pos : glbPos[sp.userData.markerId];
+        if (src) setSpritePos(sp, src);
       });
     }
   }
@@ -275,9 +294,11 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
     }
     seaPos.needsUpdate = true;
     for (const sp of sprites) {
-      if (sp.userData.collected) continue;
+      if (sp.userData.collected) { sp.position.y = sp.userData.baseY; continue; }
       const s = 1.05 + Math.sin(t * 3 + sp.userData.phase) * 0.13;
       sp.scale.set(s, s, 1);
+      // 위아래 둥실 — 움직임으로 단서 위치가 한눈에 보이게
+      sp.position.y = sp.userData.baseY + Math.sin(t * 2.2 + sp.userData.phase) * 0.14;
     }
   });
   stage.start();
