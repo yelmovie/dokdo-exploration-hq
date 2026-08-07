@@ -47,17 +47,7 @@ export default function BriefingScene(ctx) {
   const progChip = el("div.hud-chip", { style: { position: "absolute", right: "22px", top: "22px", zIndex: 12 }, text: "목표 0 / 5" });
   layer.appendChild(progChip);
 
-  /* ---- 외교부 기본입장 인용 (보드 아래 책상 위) ---- */
-  layer.appendChild(el("div", {
-    style: {
-      position: "absolute", left: "230px", top: "466px", width: "540px", zIndex: 6,
-      background: "rgba(253,246,227,.94)", border: "1px solid #d9c08a", borderRadius: "12px",
-      padding: "10px 16px", boxShadow: "2px 4px 10px rgba(90,64,20,.25)",
-      fontSize: "13.5px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.55", wordBreak: "keep-all",
-      transform: "rotate(-.5deg)",
-    },
-    html: "📜 <b>외교부 기본입장</b> · “독도는 역사적·지리적·국제법적으로 명백한 우리 고유의 영토입니다.”<br><span style='color:var(--ink-soft)'>— 이 사실의 근거 다섯 가지를 우리가 직접 모아요!</span>",
-  }));
+  /* 외교부 기본입장 인용은 목표 5개를 모두 읽은 뒤 중앙 패널로 등장 (unlockReady) */
 
   /* ---- 목표 메모 5장 (코르크보드 안, 핀 꽂힌 메모지) ---- */
   BRIEFING_FIELDS.forEach((f, i) => {
@@ -114,9 +104,44 @@ export default function BriefingScene(ctx) {
 
   function unlockReady() {
     AudioManager.correct();
-    readyHolder.innerHTML = "";
-    readyHolder.appendChild(nextCoachButton("준비 완료! 탐사 항로도로", () => ctx.navigate("missionMap"), { icon: "🗺" }));
-    toast(ctx.stage, "목표 5개 확인 완료! 탐사를 시작해요");
+    showQuotePanel();
+  }
+
+  /* 목표 5개 완료 → 외교부 기본입장이 중앙 대형 패널에 타이핑으로 등장 (읽기 강화) */
+  function showQuotePanel() {
+    const QUOTE = "“독도는 역사적·지리적·국제법적으로 명백한 우리 고유의 영토입니다.”";
+    const panel = el("div", { style: {
+      position: "absolute", left: "50%", top: "50%", transform: "translate(-50%,-50%)",
+      width: "740px", zIndex: 40, textAlign: "center",
+      background: "rgba(253,246,227,.97)", border: "4px solid var(--gold-deep)", borderRadius: "22px",
+      boxShadow: "0 26px 64px rgba(13,39,67,.5)", padding: "34px 40px 28px",
+    } }, [
+      el("div", { style: { fontFamily: "var(--font-display)", fontSize: "26px", color: "var(--sea-deep)", marginBottom: "16px" }, text: "📜 외교부 기본입장" }),
+    ]);
+    const line = el("div", { style: { fontSize: "26px", fontWeight: "800", color: "var(--navy)", lineHeight: "1.75", wordBreak: "keep-all", minHeight: "94px" } });
+    const sub = el("div", { style: { fontSize: "18px", fontWeight: "800", color: "var(--green-deep)", marginTop: "14px", opacity: "0", transition: "opacity .4s", wordBreak: "keep-all" },
+      text: "이 사실의 근거 다섯 가지를 우리가 직접 확인했어요!" });
+    const btnRow = el("div.row", { style: { justifyContent: "center", marginTop: "18px", opacity: "0", transition: "opacity .4s" } }, [
+      button("확인했어요! 탐사 항로도로", { variant: "gold", size: "lg", icon: "🗺", onClick: () => {
+        panel.remove();
+        readyHolder.innerHTML = "";
+        readyHolder.appendChild(nextCoachButton("준비 완료! 탐사 항로도로", () => ctx.navigate("missionMap"), { icon: "🗺" }));
+        toast(ctx.stage, "목표 5개 확인 완료! 탐사를 시작해요");
+      } }),
+    ]);
+    panel.appendChild(line); panel.appendChild(sub); panel.appendChild(btnRow);
+    layer.appendChild(panel);
+
+    const finish = () => { line.textContent = QUOTE; sub.style.opacity = "1"; btnRow.style.opacity = "1"; };
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) { finish(); return; }
+    let i = 0;
+    const timer = setInterval(() => {
+      i++;
+      line.textContent = QUOTE.slice(0, i);
+      if (i >= QUOTE.length) { clearInterval(timer); finish(); }
+    }, 45);
+    panel.addEventListener("pointerdown", () => { clearInterval(timer); finish(); }, { once: true }); // 탭 = 전문 표시
   }
 
   return root;

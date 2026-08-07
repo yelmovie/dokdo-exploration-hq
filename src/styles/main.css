@@ -457,6 +457,18 @@ body {
   border: 3px solid #d9c08a; box-shadow: var(--shadow);
   flex: 0 0 auto;
 }
+.routedraw__finger {
+  position: absolute; z-index: 7; pointer-events: none;
+  font-size: 40px; line-height: 1;
+  transform: translate(-50%, -130%);
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,.35));
+  animation: fingerTap 1s ease-in-out infinite;
+}
+@keyframes fingerTap {
+  0%, 100% { transform: translate(-50%, -135%); }
+  50% { transform: translate(-50%, -108%); }
+}
+@media (prefers-reduced-motion: reduce) { .routedraw__finger { animation: none; } }
 .routedraw__node {
   position: absolute; transform: translate(-50%, -50%);
   width: 54px; height: 54px; border-radius: 50%;

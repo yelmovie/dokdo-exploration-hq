@@ -60,7 +60,7 @@ export default function BriefingBoardBuildScene(ctx) {
         transition: "background .15s, border-color .15s",
       },
     }, [
-      el("span", { style: { fontSize: "12px", fontWeight: "900", color: "#fff", background: f.color, padding: "1px 10px", borderRadius: "999px", boxShadow: "var(--shadow-sm)", pointerEvents: "none" }, text: `${f.icon} ${f.label} 근거 놓기` }),
+      el("span", { style: { fontSize: "12.5px", fontWeight: "900", color: "#fff", background: f.color, padding: "2px 12px", borderRadius: "999px", boxShadow: "var(--shadow-sm)", pointerEvents: "none", whiteSpace: "nowrap" }, text: `${f.icon} ${f.label} 근거 놓기` }),
     ]);
     z.dataset.field = f.key;
     pressable(z);
@@ -90,9 +90,21 @@ export default function BriefingBoardBuildScene(ctx) {
         ])))],
   }));
 
-  placeAsset(layer, DOKDO.seagullMail, { x: 862, y: 492, w: 170, h: 200, alt: "갈매기 집배원", float: true, z: 3, shadow: true });
-  // 힌트를 갈매기 말풍선(타이핑)으로 안내 — 별도 힌트 버튼 없음
-  speech(layer, { x: 788, y: 380, text: "카드의 문장에 ‘확인할 수 있는 사실’이 있는지 봐요. 느낌·상상만 있는 카드는 근거가 약해요.", tail: "right", width: 240 });
+  const gullEl = placeAsset(layer, DOKDO.seagullMail, { x: 862, y: 492, w: 170, h: 200, alt: "갈매기 집배원", float: true, z: 3, shadow: true });
+  // 힌트 = 갈매기 말풍선: 처음 타이핑으로 보여 준 뒤 자동으로 사라지고, 갈매기를 누르면 다시 나온다
+  const GULL_HINT = "카드의 문장에 ‘확인할 수 있는 사실’이 있는지 봐요. 느낌·상상만 있는 카드는 근거가 약해요.";
+  let gullBubble = null;
+  function showGullHint(autoHide) {
+    if (gullBubble && gullBubble.isConnected) return;
+    gullBubble = speech(layer, { x: 788, y: 380, text: GULL_HINT, tail: "right", width: 240 });
+    if (autoHide) setTimeout(() => {
+      if (gullBubble && gullBubble.isConnected) { gullBubble.style.opacity = "0"; setTimeout(() => gullBubble.remove(), 350); }
+    }, GULL_HINT.length * 38 + 3500);
+  }
+  gullEl.style.pointerEvents = "auto";
+  gullEl.style.cursor = "pointer";
+  gullEl.addEventListener("click", () => { AudioManager.unlock(); AudioManager.click(); showGullHint(false); });
+  showGullHint(true);
 
   const progChip = el("div.hud-chip", { style: { position: "absolute", left: "24px", top: "96px", zIndex: 12 } });
   layer.appendChild(progChip);
@@ -134,16 +146,19 @@ export default function BriefingBoardBuildScene(ctx) {
       const z = zones.get(f.key);
       z.querySelectorAll(".zone-card").forEach((n) => n.remove());
       const cid = placedNow[f.key];
-      if (!cid) { z.style.borderStyle = "dashed"; return; }
+      const pill = z.querySelector("span");
+      if (!cid) { z.style.borderStyle = "dashed"; if (pill) pill.style.display = ""; return; }
       const card = BRIEFING_CARDS.find((c) => c.id === cid);
       if (!card) return;
       z.style.borderStyle = "solid";
       z.style.background = "rgba(255,255,255,.4)";
+      if (pill) pill.style.display = "none"; // 붙인 뒤엔 카드가 곧 라벨 — 겹침 제거
       const n = el("div.zone-card", {
         style: {
-          background: "#fff", border: "2px solid #c9962a", borderRadius: "10px",
-          padding: "6px 8px", fontSize: "11.5px", fontWeight: "800", color: "var(--ink)",
-          lineHeight: "1.35", whiteSpace: "pre-line", cursor: "pointer", width: "100%",
+          background: "#fffdf6", border: "2px solid #c9962a", borderRadius: "10px",
+          padding: "8px 9px", fontSize: "13px", fontWeight: "800", color: "var(--ink)",
+          lineHeight: "1.45", whiteSpace: "pre-line", wordBreak: "keep-all", textAlign: "center",
+          cursor: "pointer", width: "100%",
           boxShadow: "2px 3px 8px rgba(90,64,20,.3)", transform: "rotate(-1.5deg)",
         },
         text: card.label,

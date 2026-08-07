@@ -72,7 +72,7 @@ export default function HistoricalArchiveScene(ctx) {
 
   /* ---- 캐릭터 + 말풍선 (책 읽는 소녀 1.5배 확대, 우측) ---- */
   placeAsset(layer, DOKDO.readerGirl, { x: 856, y: 156, w: 420, h: 564, alt: "책 읽는 소녀", float: true, z: 3, shadow: true });
-  speech(layer, { x: 975, y: 62, text: "천장에 걸린 기록들이 보여? 다섯 기록을 시간 순서로 이어 보자!", tail: "right", width: 250 });
+  speech(layer, { x: 985, y: 182, text: "천장에 걸린 기록들이 보여? 다섯 기록을 시간 순서로 이어 보자!", tail: "right", width: 250 });
 
   /* ---- 중앙 활동 보드 ---- */
   /* 활동 패널: 천장의 연도 기록 카드들이 보이도록 아래로, 배경이 비치게 더 투명 */

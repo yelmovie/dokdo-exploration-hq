@@ -16,43 +16,8 @@ import { supportsWebGL } from "../components/three/ThreeStage.js";
 import { createDokdoGlbDiorama } from "../components/three/DokdoGlbDiorama.js";
 import PAGES from "../config/pageConfig.js";
 import { MISSIONS, BRIEFING_FIELDS, isAllComplete } from "../data/missions.js";
-import { BRIEFING_CARDS, PRESENTATION_ORDER } from "../data/questions.js";
 /* 3D 디오라마는 이후 단계에서 복구 예정 (_recovered/ 참고) */
 
-/* ---- 데이터 라벨 헬퍼 (저장값이 없거나 낡아도 "—"로 안전하게) ---- */
-function cardLabelOf(cardId) {
-  const c = BRIEFING_CARDS.find((x) => x.id === cardId);
-  return c ? c.label.replace(/\n/g, " ") : null;
-}
-function sectionLabelOf(sectionId) {
-  const s = PRESENTATION_ORDER.sections.find((x) => x.id === sectionId);
-  return s ? s.label : null;
-}
-function fieldOf(fieldKey) {
-  return BRIEFING_FIELDS.find((f) => f.key === fieldKey) || null;
-}
-
-/* ---- 입력 UI 헬퍼 (인라인 스타일 — main.css 불변 원칙) ---- */
-function makeTextarea({ maxLen, rows, placeholder, value }) {
-  const ta = el("textarea", {
-    rows: String(rows), maxlength: String(maxLen), placeholder,
-    style: {
-      width: "100%", boxSizing: "border-box", fontFamily: "inherit",
-      fontSize: "15px", fontWeight: "600", lineHeight: "1.5", color: "var(--ink)",
-      background: "#fff", border: "2px solid #b9c7d6", borderRadius: "10px",
-      padding: "8px 10px", resize: "none", outline: "none",
-    },
-  });
-  ta.value = value || "";
-  return ta;
-}
-function counterFor(ta, maxLen) {
-  const c = el("div", { style: { fontSize: "12.5px", fontWeight: "700", color: "var(--ink-soft)", textAlign: "right" } });
-  const update = () => { c.textContent = `${ta.value.length} / ${maxLen}자`; };
-  ta.addEventListener("input", update);
-  update();
-  return c;
-}
 
 export default function CompletionGalleryScene(ctx) {
   const { root, layer } = buildScene({ bg: PAGES.completion.bg, veil: "soft" });
@@ -109,10 +74,6 @@ export default function CompletionGalleryScene(ctx) {
     layer.appendChild(finale);
   }
 
-  // 저장된 다짐/성찰 복원 (없거나 깨져 있어도 기본값으로)
-  const reflection = save.get("reflection") || {};
-  const savedPledge = typeof reflection.pledge === "string" ? reflection.pledge : "";
-  const savedMemo = (reflection.memorable && typeof reflection.memorable === "object") ? reflection.memorable : {};
 
   /* ---- 상단: 이전 / 명패 / 결과 남기기 / 홈 ---- */
   layer.appendChild(el("div.row", { style: { ...pos(22, 20), gap: "12px", zIndex: 12 } }, [
@@ -195,27 +156,17 @@ export default function CompletionGalleryScene(ctx) {
     ]));
   }
 
-  /* ---- 좌측: 나의 보호 다짐(토글 → 직접 입력) ---- */
-  const pledgeTa = makeTextarea({
-    maxLen: 80, rows: 3,
-    placeholder: "예) 독도를 바르게 알리고, 자연을 관찰하되 해치지 않으며, 쓰레기는 되가져가겠습니다.",
-    value: savedPledge,
-  });
+  /* ---- 좌측: 나의 보호 다짐 (마음속으로 고르는 다짐 — 입력·저장 없음) ---- */
   layer.appendChild(collapsible({
     title: "나의 보호 다짐", icon: "🌿",
     style: { ...pos(22, 96, 300), zIndex: 10 },
-    body: [el("div.col", { style: { gap: "6px" } }, [
-      el("div", { style: { fontSize: "14px", fontWeight: "700", color: "var(--navy)", wordBreak: "keep-all" }, text: "독도를 지키기 위한 나만의 다짐을 한 문장으로 적어요." }),
-      pledgeTa,
-      counterFor(pledgeTa, 80),
-      el("div.row", { style: { justifyContent: "flex-end" } }, [
-        button("다짐 저장", { variant: "green", size: "sm", icon: "💾", onClick: () => {
-          const text = pledgeTa.value.trim().slice(0, 80);
-          if (!text) { toast(ctx.stage, "다짐을 한 문장 적은 뒤 저장해요!"); return; }
-          save.setReflection({ pledge: text });
-          toast(ctx.stage, "나의 보호 다짐을 저장했어요!");
-        } }),
-      ]),
+    body: [el("div.col", { style: { gap: "7px" } }, [
+      el("div", { style: { fontSize: "14.5px", fontWeight: "700", color: "var(--navy)", wordBreak: "keep-all" }, text: "독도를 지키기 위한 다짐 하나를 마음에 새겨요." }),
+      ...[
+        "🌿 자연을 관찰하되 해치지 않을게요.",
+        "🗑️ 쓰레기는 꼭 되가져갈게요.",
+        "📢 독도를 바르게 알릴게요.",
+      ].map((t) => el("div", { style: { fontSize: "14px", fontWeight: "800", color: "var(--ink)", background: "rgba(47,158,68,.08)", borderRadius: "10px", padding: "8px 12px", wordBreak: "keep-all" }, text: t })),
     ])],
   }));
 
@@ -277,11 +228,6 @@ export default function CompletionGalleryScene(ctx) {
     });
   }
   paintChips();
-  const memoTa = makeTextarea({
-    maxLen: 60, rows: 2,
-    placeholder: "예) 옛 기록에 독도가 우리 땅이라고 적혀 있어서예요.",
-    value: typeof savedMemo.sentence === "string" ? savedMemo.sentence : "",
-  });
   layer.appendChild(collapsible({
     title: "마무리 성찰 카드", icon: "💭", variant: "gold",
     style: { ...pos(985, 152, 280), zIndex: 9 },
@@ -289,17 +235,6 @@ export default function CompletionGalleryScene(ctx) {
       el("div", { style: { fontSize: "14.5px", fontWeight: "700", color: "var(--navy)", wordBreak: "keep-all" }, text: "가장 기억에 남는 근거 영역을 고르고, 핵심 문장을 기억해요." }),
       el("div.row", { style: { gap: "6px", flexWrap: "wrap" } }, chips.map((c) => c.node)),
       coreBox,
-      memoTa,
-      counterFor(memoTa, 60),
-      el("div.row", { style: { justifyContent: "flex-end" } }, [
-        button("성찰 저장", { variant: "green", size: "sm", icon: "💾", onClick: () => {
-          if (!memoField) { toast(ctx.stage, "기억에 남는 영역을 먼저 골라요!"); return; }
-          const sentence = memoTa.value.trim().slice(0, 60);
-          if (!sentence) { toast(ctx.stage, "그 까닭을 한 문장으로 적어 봐요!"); return; }
-          save.setReflection({ memorable: { field: memoField, sentence } });
-          toast(ctx.stage, "마무리 성찰을 저장했어요!");
-        } }),
-      ]),
     ])],
   }));
 
@@ -319,7 +254,6 @@ export default function CompletionGalleryScene(ctx) {
   /* ---- 하단: 처음으로(확인 모달) / 결과 다시보기 / 다시 탐험 ---- */
   layer.appendChild(el("div.row", { style: { ...pos(40, 662, 1200), gap: "12px", justifyContent: "center", zIndex: 8 } }, [
     button("처음으로", { variant: "ghost", icon: "⌂", onClick: () => confirmGoMain() }),
-    button("탐사 결과 다시보기", { icon: "📋", onClick: openReviewModal }),
     button("독도 영상관", { variant: "ghost", icon: "🎬", onClick: openTheater }),
     button("다시 탐험하기", { variant: "gold", icon: "🔄", onClick: () => {
       const m = modal(ctx.stage, {

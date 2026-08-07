@@ -116,6 +116,12 @@ export function routeDraw({ bgSrc, boatSrc, nodes, order, width = 700, height = 
   boat.style.top = start.y + "%";
   wrap.appendChild(boat);
 
+  // 시작 부표 위 손가락 코치 — 첫 부표를 누르면 사라진다
+  const finger = el("div.routedraw__finger", { text: "👇" });
+  finger.style.left = start.x + "%";
+  finger.style.top = start.y + "%";
+  wrap.appendChild(finger);
+
   const btns = new Map();
   nodes.forEach((n) => {
     const b = el("button.routedraw__node", { type: "button", attrs: { "aria-label": n.label } }, [
@@ -138,6 +144,7 @@ export function routeDraw({ bgSrc, boatSrc, nodes, order, width = 700, height = 
       }
       AudioManager.click();
       b.classList.add("is-done");
+      finger.remove();
       if (step > 0) {
         const prev = byId[order[step - 1]];
         const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");

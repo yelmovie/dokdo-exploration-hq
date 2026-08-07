@@ -97,11 +97,11 @@ export default function PresentationPrepScene(ctx) {
   // 발표자는 무대 우측(스크린 옆) — 좌 토글·중앙 스크린·우 발표자로 화면 균형.
   // 새 63.png 는 2:3 전신 — 발이 무대 바닥(화분 라인 y≈500)에 닿게
   placeAsset(layer, DOKDO.presenterGirl, { x: 1030, y: 245, w: 200, h: 300, alt: "발표 준비 탐험가", z: 3, shadow: true });
-  speech(layer, { x: 995, y: 150, text: "무대 스크린에 나만의 발표를 완성해 보자!", tail: "right", width: 230 });
+  speech(layer, { x: 995, y: 150, text: "안녕하세요! 지금부터 독도 탐사 결과 발표를 시작하겠습니다!", tail: "right", width: 230 });
 
   /* ---- 중앙: 활동 보드 (배경 무대의 스크린 위에) ---- */
-  // 배경 무대 스크린 영역(약 x337~946, y80~540)에 맞춘 투명막
-  const boardEl = el("div.q-board", { style: { ...pos(346, 94, 612), minHeight: "424px", maxHeight: "560px" } }, [el("div.q-board__clip")]);
+  // 무대 스크린 폭에 맞추되 높이는 내용만큼만 (빈 여백 없이 배경 노출)
+  const boardEl = el("div.q-board", { style: { ...pos(346, 94, 612), maxHeight: "560px" } }, [el("div.q-board__clip")]);
   boardEl.style.background = "rgba(252, 254, 255, .62)";
   const qTitle = el("div.q-board__title");
   const qHolder = el("div", { style: { flex: "1", overflowY: "auto", paddingRight: "4px" } });
