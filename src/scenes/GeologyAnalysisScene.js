@@ -353,7 +353,7 @@ export default function GeologyAnalysisScene(ctx) {
         b.style.borderColor = col || "#b9c7d6";
         b.style.background = col ? col + "18" : "#fff";
       });
-      requestAnimationFrame(drawLines);
+      drawLines(); // offset 읽기가 동기 레이아웃을 강제하므로 rAF 없이 즉시 정확
     }
 
     /* 4개 연결 완료 → 자동 채점 (확인 버튼 없음) */
