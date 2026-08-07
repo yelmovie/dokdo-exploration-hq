@@ -425,10 +425,28 @@ export default function CompletionGalleryScene(ctx) {
     g.font = "700 26px 'Malgun Gothic', sans-serif";
     g.fillText(`${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 · 독도 탐사본부`, W / 2, 748);
 
+    // blob 다운로드 (data URL 보다 지원 폭 넓음 — 태블릿 브라우저 대응)
+    const blob = await new Promise((res) => cv.toBlob(res, "image/png"));
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.download = `독도탐사수료증${c.grade ? "_" + c.grade + "-" + c.classNo + "-" + c.studentNo : ""}.png`;
-    a.href = cv.toDataURL("image/png");
+    a.href = url;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
+
+    // 인앱 브라우저(카카오톡 등)는 다운로드를 막는 경우가 있어 미리보기 폴백을 함께 제공
+    const img = new Image();
+    img.src = url;
+    Object.assign(img.style, { width: "100%", borderRadius: "10px", display: "block", boxShadow: "var(--shadow-sm)" });
+    const md = modal(ctx.stage, {
+      title: "수료증이 완성됐어요!", icon: "🖼",
+      body: el("div.col", { style: { gap: "10px", minWidth: "520px" } }, [
+        img,
+        el("div.tip", { html: "💾 다운로드 폴더에 저장됐어요. <b>저장이 안 보이면</b> 위 그림을 <b>길게 눌러 ‘이미지 저장’</b>을 해요.<br>카카오톡 등 앱 안 브라우저에서는 <b>Chrome 으로 열기</b>를 권장해요." }),
+      ]),
+      buttons: [button("닫기", { variant: "green", onClick: () => { md.close(); setTimeout(() => URL.revokeObjectURL(url), 500); } })],
+    });
   }
 
   return root;
