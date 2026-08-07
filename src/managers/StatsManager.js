@@ -1,7 +1,7 @@
 /* =========================================================================
-   StatsManager — 현재 미션의 시도 통계 (별점 계산용)
+   StatsManager — 현재 미션의 시도 통계 (탐사 점수 계산용)
    missionFrame 진입 시 reset, quiz/orderInteraction 등이 오답을 집계,
-   completeMission 이 점수·별점으로 변환한다.
+   completeMission 이 점수로 변환한다. (별점 없음)
    ========================================================================= */
 const stats = {
   wrong: 0,
@@ -10,9 +10,6 @@ const stats = {
   score() {
     const accuracy = Math.max(0, 40 - 6 * this.wrong);
     return accuracy + 40 + 10 + 10;
-  },
-  stars(score = this.score()) {
-    return score >= 90 ? 3 : score >= 70 ? 2 : 1;
   },
 };
 export default stats;

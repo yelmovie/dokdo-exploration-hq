@@ -82,7 +82,6 @@ export function completeMission(ctx, missionKey, { evidence = [], message = "" }
   const next = nextMissionOf(missionKey);
   const already = ctx.save.isCompleted(missionKey);
   const score = stats.score();
-  const starCount = stats.stars(score);
   ctx.save.completeMission(missionKey, {
     badgeId: m && m.badge ? m.badge.id : null,
     evidence,
@@ -100,9 +99,7 @@ export function completeMission(ctx, missionKey, { evidence = [], message = "" }
       img.addEventListener("error", () => { img.style.display = "none"; });
       return el("div.badge-pop", { style: { height: "182px", lineHeight: "0" } }, [img]);
     })() : null,
-    el("div", { style: { fontSize: "32px", letterSpacing: "5px", margin: "12px 0 0", position: "relative", zIndex: 2 },
-      text: "⭐".repeat(starCount) + "☆".repeat(3 - starCount) }),
-    el("div", { style: { fontSize: "13px", fontWeight: "700", color: "var(--ink-soft)", marginBottom: "4px" },
+    el("div", { style: { fontSize: "14px", fontWeight: "700", color: "var(--ink-soft)", margin: "12px 0 4px" },
       text: `탐사 점수 ${score}점 · 정확도와 근거 확인으로 계산돼요` }),
     el("div", { style: { fontFamily: "var(--font-display)", fontSize: "22px", color: "var(--navy)", margin: "6px 0 4px" },
       text: (m ? m.badge.name : "") + " 배지 획득!" }),

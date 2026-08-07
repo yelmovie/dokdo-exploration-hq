@@ -39,7 +39,7 @@ export default function MissionMapScene(ctx) {
   const doneCount = MISSIONS.filter((m) => save.isCompleted(m.key)).length;
   const dexCount = save.get("dex").length;
   layer.appendChild(el("div.row", { style: { position: "absolute", right: "22px", top: "20px", gap: "10px", zIndex: 12, alignItems: "center" } }, [
-    el("div.hud-chip", { text: `미션 ${doneCount}/${MISSIONS.length} · ⭐${save.get("badges").length}` }),
+    el("div.hud-chip", { text: `미션 ${doneCount}/${MISSIONS.length} 완료` }),
     button(`도감 ${dexCount}/${DEX_CARDS.length}`, { variant: "gold", size: "sm", icon: "📖", onClick: () => ctx.navigate("dex") }),
   ]));
 
@@ -78,7 +78,7 @@ export default function MissionMapScene(ctx) {
         fontSize: "15px", fontWeight: "900", background: completed ? "var(--green)" : unlocked ? "var(--gold)" : "#5a646e",
         color: completed || !unlocked ? "#fff" : "#4a3305", boxShadow: "var(--shadow-sm)",
       },
-      text: completed ? "✓" : unlocked ? String(m.order <= 5 ? m.order : "★") : "🔒",
+      text: completed ? "✓" : unlocked ? String(m.order) : "🔒",
     }));
     node.addEventListener("click", () => {
       AudioManager.unlock(); AudioManager.click();
@@ -142,7 +142,6 @@ export default function MissionMapScene(ctx) {
   function showDetail(m, unlocked) {
     const completed = save.isCompleted(m.key);
     const score = save.get("missionScores")[m.key] || 0;
-    const stars = score >= 90 ? 3 : score >= 70 ? 2 : 1;
     detail.innerHTML = "";
     const head = el("div.row", { style: { alignItems: "center", gap: "10px" } });
     const hi = assetImg(DOKDO[NODE_ICON[m.key]], "");
@@ -152,7 +151,7 @@ export default function MissionMapScene(ctx) {
     detail.appendChild(head);
     detail.appendChild(el("div", { style: { fontSize: "16px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.55", wordBreak: "keep-all" }, text: m.desc }));
     if (completed) detail.appendChild(el("div", { style: { fontSize: "15px", fontWeight: "800", color: "var(--navy)" },
-      text: `${score}점 ` + "⭐".repeat(stars) }));
+      text: `탐사 점수 ${score}점` }));
     if (unlocked) {
       detail.appendChild(el("div.row", { style: { justifyContent: "center", marginTop: "auto" } }, [
         button(completed ? "다시 도전" : "미션 시작", { variant: "gold", size: "lg", onClick: () => ctx.navigate(missionPageKey(m.key)) }),
