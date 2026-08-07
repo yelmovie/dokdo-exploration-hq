@@ -4,7 +4,7 @@
    5장을 모두 읽으면 미션 지도 해금.
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
-import { buildScene, button, modal, toast, backButton, coachify, uncoach, speech, titleRibbon } from "../components/ui.js";
+import { buildScene, button, modal, toast, backButton, coachify, uncoach, speech, titleRibbon, placeAsset } from "../components/ui.js";
 import { DOKDO } from "../config/assetManifest.js";
 import PAGES from "../config/pageConfig.js";
 import { BRIEFING_FIELDS } from "../data/missions.js";
@@ -26,11 +26,11 @@ const GOAL_DETAILS = {
 
 /* 코르크보드 내부 좌표 — bg_briefing3(대형 보드 x216..796, y100..420) 기준 */
 const PIN_POS = [
-  { x: 240, y: 118, r: -2.5 },
-  { x: 420, y: 112, r: 1.5 },
-  { x: 600, y: 120, r: -1 },
-  { x: 330, y: 276, r: 2 },
-  { x: 510, y: 272, r: -2 },
+  { x: 240, y: 112, r: -2.5 },
+  { x: 420, y: 106, r: 1.5 },
+  { x: 600, y: 114, r: -1 },
+  { x: 330, y: 286, r: 2 },
+  { x: 510, y: 282, r: -2 },
 ];
 
 export default function BriefingScene(ctx) {
@@ -50,7 +50,7 @@ export default function BriefingScene(ctx) {
   /* ---- 외교부 기본입장 인용 (보드 아래 책상 위) ---- */
   layer.appendChild(el("div", {
     style: {
-      position: "absolute", left: "230px", top: "452px", width: "540px", zIndex: 6,
+      position: "absolute", left: "230px", top: "466px", width: "540px", zIndex: 6,
       background: "rgba(253,246,227,.94)", border: "1px solid #d9c08a", borderRadius: "12px",
       padding: "10px 16px", boxShadow: "2px 4px 10px rgba(90,64,20,.25)",
       fontSize: "13.5px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.55", wordBreak: "keep-all",
@@ -64,7 +64,7 @@ export default function BriefingScene(ctx) {
     const d = GOAL_DETAILS[f.key];
     const p = PIN_POS[i];
     const ic = assetImg(DOKDO[GOAL_ICON[f.key]], f.label);
-    Object.assign(ic.style, { width: "72px", height: "72px", objectFit: "contain" });
+    Object.assign(ic.style, { width: "52px", height: "52px", objectFit: "contain" });
     const card = el("div.pin-card", { style: { left: p.x + "px", top: p.y + "px", transform: `rotate(${p.r}deg)`, zIndex: 6 } }, [
       ic,
       el("div", { style: { fontSize: "16px", fontWeight: "900", color: "var(--navy)" }, text: f.label }),
@@ -102,8 +102,9 @@ export default function BriefingScene(ctx) {
     layer.appendChild(card);
   });
 
-  /* ---- 로봇 인형(배경 선반) 말풍선 ---- */
-  speech(layer, { x: 74, y: 190, text: "코르크보드의 목표 메모 5장을 눌러 읽어 봐! 다 읽으면 항로도가 열려.", tail: "left", width: 240 });
+  /* ---- 등대 마스코트(우측 책상) + 머리 위 말풍선 (타이핑) ---- */
+  placeAsset(layer, DOKDO.lighthouseChar, { x: 1020, y: 415, w: 175, h: 205, alt: "등대 마스코트", float: true, z: 5, shadow: true });
+  speech(layer, { x: 950, y: 300, text: "코르크보드의 목표 메모 5장을 눌러 읽어 봐! 다 읽으면 항로도가 열려.", tail: "right", width: 235 });
 
   /* ---- 하단: 준비 완료(게이팅) ---- */
   const readyHolder = el("div", {

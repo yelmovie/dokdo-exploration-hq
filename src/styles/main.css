@@ -475,12 +475,12 @@ body {
 
 /* ---- 코르크보드 핀 메모 카드 (2p) ---- */
 .pin-card {
-  position: absolute; width: 158px; min-height: 158px;
+  position: absolute; width: 158px; min-height: 146px;
   background: linear-gradient(170deg, #fffdf4, #f7ecd2);
   border: 1px solid #d9c08a; border-radius: 6px;
   box-shadow: 2px 4px 10px rgba(90, 64, 20, .3);
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
-  padding: 16px 10px 10px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 14px 9px 9px; cursor: pointer;
   transition: transform .15s;
 }
 .pin-card:hover { transform: scale(1.04) rotate(0deg) !important; }
