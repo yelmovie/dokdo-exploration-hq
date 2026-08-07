@@ -11,7 +11,7 @@ import AudioManager from "../managers/AudioManager.js";
 export default function DexScene(ctx) {
   const cfg = PAGES.dex;
   const { root, layer } = buildScene({ bg: cfg.bg, veil: "dark" });
-  const owned = new Set(ctx.save.get("dex"));
+  const owned = new Set(ctx.save.get("dex").filter((id) => DEX_CARDS.some((c) => c.id === id))); // 삭제된 옛 카드 id 제외
 
   layer.appendChild(el("div.row", { style: { position: "absolute", left: "22px", top: "20px", gap: "12px", zIndex: 12 } }, [
     backButton(() => ctx.navigate("missionMap")),

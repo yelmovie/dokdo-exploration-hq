@@ -107,7 +107,7 @@ export default function HistoricalArchiveScene(ctx) {
       slotW: 116, slotH: 84,
       onResult: (ok) => {
         if (!ok) return;
-        awardDex(ctx, ["d-samguk", "d-sejong", "d-taejeong", "d-chikryeong"]);
+        awardDex(ctx, ["d-samguk", "d-sejong", "d-chikryeong"]);
         // 정답: 연도 공개
         const yearsRow = el("div.row", { style: { justifyContent: "center", gap: "10px", flexWrap: "wrap", marginTop: "6px" } },
           HISTORY_CARDS.map((c) => el("div", {

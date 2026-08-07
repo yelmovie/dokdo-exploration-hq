@@ -174,11 +174,13 @@ export default function EcologyProtectionScene(ctx) {
       if (qi < total - 1) {
         nextHolder.appendChild(nextCoachButton("다음 상황", () => { qi++; render(); }));
       } else {
-        nextHolder.appendChild(nextCoachButton("미션 완료!", () =>
+        nextHolder.appendChild(nextCoachButton("미션 완료!", () => {
+          awardDex(ctx, "d-guard"); // 보호 행동을 다 배우면 '지금 독도를 지키는 사람들' 카드
           completeMission(ctx, "ecology", {
             evidence: ["c-eco", "c-pro"],
             message: "생태 단서를 근거로 알맞은 보호 행동을 판단했어요. 보호 근거 카드까지 2장 획득!",
-          }), { icon: "🏅" }));
+          });
+        }, { icon: "🏅" }));
       }
     } });
     qHolder.appendChild(qc.node);

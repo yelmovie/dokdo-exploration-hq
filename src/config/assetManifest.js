@@ -137,6 +137,13 @@ export const DOKDO = ver({
   passport:      DK + "77.png",  // 미션 패스포트
   certScroll:    DK + "78.png",  // 수료 두루마리
   flowerField:   DK + "81.png",  // 들꽃 무리
+  anyongbokChar: DK + "82.png",  // 안용복 (조선 어부, 도감용)
+  isabuChar:     DK + "83.png",  // 이사부 (신라 장군, 도감용)
+  gullBird:      DK + "84.png",  // 괭이갈매기 (도감용)
+  decreeScroll:  DK + "85.png",  // 대한제국 칙령 제41호 문서 (도감용)
+  dohaeBan:      DK + "86.png",  // 도해금지령 문서 (도감용)
+  gangchiReal:   DK + "87.png",  // 독도 강치 (자연 일러스트, 도감용)
+  dokdoGuard:    DK + "88.png",  // 독도경비대 (도감용)
 });
 
 /** 옛 icons/ 세트 별칭 — 원본이 사라져 DOKDO 세트로 대체 매핑 (복구 씬 호환용) */

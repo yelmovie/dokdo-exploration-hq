@@ -37,7 +37,7 @@ export default function MissionMapScene(ctx) {
 
   /* HUD: 진행 + 도감 */
   const doneCount = MISSIONS.filter((m) => save.isCompleted(m.key)).length;
-  const dexCount = save.get("dex").length;
+  const dexCount = save.get("dex").filter((id) => DEX_CARDS.some((c) => c.id === id)).length; // 삭제된 옛 카드 id 제외
   layer.appendChild(el("div.row", { style: { position: "absolute", right: "22px", top: "20px", gap: "10px", zIndex: 12, alignItems: "center" } }, [
     el("div.hud-chip", { text: `미션 ${doneCount}/${MISSIONS.length} 완료` }),
     button(`도감 ${dexCount}/${DEX_CARDS.length}`, { variant: "gold", size: "sm", icon: "📖", onClick: () => ctx.navigate("dex") }),
