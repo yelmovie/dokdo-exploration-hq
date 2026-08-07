@@ -121,11 +121,11 @@ export default function MissionMapScene(ctx) {
   placeGuide();
   function placeGuide() {
     const g = assetImg(DOKDO.otterSailor, "강치 항해사");
-    Object.assign(g.style, { position: "absolute", left: "22px", top: "470px", width: "200px", height: "245px", objectFit: "contain", zIndex: 7 });
+    Object.assign(g.style, { position: "absolute", left: "8px", top: "352px", width: "300px", height: "370px", objectFit: "contain", zIndex: 7 });
     layer.appendChild(g);
     const next = MISSIONS.find((m) => !save.isCompleted(m.key));
     speech(layer, {
-      x: 60, y: 388,
+      x: 36, y: 262,
       text: next ? `다음 목적지는 ‘${next.title.replace(/^\d단계 /, "")}’야! 부표를 눌러 봐.` : "모든 항로를 정복했어! 수료관으로 가자!",
       tail: "left", width: 250,
     });

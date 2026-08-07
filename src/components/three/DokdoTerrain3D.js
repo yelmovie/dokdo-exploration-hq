@@ -216,7 +216,7 @@ export function createDokdoTerrain3D({ root = null, width = 560, height = 300, o
       glbModel.scale.setScalar(scale);
       const center = box.getCenter(new THREE.Vector3()).multiplyScalar(scale);
       glbModel.position.sub(center);
-      glbModel.position.y += 0.4;
+      glbModel.position.y += 1.15; // 원판이 화면 중앙에 오도록 (카메라 타깃 y=1.2 기준)
       scene.add(glbModel);
       if (!sectionOn) { islands.visible = false; seaMesh.visible = false; }
       sprites.forEach((sp) => {

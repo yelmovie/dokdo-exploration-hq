@@ -13,6 +13,7 @@ import PAGES from "../config/pageConfig.js";
 import { GEOLOGY_QUESTIONS, GEOLOGY_COMPARE } from "../data/questions.js";
 import { supportsWebGL } from "../components/three/ThreeStage.js";
 import { createDokdoTerrain3D } from "../components/three/DokdoTerrain3D.js";
+import { createDokdoGlbDiorama } from "../components/three/DokdoGlbDiorama.js";
 
 /* 단서별 실사 사진 (단서 카드 모달에서 표시) — 외교부 실사 */
 const CLUE_PHOTO = { cliff: "seodo", flat: "dongdo", erosion: "elephant", bird: "aerial" };
@@ -109,6 +110,25 @@ export default function GeologyAnalysisScene(ctx) {
     } });
     Object.assign(photoBtn.style, { position: "absolute", right: "10px", top: "48px", zIndex: 6, padding: "6px 14px", fontSize: "13px", minHeight: "44px" });
     island.appendChild(photoBtn);
+
+    /* 전체 화면 보기: 큰 뷰어(줌인·줌아웃 자유) */
+    const fullBtn = button("전체 화면", { variant: "ghost", icon: "⛶", onClick: () => {
+      const big = createDokdoGlbDiorama({ width: 980, height: 520, minDistance: 2.2, maxDistance: 16 });
+      const body = el("div", { style: { position: "relative", background: "linear-gradient(180deg,#dcedfa,#c3ddf1)", borderRadius: "14px", overflow: "hidden" } }, [
+        big.el,
+        el("div", { style: { position: "absolute", left: "0", right: "0", bottom: "8px", textAlign: "center", fontSize: "13px", fontWeight: "800", color: "var(--navy)", opacity: ".8", pointerEvents: "none" },
+          text: "드래그 회전 · 휠/두 손가락 줌 — 절벽·등대·접안시설까지 자세히 살펴봐요" }),
+      ]);
+      const m = modal(ctx.stage, {
+        title: "3D 독도 — 전체 화면 탐험", icon: "⛶",
+        body,
+        buttons: [button("닫기", { variant: "green", onClick: () => { big.stage.dispose(); m.close(); } })],
+      });
+      m.el.querySelector(".modal").style.maxWidth = "1060px";
+      m.el.addEventListener("pointerdown", (e) => { if (e.target === m.el) big.stage.dispose(); });
+    } });
+    Object.assign(fullBtn.style, { position: "absolute", right: "10px", top: "92px", zIndex: 6, padding: "6px 14px", fontSize: "13px", minHeight: "44px" });
+    island.appendChild(fullBtn);
   } else {
     /* ---- 2D 폴백: 실사 항공 사진 + 단서 라벨 ---- */
     const islandImg = assetImg(PHOTOS.aerial, "독도 항공 사진");

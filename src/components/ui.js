@@ -108,13 +108,35 @@ export function iconButton(icon, { title = "", onClick = null, variant = "ghost"
 export function backButton(onClick) { return button("이전", { variant: "ghost", size: "sm", icon: "◀", onClick }); }
 export function homeButton(onClick) { return button("처음으로", { variant: "ghost", size: "sm", icon: "⌂", onClick }); }
 
-/** 캐릭터 말풍선 — 씬 진입 안내 한 문장. 탭하면 닫힘 */
+/** 캐릭터 말풍선 — 타이핑 애니메이션으로 한 글자씩 출력. 탭하면 닫힘 */
 export function speech(layer, { x, y, text, tail = "left", width = 250 } = {}) {
   const b = el("div.speech.speech--" + tail, {
     style: { position: "absolute", left: x + "px", top: y + "px", maxWidth: width + "px", zIndex: 15 },
-    text,
   });
+  // 레이아웃 높이 고정용 투명 전체 텍스트 + 그 위에 타이핑 텍스트
+  const ghost = el("span", { text, style: { visibility: "hidden", display: "block" } });
+  const live = el("span", { style: { position: "absolute", inset: "11px 15px" } });
+  b.appendChild(ghost);
+  b.appendChild(live);
+
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let i = 0, timer = 0;
+  if (reduced) {
+    live.textContent = text;
+  } else {
+    timer = setInterval(() => {
+      i++;
+      live.textContent = text.slice(0, i);
+      if (i >= text.length) clearInterval(timer);
+    }, 38);
+  }
   b.addEventListener("pointerdown", () => {
+    if (i < text.length && !reduced) { // 첫 탭: 전체 문장 즉시 표시
+      clearInterval(timer);
+      i = text.length;
+      live.textContent = text;
+      return;
+    }
     b.style.opacity = "0";
     setTimeout(() => b.remove(), 300);
   });

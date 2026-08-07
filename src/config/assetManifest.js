@@ -20,7 +20,7 @@ function ver(obj) { for (const k in obj) if (typeof obj[k] === "string") obj[k] 
 export const BACKGROUNDS = ver({
   main:         BG + "bg_main.jpg",        // 노을 전망대 (1p)
   missionMap:   BG + "bg_map_chart.jpg",   // 보물지도풍 해도 (3p, 2026-08 생성)
-  briefing:     BG + "bg_briefing2.jpg",   // 탐사본부 브리핑룸 — 빈 코르크보드 (2p)
+  briefing:     BG + "bg_briefing3.jpg",   // 탐사본부 브리핑룸 v2 — 대형 빈 코르크보드 (2p, 2026-08-07)
   presentation: BG + "bg_stage.jpg",       // 강당 발표 무대 (9p)
   route:        BG + "bg_route.jpg",       // 항로 복원실 (4p)
   routeChart:   BG + "route_chart.jpg",    // 4p 항로 선긋기 보드 (액자 해도)

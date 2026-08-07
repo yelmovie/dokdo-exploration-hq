@@ -24,13 +24,13 @@ const GOAL_DETAILS = {
   protection: { goal: "독도를 지키는 알맞은 행동을 판단하기", how: "상황을 읽고 가장 알맞은 보호 행동을 골라요." },
 };
 
-/* 코르크보드 내부 좌표 (1280×720 기준, 시각 확인 후 조정) */
+/* 코르크보드 내부 좌표 — bg_briefing3(대형 보드 x216..796, y100..420) 기준 */
 const PIN_POS = [
-  { x: 450, y: 140, r: -2.5 },
-  { x: 632, y: 134, r: 1.5 },
-  { x: 814, y: 142, r: -1 },
-  { x: 540, y: 336, r: 2 },
-  { x: 728, y: 332, r: -2 },
+  { x: 240, y: 118, r: -2.5 },
+  { x: 420, y: 112, r: 1.5 },
+  { x: 600, y: 120, r: -1 },
+  { x: 330, y: 276, r: 2 },
+  { x: 510, y: 272, r: -2 },
 ];
 
 export default function BriefingScene(ctx) {
@@ -50,7 +50,7 @@ export default function BriefingScene(ctx) {
   /* ---- 외교부 기본입장 인용 (보드 아래 책상 위) ---- */
   layer.appendChild(el("div", {
     style: {
-      position: "absolute", left: "452px", top: "506px", width: "520px", zIndex: 6,
+      position: "absolute", left: "230px", top: "452px", width: "540px", zIndex: 6,
       background: "rgba(253,246,227,.94)", border: "1px solid #d9c08a", borderRadius: "12px",
       padding: "10px 16px", boxShadow: "2px 4px 10px rgba(90,64,20,.25)",
       fontSize: "13.5px", fontWeight: "700", color: "var(--ink)", lineHeight: "1.55", wordBreak: "keep-all",

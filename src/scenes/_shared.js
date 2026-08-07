@@ -95,15 +95,15 @@ export function completeMission(ctx, missionKey, { evidence = [], message = "" }
     m && m.badge ? (() => {
       const img = new Image();
       img.src = m.badge.icon; img.alt = m.badge.name;
-      Object.assign(img.style, { width: "130px", height: "130px", objectFit: "contain" });
+      Object.assign(img.style, { width: "182px", height: "182px", objectFit: "contain", display: "block", margin: "0 auto" });
       img.addEventListener("error", () => { img.style.display = "none"; });
-      return el("div.badge-pop", {}, [img]);
+      return el("div.badge-pop", { style: { height: "182px", lineHeight: "0" } }, [img]);
     })() : null,
-    el("div", { style: { fontSize: "30px", letterSpacing: "4px", margin: "4px 0" },
+    el("div", { style: { fontSize: "32px", letterSpacing: "5px", margin: "12px 0 0", position: "relative", zIndex: 2 },
       text: "⭐".repeat(starCount) + "☆".repeat(3 - starCount) }),
-    el("div", { style: { fontSize: "13.5px", fontWeight: "800", color: "var(--ink-soft)" },
+    el("div", { style: { fontSize: "13px", fontWeight: "700", color: "var(--ink-soft)", marginBottom: "4px" },
       text: `탐사 점수 ${score}점 · 정확도와 근거 확인으로 계산돼요` }),
-    el("div", { style: { fontSize: "20px", fontWeight: "900", color: "var(--navy)", margin: "8px 0 4px" },
+    el("div", { style: { fontFamily: "var(--font-display)", fontSize: "22px", color: "var(--navy)", margin: "6px 0 4px" },
       text: (m ? m.badge.name : "") + " 배지 획득!" }),
     el("div", { style: { fontSize: "15px", fontWeight: "700", color: "var(--ink-soft)", lineHeight: "1.55", wordBreak: "keep-all" }, text: message }),
     evidence.length ? el("div.tip", { style: { marginTop: "10px" }, html: "🃏 <b>근거 카드</b>를 얻었어요! 브리핑 보드 제작에서 사용해요." }) : null,
