@@ -13,7 +13,7 @@ const SND = "public/assets/sounds/";
 const PH = "public/assets/photos/";
 
 /** 에셋 캐시 버전 — 1년 immutable 캐시를 쓰므로, 에셋 파일을 교체하면 반드시 이 숫자를 올린다 */
-const V = "?v=3";
+const V = "?v=4";
 function ver(obj) { for (const k in obj) if (typeof obj[k] === "string") obj[k] += V; return obj; }
 
 /** 배경 — 10페이지 / 8장 (main·map, briefing·presentation 은 재사용) */

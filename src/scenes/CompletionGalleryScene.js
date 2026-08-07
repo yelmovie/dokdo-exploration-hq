@@ -462,39 +462,43 @@ export default function CompletionGalleryScene(ctx) {
     });
   }
 
-  /** 수료증을 canvas 에 직접 그려 PNG 다운로드 (생성 프레임 합성) */
+  /** 수료증을 canvas 에 직접 그려 PNG 다운로드
+      cert_frame.png 은 중앙까지 그려진 완성형 배경(1672×941) — 먼저 깔고 텍스트를 위에 쓴다 */
   async function downloadCertificate(c) {
-    const W = 1200, H = 800; // cert_frame 비율(3:2)
+    const W = 1672, H = 941; // cert_frame 원본 비율 그대로
     const cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
-    const grad = g.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, "#fffdf6"); grad.addColorStop(1, "#f6efdb");
-    g.fillStyle = grad; g.fillRect(0, 0, W, H);
 
     const load = (src) => new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
     const [badge, frame] = await Promise.all([load(DOKDO.badgeFinal), load(DOKDO.certFrame)]);
 
-    if (badge) g.drawImage(badge, W / 2 - 88, 96, 176, 176);
+    if (frame) g.drawImage(frame, 0, 0, W, H);
+    else { // 프레임 로딩 실패 시 양피지 그라데이션 폴백
+      const grad = g.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, "#fffdf6"); grad.addColorStop(1, "#f6efdb");
+      g.fillStyle = grad; g.fillRect(0, 0, W, H);
+    }
+
+    if (badge) g.drawImage(badge, W / 2 - 102, 112, 204, 204);
     g.fillStyle = "#14365c"; g.textAlign = "center";
-    g.font = "900 52px 'Malgun Gothic', sans-serif";
-    g.fillText("독도 탐사본부 수료증", W / 2, 340);
-    g.font = "700 28px 'Malgun Gothic', sans-serif";
+    g.font = "900 61px 'Malgun Gothic', sans-serif";
+    g.fillText("독도 탐사본부 수료증", W / 2, 400);
+    g.font = "700 33px 'Malgun Gothic', sans-serif";
     g.fillStyle = "#5b6b7c";
     const who = (c.grade ? `${c.grade}학년 ` : "") + (c.classNo ? `${c.classNo}반 ` : "") + (c.studentNo ? `${c.studentNo}번 ` : "") + "탐사대원";
-    g.fillText(who, W / 2, 394);
+    g.fillText(who, W / 2, 464);
     g.fillStyle = "#2b3a4a";
-    g.font = "700 23px 'Malgun Gothic', sans-serif";
-    g.fillText("위 대원은 독도의 위치·지형·역사·생태·보호 다섯 영역의 근거를", W / 2, 456);
-    g.fillText("스스로 수집하여 탐사 임무를 완수하였기에 이 증서를 수여합니다.", W / 2, 492);
+    g.font = "700 27px 'Malgun Gothic', sans-serif";
+    g.fillText("위 대원은 독도의 위치·지형·역사·생태·보호 다섯 영역의 근거를", W / 2, 537);
+    g.fillText("스스로 수집하여 탐사 임무를 완수하였기에 이 증서를 수여합니다.", W / 2, 580);
     g.fillStyle = "#1d6b2e";
-    g.font = "800 25px 'Malgun Gothic', sans-serif";
-    g.fillText("“독도는 역사·지리·국제법적으로 명백한 대한민국의 영토입니다.”", W / 2, 560);
+    g.font = "800 29px 'Malgun Gothic', sans-serif";
+    g.fillText("“독도는 역사·지리·국제법적으로 명백한 대한민국의 영토입니다.”", W / 2, 660);
     const d = new Date();
     g.fillStyle = "#5b6b7c";
-    g.font = "700 22px 'Malgun Gothic', sans-serif";
-    g.fillText(`${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 · 독도 탐사본부`, W / 2, 636);
-    if (frame) g.drawImage(frame, 0, 0, W, H); // 장식 프레임을 맨 위에 합성
+    g.font = "700 26px 'Malgun Gothic', sans-serif";
+    g.fillText(`${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 · 독도 탐사본부`, W / 2, 748);
 
     const a = document.createElement("a");
     a.download = `독도탐사수료증${c.grade ? "_" + c.grade + "-" + c.classNo + "-" + c.studentNo : ""}.png`;
