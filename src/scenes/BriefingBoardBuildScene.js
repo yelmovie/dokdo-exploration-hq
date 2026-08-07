@@ -15,7 +15,6 @@ import PAGES from "../config/pageConfig.js";
 import { BRIEFING_FIELDS } from "../data/missions.js";
 import { BRIEFING_CARDS, BOARD_CHECK_QUESTION } from "../data/questions.js";
 import AudioManager from "../managers/AudioManager.js";
-import stats from "../managers/StatsManager.js";
 
 export default function BriefingBoardBuildScene(ctx) {
   const cfg = PAGES.briefingBoard;
@@ -181,7 +180,6 @@ export default function BriefingBoardBuildScene(ctx) {
     selectedCard = null;
     const f = BRIEFING_FIELDS.find((x) => x.key === fieldKey);
     if (!card.strong) {
-      stats.wrong++;
       AudioManager.wrong();
       const md = modal(ctx.stage, {
         title: "근거가 약한 카드예요!", icon: "⚠️",
@@ -192,7 +190,6 @@ export default function BriefingBoardBuildScene(ctx) {
       return;
     }
     if (card.field !== fieldKey) {
-      stats.wrong++;
       AudioManager.wrong();
       toast(ctx.stage, `이 카드는 ${f.label} 영역 근거가 아니에요. 내용을 다시 읽어 봐요.`);
       refresh();

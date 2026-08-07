@@ -7,7 +7,6 @@
    ========================================================================= */
 import { el } from "../core/dom.js";
 import AudioManager from "../managers/AudioManager.js";
-import stats from "../managers/StatsManager.js";
 
 /** 카드에 드래그+탭 동작 부여.
     onTap(), onDrop(dropEl|null) — dropEl 은 dropSelector 에 매칭된 요소 */
@@ -135,7 +134,6 @@ export function routeDraw({ bgSrc, boatSrc, nodes, order, width = 700, height = 
       AudioManager.unlock();
       const expected = order[step];
       if (n.id !== expected) {
-        stats.wrong++;
         AudioManager.wrong();
         b.classList.add("is-shake");
         setTimeout(() => b.classList.remove("is-shake"), 400);
@@ -271,7 +269,6 @@ export function orderInteraction({ items, answer, slotW = 150, slotH = 80, onRes
     // freeOrder: 정답 없음 — 5칸 다 채우면 학습자의 배치 그대로 통과
     const ok = freeOrder || placed.every((p, i) => p && p.id === answer[i]);
     if (!ok) {
-      stats.wrong++;
       AudioManager.wrong();
       fb.className = "feedback show feedback--no";
       fb.textContent = "🤔 순서가 아직 맞지 않아요. 카드를 눌러 되돌리고 단서를 다시 읽어 봐요.";

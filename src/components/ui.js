@@ -4,7 +4,6 @@
    ========================================================================= */
 import { el, assetImg } from "../core/dom.js";
 import AudioManager from "../managers/AudioManager.js";
-import stats from "../managers/StatsManager.js";
 
 /** 1280×720 스테이지 좌표 배치 헬퍼 */
 export function pos(x, y, w, h) {
@@ -336,7 +335,6 @@ export function quiz(q, { layout = "column", confirmLabel = "정답 확인", con
     const ok = picked.size === answers.length && answers.every((a) => picked.has(a));
     if (!ok) {
       wrongCount++;
-      stats.wrong++;
       AudioManager.wrong();
       // 오개념 피드백: 잘못 고른 선택지에 맞는 설명 (정답은 비공개)
       const firstWrong = [...picked].find((i) => !answers.includes(i));

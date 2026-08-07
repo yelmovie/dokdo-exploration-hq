@@ -373,7 +373,6 @@ export default function GeologyAnalysisScene(ctx) {
       setTimeout(() => {
         const wrong = m.pairs.filter((p) => paired[p.id] !== p.id);
         if (wrong.length) {
-          stats.wrong++;
           AudioManager.wrong();
           wrong.forEach((p) => delete paired[p.id]); // 틀린 연결만 풀어 재도전
           grid.classList.add("is-shake");
