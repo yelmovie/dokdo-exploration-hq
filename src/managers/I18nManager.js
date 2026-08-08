@@ -46,10 +46,12 @@ const I18n = {
       const m = s.match(re);
       if (!m) continue;
       // $n 캡처: 사전에 있으면 캡처도 번역 (미션 제목 등)
-      return tpl.replace(/\$(\d+)/g, (_, n) => {
+      const out = tpl.replace(/\$(\d+)/g, (_, n) => {
         const cap = m[Number(n)] ?? "";
         return this.dict[cap] || cap;
       });
+      // 출력이 입력과 같으면(이미 번역됨) 무시 — 통과형 패턴 무한 루프 방지
+      if (out !== s) return out;
     }
     // 폴백: "이모지 + 텍스트" 조합은 이모지를 떼고 재조회 (📔 분석 정리 노트 등)
     const em = s.match(/^([\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}⭐✅❌][️]?\s+)(.+)$/u);
@@ -74,20 +76,20 @@ const I18n = {
     // 속성
     for (const attr of ["title", "aria-label", "placeholder"]) {
       const v = el.getAttribute && el.getAttribute(attr);
-      if (v) { const r = this.tStr(v); if (r) el.setAttribute(attr, r); }
+      if (v) { const r = this.tStr(v); if (r && r !== v) el.setAttribute(attr, r); }
     }
     if (el.childElementCount === 0) {
       const s = el.textContent;
-      if (!s || !/[가-힣]/.test(s)) return;
+      if (!s || !/[가-힣]/.test(s)) return; // 한국어가 없으면 이미 번역된 것 — 건드리지 않는다
       const r = this.tStr(s) || this.tStr(s.trim());
-      if (r) el.textContent = r;
+      if (r && r !== s) el.textContent = r;
       return;
     }
     // <b>/<u> 등 인라인 조합 문자열 (innerHTML 이 사전 키)
     const html = el.innerHTML;
     if (html && html.length < 2400 && /[가-힣]/.test(html) && !html.includes("<div") && !html.includes("<button")) {
       const r = this.tStr(html);
-      if (r) { el.innerHTML = r; return; }
+      if (r && r !== html) { el.innerHTML = r; return; }
     }
   },
 
@@ -113,6 +115,7 @@ const I18n = {
           m.addedNodes.forEach((n) => this.translateTree(n));
         }
       }
+      mo.takeRecords(); // 우리 자신의 치환이 만든 변경 기록은 버린다 (루프 방지)
     });
     mo.observe(document.body, { childList: true, subtree: true, characterData: true });
   },
