@@ -353,23 +353,36 @@ export default function GeologyAnalysisScene(ctx) {
     }
 
     function paint() {
+      const isSel = (side, id) => sel && sel.side === side && sel.id === id;
       m.pairs.forEach((p, i) => {
         const b = featBtns.get(p.id);
         const col = PAIR_COLORS[i];
         const has = !!paired[p.id];
-        b.style.borderColor = has ? col : "#b9c7d6";
-        b.style.background = has ? col + "18" : "#fff";
+        const on = isSel("feat", p.id);
+        b.style.borderColor = on ? "var(--gold-deep)" : has ? col : "#b9c7d6";
+        b.style.background = on ? "#fff6da" : has ? col + "18" : "#fff";
+        b.style.boxShadow = on ? "0 0 0 3px rgba(255,217,104,.5)" : "";
         const fd = featDots.get(p.id);
-        if (fd) { fd.dot.style.borderColor = has ? col : "#8fa4b8"; fd.dot.style.background = has ? col : "#fff"; }
+        if (fd) {
+          fd.dot.style.borderColor = on ? "var(--gold-deep)" : has ? col : "#8fa4b8";
+          fd.dot.style.background = on ? "var(--gold)" : has ? col : "#fff";
+          fd.dot.style.transform = on ? "scale(1.35)" : "";
+        }
       });
       effects.forEach((e) => {
         const b = effBtns.get(e.id);
         const owner = Object.keys(paired).find((f) => paired[f] === e.id);
         const col = owner ? PAIR_COLORS[m.pairs.findIndex((p) => p.id === owner)] : null;
-        b.style.borderColor = col || "#b9c7d6";
-        b.style.background = col ? col + "18" : "#fff";
+        const on = isSel("eff", e.id);
+        b.style.borderColor = on ? "var(--gold-deep)" : col || "#b9c7d6";
+        b.style.background = on ? "#fff6da" : col ? col + "18" : "#fff";
+        b.style.boxShadow = on ? "0 0 0 3px rgba(255,217,104,.5)" : "";
         const ed = effDots.get(e.id);
-        if (ed) { ed.dot.style.borderColor = col || "#8fa4b8"; ed.dot.style.background = col || "#fff"; }
+        if (ed) {
+          ed.dot.style.borderColor = on ? "var(--gold-deep)" : col || "#8fa4b8";
+          ed.dot.style.background = on ? "var(--gold)" : col || "#fff";
+          ed.dot.style.transform = on ? "scale(1.35)" : "";
+        }
       });
       drawLines(); // offset 읽기가 동기 레이아웃을 강제하므로 rAF 없이 즉시 정확
     }
@@ -432,32 +445,67 @@ export default function GeologyAnalysisScene(ctx) {
       return { pad, dot };
     }
 
-    /** 드래그 공통: 어느 쪽 점에서 시작해도 반대편에 놓으면 연결 */
+    /* 선택 상태 (탭-탭 연결의 1단계) */
+    let sel = null; // { side: "feat"|"eff", id }
+
+    /** 연결 확정 — 1:1 규칙 적용 후 자동 채점 */
+    function connect(fid, eid) {
+      for (const f of Object.keys(paired)) if (paired[f] === eid) delete paired[f]; // 한 영향엔 한 특징만
+      paired[fid] = eid;
+      sel = null;
+      AudioManager.click();
+      paint();
+      autoCheck();
+    }
+
+    /** 탭 한 번 = 고르기 / 반대쪽 탭 = 연결 (초등학생 기본 조작) */
+    function tapSelect(side, id) {
+      if (locked) return;
+      AudioManager.unlock();
+      if (sel && sel.side !== side) {          // 반대쪽이 골라져 있으면 → 연결!
+        const fid = side === "feat" ? id : sel.id;
+        const eid = side === "eff" ? id : sel.id;
+        connect(fid, eid);
+        return;
+      }
+      if (sel && sel.side === side && sel.id === id) sel = null; // 같은 카드 재탭 = 취소
+      else {
+        sel = { side, id };
+        toast(ctx.stage, "좋아요! 이제 반대쪽 카드를 눌러 연결해요");
+      }
+      AudioManager.click();
+      paint();
+    }
+
+    /** 드래그(보조 조작): 점을 끌어 반대편에 놓기. 탭이면 tapSelect 로 처리 */
     function wireDrag(pad, ownDot, from) { // from: {side:"feat"|"eff", id}
+      let sx = 0, sy = 0, dragging = false;
       pad.addEventListener("pointerdown", (ev) => {
         if (locked) return;
         ev.preventDefault(); ev.stopPropagation();
         AudioManager.unlock();
         try { pad.setPointerCapture(ev.pointerId); } catch { /* 무시 */ }
-        if (from.side === "feat") delete paired[from.id]; // 다시 끌면 기존 연결 해제
-        else for (const f of Object.keys(paired)) if (paired[f] === from.id) delete paired[f];
-        const ci = from.side === "feat"
-          ? m.pairs.findIndex((p) => p.id === from.id)
-          : Math.max(0, m.pairs.findIndex((p) => p.id === from.id));
-        const col = PAIR_COLORS[ci] || "#1f7ac2";
-        const a = dotCenter(ownDot);
-        const lp = toLocal(ev.clientX, ev.clientY);
-        tempLine = mkLine(a.x, a.y, lp.x, lp.y, col, true);
-        pad.style.cursor = "grabbing";
-        paint();
+        sx = ev.clientX; sy = ev.clientY; dragging = false;
       });
       pad.addEventListener("pointermove", (ev) => {
-        if (!tempLine) return;
+        if (ev.buttons === 0 && !dragging) return;
+        if (!dragging) {
+          if (Math.hypot(ev.clientX - sx, ev.clientY - sy) < 8) return; // 아직 탭 범위
+          dragging = true;
+          // 드래그 시작 시에만 기존 연결 해제
+          if (from.side === "feat") delete paired[from.id];
+          else for (const f of Object.keys(paired)) if (paired[f] === from.id) delete paired[f];
+          const ci = Math.max(0, m.pairs.findIndex((p) => p.id === from.id));
+          const a = dotCenter(ownDot);
+          tempLine = mkLine(a.x, a.y, a.x, a.y, PAIR_COLORS[ci] || "#1f7ac2", true);
+          pad.style.cursor = "grabbing";
+          sel = null;
+          paint();
+        }
         const lp = toLocal(ev.clientX, ev.clientY);
         tempLine.setAttribute("x2", lp.x);
         tempLine.setAttribute("y2", lp.y);
         drawLines();
-        // 드롭 후보 하이라이트
         const overId = from.side === "feat"
           ? targetAt(effBtns, effDots, ev.clientX, ev.clientY)
           : targetAt(featBtns, featDots, ev.clientX, ev.clientY);
@@ -469,10 +517,11 @@ export default function GeologyAnalysisScene(ctx) {
         }
       });
       const endDrag = (ev) => {
-        if (!tempLine) return;
+        try { pad.releasePointerCapture(ev.pointerId); } catch { /* 무시 */ }
+        if (!dragging) { tapSelect(from.side, from.id); return; } // 점을 '탭'해도 고르기
+        dragging = false;
         tempLine = null;
         pad.style.cursor = "grab";
-        try { pad.releasePointerCapture(ev.pointerId); } catch { /* 무시 */ }
         let fid = null, eid = null;
         if (from.side === "feat") {
           fid = from.id;
@@ -481,13 +530,8 @@ export default function GeologyAnalysisScene(ctx) {
           eid = from.id;
           fid = targetAt(featBtns, featDots, ev.clientX, ev.clientY);
         }
-        if (fid && eid) {
-          for (const f of Object.keys(paired)) if (paired[f] === eid) delete paired[f]; // 한 영향엔 한 특징만
-          paired[fid] = eid;
-          AudioManager.click();
-        }
-        paint();
-        if (fid && eid) autoCheck();
+        if (fid && eid) connect(fid, eid);
+        else paint();
       };
       pad.addEventListener("pointerup", endDrag);
       pad.addEventListener("pointercancel", endDrag);
@@ -500,12 +544,7 @@ export default function GeologyAnalysisScene(ctx) {
       b.appendChild(pad);
       featDots.set(p.id, { pad, dot });
       wireDrag(pad, dot, { side: "feat", id: p.id });
-      b.addEventListener("click", () => { // 카드 탭 = 연결 해제
-        if (locked || !paired[p.id]) return;
-        AudioManager.unlock(); AudioManager.click();
-        delete paired[p.id];
-        paint();
-      });
+      b.addEventListener("click", () => tapSelect("feat", p.id)); // 카드 전체가 탭 대상
       featBtns.set(p.id, b);
     });
     effects.forEach((e) => {
@@ -514,10 +553,7 @@ export default function GeologyAnalysisScene(ctx) {
       b.appendChild(pad);
       effDots.set(e.id, { pad, dot });
       wireDrag(pad, dot, { side: "eff", id: e.id });
-      b.addEventListener("click", () => {
-        if (locked) return;
-        toast(ctx.stage, "● 점을 끌어서 반대쪽 카드에 놓으면 연결돼요!");
-      });
+      b.addEventListener("click", () => tapSelect("eff", e.id)); // 카드 전체가 탭 대상
       effBtns.set(e.id, b);
     });
 
@@ -528,7 +564,7 @@ export default function GeologyAnalysisScene(ctx) {
     grid.appendChild(svg);
 
     const node = el("div.col", { style: { gap: "10px" } }, [
-      el("div.tip", { style: { fontSize: "14px", padding: "7px 12px" }, html: "<b>● 점을 끌어서</b> 반대쪽 카드에 놓으면 선으로 연결돼요. 어느 쪽 점에서 시작해도 좋아요. 4개를 다 이으면 자동 확인!" }),
+      el("div.tip", { style: { fontSize: "14.5px", padding: "7px 12px" }, html: "① <b>카드를 한 번 눌러</b> 고르고 ② <b>반대쪽 카드를 누르면</b> 선으로 연결! (● 점을 끌어도 돼요) 4개를 다 이으면 자동 확인!" }),
       grid,
       fb,
     ]);
